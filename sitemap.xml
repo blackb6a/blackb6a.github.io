@@ -3,11 +3,22 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>https://b6a.black/team/</loc>
+    <loc>https://b6a.black/</loc>
+    <lastmod>2021-02-09T03:17:10+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://b6a.black/</loc>
+    <loc>https://b6a.black/posts/2021-02-09-hello-world/</loc>
+    <lastmod>2021-02-09T03:17:10+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://b6a.black/posts/</loc>
+    <lastmod>2021-02-09T03:17:10+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://b6a.black/team/</loc>
   </url>
   
   <url>
