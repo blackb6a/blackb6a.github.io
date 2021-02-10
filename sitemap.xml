@@ -3,19 +3,41 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>https://b6a.black/about-us/</loc>
-  </url>
-  
-  <url>
     <loc>https://b6a.black/</loc>
+    <lastmod>2021-02-11T02:01:00+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://b6a.black/categories/</loc>
+    <loc>https://b6a.black/posts/2021-02-09-dicectf-liye/</loc>
+    <lastmod>2021-02-11T02:01:00+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://b6a.black/posts/</loc>
+    <lastmod>2021-02-11T02:01:00+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://b6a.black/tags/reverse-engineering/</loc>
+    <lastmod>2021-02-11T02:01:00+08:00</lastmod>
   </url>
   
   <url>
     <loc>https://b6a.black/tags/</loc>
+    <lastmod>2021-02-11T02:01:00+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://b6a.black/tags/vm/</loc>
+    <lastmod>2021-02-11T02:01:00+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://b6a.black/about-us/</loc>
+  </url>
+  
+  <url>
+    <loc>https://b6a.black/categories/</loc>
   </url>
   
 </urlset>

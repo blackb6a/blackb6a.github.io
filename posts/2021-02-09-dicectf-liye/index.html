@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>DiceCTF 2021: Lost in your Eyes | Black Bauhinia</title>
+
+<meta name="keywords" content="reverse-engineering, vm" />
+<meta name="description" content="Challenge Summary Lost in Your Eyes is a reverse engineering challenge in DiceCTF 2021 with ten solves (334 points).
+ Your eyes are like a maze, and I hate mazes, so help me escape.
+ We are given a binary which takes an input and outputs either :) or :(. If you win a smiley face on the remote server, you are additionally given the flag.
+Solution This challenge is solved by harrier in collaboration with Mystiz.">
+<meta name="author" content="harrier, Mystiz">
+<link rel="canonical" href="https://b6a.black/posts/2021-02-09-dicectf-liye/" />
+<link href="/assets/css/stylesheet.min.9733bd0dca4a7fe1379bd36836878b5b67d7a574e270b0fd4860e518a432e117.css" integrity="sha256-lzO9DcpKf&#43;E3m9NoNoeLW2fXpXTicLD9SGDlGKQy4Rc=" rel="preload stylesheet"
+    as="style">
+
+<link rel="icon" href="https://b6a.black/favicon.ico">
+
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<meta name="generator" content="Hugo 0.68.3" />
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-M67YZZ2MP1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-M67YZZ2MP1');
+</script>
+
+
+
+
+<meta property="og:title" content="DiceCTF 2021: Lost in your Eyes" />
+<meta property="og:description" content="Challenge Summary Lost in Your Eyes is a reverse engineering challenge in DiceCTF 2021 with ten solves (334 points).
+ Your eyes are like a maze, and I hate mazes, so help me escape.
+ We are given a binary which takes an input and outputs either :) or :(. If you win a smiley face on the remote server, you are additionally given the flag.
+Solution This challenge is solved by harrier in collaboration with Mystiz." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://b6a.black/posts/2021-02-09-dicectf-liye/" />
+<meta property="og:image" content="https://i.imgur.com/OhutAXp.png" /><meta property="article:published_time" content="2021-02-11T02:01:00+08:00" />
+<meta property="article:modified_time" content="2021-02-11T02:01:00+08:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image" content="https://i.imgur.com/OhutAXp.png" />
+<meta name="twitter:title" content="DiceCTF 2021: Lost in your Eyes"/>
+<meta name="twitter:description" content="Challenge Summary Lost in Your Eyes is a reverse engineering challenge in DiceCTF 2021 with ten solves (334 points).
+ Your eyes are like a maze, and I hate mazes, so help me escape.
+ We are given a binary which takes an input and outputs either :) or :(. If you win a smiley face on the remote server, you are additionally given the flag.
+Solution This challenge is solved by harrier in collaboration with Mystiz."/>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "DiceCTF 2021: Lost in your Eyes",
+  "name": "DiceCTF 2021: Lost in your Eyes",
+  "description": "Challenge Summary Lost in Your Eyes is a reverse engineering challenge in DiceCTF 2021 with ten solves (334 points).\n Your eyes are like a maze, and I hate mazes, so help me …",
+  "keywords": [
+    "reverse-engineering", "vm"
+  ],
+  "articleBody": "Challenge Summary Lost in Your Eyes is a reverse engineering challenge in DiceCTF 2021 with ten solves (334 points).\n Your eyes are like a maze, and I hate mazes, so help me escape.\n We are given a binary which takes an input and outputs either :) or :(. If you win a smiley face on the remote server, you are additionally given the flag.\nSolution This challenge is solved by harrier in collaboration with Mystiz. The solution is written in the prespective of harrier.\nPart I: Reversing the virtual machine Since this is a reverse question with a binary, I decided to open it with IDA. This is a simple VM-type binary, with the instruction code stored directly inside.\nIt looked so simple to me at the beginning, and I wonder why no one has solved it? After a bit of reversing and dynamically debugging, I know I was wrong.\nThe code of the binary itself is simple. It is a simple VM with the below variables\n Eight one-byte state registers ($R_0, R_1, …, R_7$), a two-byte instruction pointer ($p$), an one-byte direction register ($d=1, 2, 3, 4$) deciding how the instruction pointer move, an one-byte select register ($k$) deciding the index of register for subsequent operations, and 65536 one-byte memory ($M_0, M_1, …, M_{65535}$) storing the instructions and data.  Moreover, each byte in the memory represents an instruction, and the instruction set is defined below.\n   Value Operation     0 do nothing   1 - 8 $k \\leftarrow 0$, …, $k \\leftarrow 7$   9 - 16 $R_k \\leftarrow R_0$, …, $R_k \\leftarrow R_7$   17 $R_k \\leftarrow R_k + 1$   18 $R_k \\leftarrow R_k - 1$   19 $R_k \\leftarrow R_6 + R_7$   20 $R_k \\leftarrow R_6 - R_7$   21 $R_k \\leftarrow R_6 \\times R_7$   22 $R_k \\leftarrow \\text{floor}(R_6 / R_7)$   23 $R_k \\leftarrow R_6\\ \\text{mod}\\ R_7$   24 $R_k \\leftarrow \\text{~}R_k$   25 $R_k \\leftarrow -R_k$   26 $R_k \\leftarrow R_6\\ \\text{and}\\ R_7$   27 $R_k \\leftarrow R_6\\ \\text{or}\\ R_7$   28 $R_k \\leftarrow R_6\\ \\text{xor}\\ R_7$   29 $R_k \\leftarrow R_6 == R_7$   30 $R_k \\leftarrow R_6   31 $256R_0+R_1 \\leftarrow p, R_2 \\leftarrow d$   32 keycheck   33 $R_k \\leftarrow M_{256R_0 + R_1}$   34 $M_{256R_0 + R_1} \\leftarrow R_k$   35 $p \\leftarrow 256R_0 + R_1, d \\leftarrow R_2$   36 $R_k \\leftarrow \\text{input}$   37 $\\text{print}\\ R_k$   38 - 41 $d \\leftarrow 1$, …, $d \\leftarrow 4$    Keycheck is the only curious instruction, where I don’t really know why it even exists. While I was reversing, I am only able to realize it is used perform some fatal checks.\nPart II: Building an emulator As the VM code is so simple, I decided to write an emulator in Python for ease of testing. It is not hard to write an emulation given that I have fully reversed the VM.\nSince the instruction code is embedded in the binary, I used gef to extract the code part, and while in emulation I translate the code to human (me) readable instruction for further reverse. I thought I could get the flag by just reading and parsing the translated code, and figuring out the whole logic. I was wrong and it was far more complicated than that.\nWith the emulator I was able to produce some code trace with various input, here’s some debug log I generated, with state of the VM and instruction it ran:\nCurrent state: [0, 46, 1, 22, 41, 35, 23, 0] 6 50 / 16 0 50/16 REGSEL = 6 Current state: [0, 46, 1, 22, 41, 35, 24, 0] 6 49 / 16 0 49/16 LOAD REG[6] 0/46 Current state: [0, 46, 1, 22, 41, 35, 24, 0] 7 48 / 16 0 48/16 REGSEL = 7 Current state: [0, 46, 1, 22, 41, 35, 24, 0] 7 47 / 16 0 47/16 REG[7] = REG[6] == REG[7] Current state: [0, 46, 1, 22, 41, 35, 24, 0] 7 46 / 16 0 46/16 KEYCHECK REG[7] OK Current state: [0, 46, 1, 22, 41, 35, 24, 0] 7 45 / 16 3 45/16 SETMODE 3 Current state: [0, 46, 1, 22, 41, 35, 24, 0] 7 45 / 15 2 45/15 SETMODE 2 Current state: [0, 46, 1, 22, 41, 35, 24, 0] 7 46 / 15 2 47/15 REG[7] = REG[4] a/b is the notation I used to express instruction pointers, hereby $p = 256a + b$.\nI yield thousands of debug lines like the one above, and I tried to reverse the input process logic, and I realize there is a loop to detect what is my input, and it loop through to see whether the input matched those in the accepted characters.\nHow the characters are matched? Only here I realize the meaning of the keycheck operation. It is simply an if: If the condition holds, the instruction pointer will move two steps forward. Otherwise it will move only one.\nAlso, I was able to generate a list of possible inputs for the first byte, but then I was stuck and didn’t know how to do.\nPart III: Visualizing the inner program This part is written in the prespective of Mystiz.\nI decided to join harrier on this challenge at some point of time. At that moment, he have reversed all of the VM and part of the inner program. I want to know what proportation of the inner program he has reversed.\nAt first, I tried to use graphviz for visualization. The results are pretty dull, and most nodes have both the in-degrees and out-degrees being one.\nThis is not surprising, since the nodes have out-degrees larger than one only if they are branches. However, one interesting point from this is, in most of the time, if x1/y1 transits to x2/y2, then $|x_1-x_2|+|y_1+y_2|=1$… Sounds like they are transited to adjacent grids in each instruction. I recalled some esolangs like Piet and Befunge, where the instruction pointers are actually 2D-coordinates. Although they are not equal, I had an idea to transform the whole thing into a two-dimensional grid. Well, maybe I should use HTML tables to visualize this. Since harrier is tracing the instructions executed, I can integrate it and generate a heatmap to check what is being covered.\nWow, this is pretty impressive. Now we can see that only a small proportion of the code in the inner program is visited. One thing that caught our attention is the maze on the top-left corner. Well, it seemed impossible for us to traverse inside the maze, since there are no arrows and we are very likely unable to turn without arrows.\nWe are able to identify a few zones inside the internal program:\n Request for input Payload area Loop structure The failing and the winning gadgets Maze  Part IV: Generating random ideas While testing with random inputs, it seemed that the input will be filling in 35/22, 35/23 and etc.\nMy first idea is to see whether if we can overwrite 35/1 by overflowing the input buffer. I was expecting that the original code can be corrupted by writing up to 35/255, then it will be wrapped back to 35/0 and 35/1. Turns out this is not possible since only the bottom right zone, with dimensions $47\\times34$, could be overwritten, filling line by line. The excessive input will simply be ignored.\nFrom the visualization, we can see that there are several print gadgets. For example, there is a failing gadget (which prints :() on the bottom left input part that will be traversed when a character outside the character set is given. There is also one on the upper middle of the map and one in the top right. mystiz has identified that the former one has the same instructions as the one on the bottom left, so it would also be a failing gadget. The objective is simple: To make the instruction pointer end up on the top-right part, on the winning gadget.\nTo achieve this, one idea we had is to find ways to jump to the winning gadget directly. We found that the instruction pointer will be moving into the payload area when we are given a sufficiently long input. Therefore we can actually execute the payloads we sent.\nKnowing that, we tried to use the set address instruction (byte 0x23) to jump to the win widget. Unfortunately this does not work, since 0x23 is not allowed as an input.\nWe then come up an idea to try to use the conditional keycheck operation on the side of the square to escape out of the box. However keycheck does not allow an arrow pointing to itself. This does not work as well.\nIt seems that the only possible way is to navigate in the maze properly to get to the win gadget. But how is it possible if the maze do not have arrows?\nWell, there is an untouched part of the program - the arrow-putting gadget. With $R_4 set register instruction (byte 0x21). We reversed it and and expected that it behaves as the following Python code snippet:\nfor x in range(1, 21): for y in range(1, 21): # We are not allowed to overwrite the \"load address\" instructions # i.e., the walls. if M[256*x + y] == 0x23: continue if R[4]  4: M[256 * x + y] = 0x26 + R[4] # 0x26 0x27 0x28 0x29 # ↑ → ↓ ← Our objective is updated once again. Now the goal is to craft a payload to put appropriate arrows to let us navigate through the maze.\nBut wait, there is a check after the maze. Basically, there are some instructions in the maze to write $R_3, R_4, R_5$ and $R_7$. All we need to do is to walk through the maze in a specific order to pass the check.\nSo we finally have a clear target: design a route for the maze to pass through all the checks and get to the winning gadget.\nPart V: Crafting a smiley face In each iteration, I can control 8 registers, initially with $R_0 = 0, R_1 = 5, R_6 = x$ and $R_7 = y$. Initially, I copied the coordinates by $R_2 \\leftarrow x$ and $R_3 \\leftarrow y$ for further operations. Moreover, $R_0$ and $R_1$ can be used to build up to an arbitrary number in a few instructions.\nThe idea is to encode few arrows into a vertical block.\nHowever, the size of our input is pretty small. We need to make use of some techniques to save space. For instance, we can encode few arrows into one condition (Instead of checking x == x0 and y == y0, we can use y  y0, y mod 6 or even x == y as long as it traverses to the goal).\nWriting the payload is tiring without some auxiliary tools, so I used spreadsheet to write the instructions and wrote a simple CSV parser to convert those instruction to the input payload. After some unknown hours of manual work, I have eventually crafted the payload. This is how it looks in spreadsheet. 🙈\nIt is then converted as a payload to the binary. This is the emulated result that eventually returns a smiley face.\nPart VI: Final thoughts It was really a fun reverse challenge, while being easy to begin yet challenging to finish. Every part of the challenge is well-designed. The maze, the constraints, and even the instructions that making this challenge to work. That was an exciting and mind-blowing experience to explore and dig into rabbit holes of the challenge bit by bit.\nThanks to mystiz for the great insights and the visualization, I think having the visualization itself is already having half of the challenge solved. 😀\n",
+  "wordCount" : "1957",
+  "inLanguage": "en",
+  "image":"https://i.imgur.com/OhutAXp.png","datePublished": "2021-02-11T02:01:00+08:00",
+  "dateModified": "2021-02-11T02:01:00+08:00",
+  "author":[{
+    "@type": "Person",
+    "name": "harrier"
+  }, {
+    "@type": "Person",
+    "name": "Mystiz"
+  }],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://b6a.black/posts/2021-02-09-dicectf-liye/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Black Bauhinia",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://b6a.black/favicon.ico"
+    }
+  }
+}
+</script>
+
+
+
+</head>
+
+<body class=" dark" id="top">
+<noscript>
+    <style type="text/css">
+        .theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+</noscript>
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://b6a.black/" accesskey="h" title="Black Bauhinia (Alt + H)">Black Bauhinia</a>
+            <span class="logo-switches">
+                
+                
+            </span>
+        </div>
+        <ul id="menu" onscroll="menu_on_scroll()">
+            <li>
+                <a href="https://b6a.black/about-us/" title="About Us">
+                    <span>About Us</span>
+                </a>
+            </li></ul>
+    </nav>
+</header>
+
+    <main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+
+    <h1 class="post-title">
+      DiceCTF 2021: Lost in your Eyes
+    </h1>
+    <div class="post-meta">
+
+February 11, 2021&nbsp;·&nbsp;harrier, Mystiz
+
+</div>
+  </header>
+  
+  
+  <div class="post-content">
+<h2 id="challenge-summary">Challenge Summary<a hidden class="anchor" aria-hidden="true" href="#challenge-summary">#</a></h2>
+<p><em>Lost in Your Eyes</em> is a reverse engineering challenge in DiceCTF 2021 with ten solves (334 points).</p>
+<blockquote>
+<p>Your eyes are like a maze, and I hate mazes, so help me escape.</p>
+</blockquote>
+<p>We are given a binary which takes an input and outputs either <code>:)</code> or <code>:(</code>. If you win a smiley face on the remote server, you are additionally given the flag.</p>
+<h2 id="solution">Solution<a hidden class="anchor" aria-hidden="true" href="#solution">#</a></h2>
+<p>This challenge is solved by <em>harrier</em> in collaboration with <em>Mystiz</em>. The solution is written in the prespective of <em>harrier</em>.</p>
+<h3 id="part-i-reversing-the-virtual-machine">Part I: Reversing the virtual machine<a hidden class="anchor" aria-hidden="true" href="#part-i-reversing-the-virtual-machine">#</a></h3>
+<p>Since this is a reverse question with a binary, I decided to open it with IDA. This is a simple VM-type binary, with the instruction code stored directly inside.</p>
+<p>It looked so simple to me at the beginning, and I wonder why no one has solved it? After a bit of reversing and dynamically debugging, I know I was wrong.</p>
+<p>The code of the binary itself is simple. It is a simple VM with the below variables</p>
+<ul>
+<li>Eight one-byte <em>state registers</em> ($R_0, R_1, &hellip;, R_7$),</li>
+<li>a two-byte <em>instruction pointer</em> ($p$),</li>
+<li>an one-byte <em>direction register</em> ($d=1, 2, 3, 4$) deciding how the instruction pointer move,</li>
+<li>an one-byte <em>select register</em> ($k$) deciding the index of register for subsequent operations, and</li>
+<li>65536 one-byte <em>memory</em> ($M_0, M_1, &hellip;, M_{65535}$) storing the instructions and data.</li>
+</ul>
+<p>Moreover, each byte in the memory represents an instruction, and the instruction set is defined below.</p>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Operation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td><em>do nothing</em></td>
+</tr>
+<tr>
+<td>1 - 8</td>
+<td>$k \leftarrow 0$, &hellip;, $k \leftarrow 7$</td>
+</tr>
+<tr>
+<td>9 - 16</td>
+<td>$R_k \leftarrow R_0$, &hellip;, $R_k \leftarrow R_7$</td>
+</tr>
+<tr>
+<td>17</td>
+<td>$R_k \leftarrow R_k + 1$</td>
+</tr>
+<tr>
+<td>18</td>
+<td>$R_k \leftarrow R_k - 1$</td>
+</tr>
+<tr>
+<td>19</td>
+<td>$R_k \leftarrow R_6 + R_7$</td>
+</tr>
+<tr>
+<td>20</td>
+<td>$R_k \leftarrow R_6 - R_7$</td>
+</tr>
+<tr>
+<td>21</td>
+<td>$R_k \leftarrow R_6 \times R_7$</td>
+</tr>
+<tr>
+<td>22</td>
+<td>$R_k \leftarrow \text{floor}(R_6 / R_7)$</td>
+</tr>
+<tr>
+<td>23</td>
+<td>$R_k \leftarrow R_6\ \text{mod}\ R_7$</td>
+</tr>
+<tr>
+<td>24</td>
+<td>$R_k \leftarrow \text{~}R_k$</td>
+</tr>
+<tr>
+<td>25</td>
+<td>$R_k \leftarrow -R_k$</td>
+</tr>
+<tr>
+<td>26</td>
+<td>$R_k \leftarrow R_6\ \text{and}\ R_7$</td>
+</tr>
+<tr>
+<td>27</td>
+<td>$R_k \leftarrow R_6\ \text{or}\ R_7$</td>
+</tr>
+<tr>
+<td>28</td>
+<td>$R_k \leftarrow R_6\ \text{xor}\ R_7$</td>
+</tr>
+<tr>
+<td>29</td>
+<td>$R_k \leftarrow R_6 == R_7$</td>
+</tr>
+<tr>
+<td>30</td>
+<td>$R_k \leftarrow R_6 &lt; R_7$</td>
+</tr>
+<tr>
+<td>31</td>
+<td>$256R_0+R_1 \leftarrow p, R_2 \leftarrow d$</td>
+</tr>
+<tr>
+<td>32</td>
+<td><em>keycheck</em></td>
+</tr>
+<tr>
+<td>33</td>
+<td>$R_k \leftarrow M_{256R_0 + R_1}$</td>
+</tr>
+<tr>
+<td>34</td>
+<td>$M_{256R_0 + R_1} \leftarrow R_k$</td>
+</tr>
+<tr>
+<td>35</td>
+<td>$p \leftarrow 256R_0 + R_1, d \leftarrow R_2$</td>
+</tr>
+<tr>
+<td>36</td>
+<td>$R_k \leftarrow \text{input}$</td>
+</tr>
+<tr>
+<td>37</td>
+<td>$\text{print}\ R_k$</td>
+</tr>
+<tr>
+<td>38 - 41</td>
+<td>$d \leftarrow 1$, &hellip;, $d \leftarrow 4$</td>
+</tr>
+</tbody>
+</table>
+<p><em>Keycheck</em> is the only curious instruction, where I don&rsquo;t really know why it even exists. While I was reversing, I am only able to realize it is used perform some fatal checks.</p>
+<h3 id="part-ii-building-an-emulator">Part II: Building an emulator<a hidden class="anchor" aria-hidden="true" href="#part-ii-building-an-emulator">#</a></h3>
+<p>As the VM code is so simple, I decided to write an emulator in Python for ease of testing. It is not hard to write an emulation given that I have fully reversed the VM.</p>
+<p>Since the instruction code is embedded in the binary, I used <em>gef</em> to extract the code part, and while in emulation I translate the code to human (me) readable instruction for further reverse. I thought I could get the flag by just reading and parsing the translated code, and figuring out the whole logic. I was wrong and it was far more complicated than that.</p>
+<p>With the emulator I was able to produce some code trace with various input, here&rsquo;s some debug log I generated, with state of the VM and instruction it ran:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">Current state: [0, 46, 1, 22, 41, 35, 23, 0] 6 50 / 16 0
+50/16 REGSEL = 6
+Current state: [0, 46, 1, 22, 41, 35, 24, 0] 6 49 / 16 0
+49/16 LOAD REG[6] 0/46
+Current state: [0, 46, 1, 22, 41, 35, 24, 0] 7 48 / 16 0
+48/16 REGSEL = 7
+Current state: [0, 46, 1, 22, 41, 35, 24, 0] 7 47 / 16 0
+47/16 REG[7] = REG[6] == REG[7]
+Current state: [0, 46, 1, 22, 41, 35, 24, 0] 7 46 / 16 0
+46/16 KEYCHECK REG[7] OK
+Current state: [0, 46, 1, 22, 41, 35, 24, 0] 7 45 / 16 3
+45/16 SETMODE 3
+Current state: [0, 46, 1, 22, 41, 35, 24, 0] 7 45 / 15 2
+45/15 SETMODE 2
+Current state: [0, 46, 1, 22, 41, 35, 24, 0] 7 46 / 15 2
+47/15 REG[7] = REG[4]
+</code></pre></div><p><code>a/b</code> is the notation I used to express instruction pointers, hereby $p = 256a + b$.</p>
+<p>I yield thousands of debug lines like the one above, and I tried to reverse the input process logic, and I realize there is a loop to detect what is my input, and it loop through to see whether the input matched those in the accepted characters.</p>
+<p>How the characters are matched? Only here I realize the meaning of the <em>keycheck</em> operation. It is simply an <em>if</em>: If the condition holds, the instruction pointer will move two steps forward. Otherwise it will move only one.</p>
+<p>Also, I was able to generate a list of possible inputs for the first byte, but then I was stuck and didn&rsquo;t know how to do.</p>
+<h3 id="part-iii-visualizing-the-inner-program">Part III: Visualizing the inner program<a hidden class="anchor" aria-hidden="true" href="#part-iii-visualizing-the-inner-program">#</a></h3>
+<p><em>This part is written in the prespective of Mystiz.</em></p>
+<p>I decided to join <em>harrier</em> on this challenge at some point of time. At that moment, he have reversed all of the VM and part of the inner program. I want to know what proportation of the inner program he has reversed.</p>
+<p>At first, I tried to use <em>graphviz</em> for visualization. The results are pretty dull, and most nodes have both the in-degrees and out-degrees being one.</p>
+<p><img src="/images/2021-02-09-dicectf-liye/graphviz.png" alt=""></p>
+<p>This is not surprising, since the nodes have out-degrees larger than one only if they are branches. However, one interesting point from this is, in most of the time, if <code>x1/y1</code> transits to <code>x2/y2</code>, then $|x_1-x_2|+|y_1+y_2|=1$&hellip; Sounds like they are transited to adjacent grids in each instruction. I recalled some esolangs like <em>Piet</em> and <em>Befunge</em>, where the instruction pointers are actually 2D-coordinates. Although they are not equal, I had an idea to transform the whole thing into a two-dimensional grid. Well, maybe I should use HTML tables to visualize this. Since <em>harrier</em> is tracing the instructions executed, I can integrate it and generate a heatmap to check what is being covered.</p>
+<p><img src="/images/2021-02-09-dicectf-liye/html-viz.png" alt=""></p>
+<p>Wow, this is pretty impressive. Now we can see that only a small proportion of the code in the inner program is visited. One thing that caught our attention is the <em>maze</em> on the top-left corner. Well, it seemed impossible for us to traverse inside the maze, since there are no arrows and we are very likely unable to turn without arrows.</p>
+<p>We are able to identify a few <em>zones</em> inside the internal program:</p>
+<ul>
+<li><em>Request for input</em></li>
+<li>Payload area</li>
+<li>Loop structure</li>
+<li>The failing and the winning gadgets</li>
+<li>Maze</li>
+</ul>
+<h3 id="part-iv-generating-random-ideas">Part IV: Generating random ideas<a hidden class="anchor" aria-hidden="true" href="#part-iv-generating-random-ideas">#</a></h3>
+<p>While testing with random inputs, it seemed that the input will be filling in 35/22, 35/23 and etc.</p>
+<p>My first idea is to see whether if we can overwrite 35/1 by overflowing the input buffer. I was expecting that the original code can be corrupted by writing up to 35/255, then it will be wrapped back to 35/0 and 35/1. Turns out this is not possible since only the bottom right zone, with dimensions $47\times34$, could be overwritten, filling line by line. The excessive input will simply be ignored.</p>
+<p>From the visualization, we can see that there are several <em>print</em> gadgets. For example, there is a failing gadget (which prints <code>:(</code>) on the bottom left input part that will be traversed when a character outside the character set is given. There is also one on the upper middle of the map and one in the top right. <em>mystiz</em> has identified that the former one has the same instructions as the one on the bottom left, so it would also be a failing gadget. The objective is simple: To make the instruction pointer end up on the top-right part, on the winning gadget.</p>
+<p>To achieve this, one idea we had is to find ways to jump to the winning gadget directly. We found that the instruction pointer will be moving into the <em>payload area</em> when we are given a sufficiently long input. Therefore we can actually execute the payloads we sent.</p>
+<p>Knowing that, we tried to use the <em>set address</em> instruction (byte 0x23) to jump to the win widget. Unfortunately this does not work, since <code>0x23</code> is not allowed as an input.</p>
+<p>We then come up an idea to try to use the conditional <em>keycheck</em> operation on the side of the square to escape out of the box. However <em>keycheck</em> does not allow an arrow pointing to itself. This does not work as well.</p>
+<p>It seems that the only possible way is to navigate in the maze properly to get to the win gadget. But how is it possible if the maze do not have arrows?</p>
+<p>Well, there is an untouched part of the program - the arrow-putting gadget. With $R_4 &lt; 4$, it can be used to put arrows on to the maze with the <em>set register</em> instruction (byte 0x21). We reversed it and and expected that it behaves as the following Python code snippet:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">for</span> x <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">21</span>):
+    <span style="color:#66d9ef">for</span> y <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">21</span>):
+        <span style="color:#75715e"># We are not allowed to overwrite the &#34;load address&#34; instructions</span>
+        <span style="color:#75715e"># i.e., the walls.</span>
+        <span style="color:#66d9ef">if</span> M[<span style="color:#ae81ff">256</span><span style="color:#f92672">*</span>x <span style="color:#f92672">+</span> y] <span style="color:#f92672">==</span> <span style="color:#ae81ff">0x23</span>: <span style="color:#66d9ef">continue</span>
+        <span style="color:#66d9ef">if</span> R[<span style="color:#ae81ff">4</span>] <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">4</span>:
+            M[<span style="color:#ae81ff">256</span> <span style="color:#f92672">*</span> x <span style="color:#f92672">+</span> y] <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x26</span> <span style="color:#f92672">+</span> R[<span style="color:#ae81ff">4</span>]
+            <span style="color:#75715e"># 0x26 0x27 0x28 0x29</span>
+            <span style="color:#75715e">#   ↑    →    ↓    ←</span>
+</code></pre></div><p>Our objective is updated once again. Now the goal is to craft a payload to put appropriate arrows to let us navigate through the maze.</p>
+<p>But wait, there is a check after the maze. Basically, there are some instructions in the maze to write $R_3, R_4, R_5$ and $R_7$. All we need to do is to walk through the maze in a specific order to pass the check.</p>
+<p>So we finally have a clear target: design a route for the maze to pass through all the checks and get to the winning gadget.</p>
+<p><img src="/images/2021-02-09-dicectf-liye/maze-path.png" alt=""></p>
+<h3 id="part-v-crafting-a-smiley-face">Part V: Crafting a smiley face<a hidden class="anchor" aria-hidden="true" href="#part-v-crafting-a-smiley-face">#</a></h3>
+<p>In each iteration, I can control 8 registers, initially with $R_0 = 0, R_1 = 5, R_6 = x$ and $R_7 = y$. Initially, I copied the coordinates by $R_2 \leftarrow x$ and $R_3 \leftarrow y$ for further operations. Moreover, $R_0$ and $R_1$ can be used to build up to an arbitrary number in a few instructions.</p>
+<p>The idea is to encode few arrows into a vertical block.</p>
+<p>However, the size of our input is pretty small. We need to make use of some techniques to save space. For instance, we can encode few arrows into one condition (Instead of checking <code>x == x0</code> and <code>y == y0</code>, we can use <code>y &gt; y0</code>, <code>y mod 6</code> or even <code>x == y</code> as long as it traverses to the goal).</p>
+<p>Writing the payload is tiring without some auxiliary tools, so I used spreadsheet to write the instructions and wrote a simple CSV parser to convert those instruction to the input payload. After some unknown hours of manual work, I have eventually crafted the payload. This is how it looks in spreadsheet. 🙈</p>
+<p><img src="/images/2021-02-09-dicectf-liye/spreadsheet.png" alt=""></p>
+<p>It is then converted as a payload to the binary. This is the emulated result that eventually returns a smiley face.</p>
+<p><img src="/images/2021-02-09-dicectf-liye/maze-final.png" alt=""></p>
+<h3 id="part-vi-final-thoughts">Part VI: Final thoughts<a hidden class="anchor" aria-hidden="true" href="#part-vi-final-thoughts">#</a></h3>
+<p>It was really a fun reverse challenge, while being easy to begin yet challenging to finish. Every part of the challenge is well-designed. The maze, the constraints, and even the instructions that making this challenge to work. That was an exciting and mind-blowing experience to explore and dig into rabbit holes of the challenge bit by bit.</p>
+<p>Thanks to <em>mystiz</em> for the great insights and the visualization, I think having the visualization itself is already having half of the challenge solved. 😀</p>
+
+</div>
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://b6a.black/tags/reverse-engineering/">reverse-engineering</a></li>
+      <li><a href="https://b6a.black/tags/vm/">vm</a></li>
+    </ul>
+  </footer>
+</article>
+    </main><footer class="footer">
+    <span>&copy; 2021 <a href="https://b6a.black/">Black Bauhinia</a></span>
+    <span>&middot;</span>
+    <span>Powered by <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a></span>
+    <span>&middot;</span>
+    <span>Theme <a href="https://git.io/hugopapermod" rel="noopener" target="_blank">PaperMod</a></span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)">
+    <button class="top-link" id="top-link" type="button" accesskey="g">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+            <path d="M12 6H0l6-6z" />
+        </svg>
+    </button>
+</a>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css"
+  integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.js"
+  integrity="sha384-g7c+Jr9ZivxKLnZTDUhnkOnsh30B4H0rpLUpJ4jAIKs4fnJI+sEnkvrMWph2EDg4" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/contrib/auto-render.min.js"
+  integrity="sha384-mll67QQFJfxn0IYznZYonOWZ644AWYC+Pt2cHqMaRhXVrursRwvLnLaebdGIlYNa" crossorigin="anonymous"
+  onload="renderMathInElement(document.body, { delimiters: [{ left: '$$', right: '$$', display: true }, { left: '\\[', right: '\\]', display: true }, { left: '$', right: '$', display: false }, { left: '\\(', right: '\\)', display: false }]})"></script>
+
+
+
+<script defer src="/assets/js/highlight.min.27cd435cc9ed6abb4b496581b151804f79f366c412620272bb94e2f5f598ebcc.js" integrity="sha256-J81DXMntartLSWWBsVGAT3nzZsQSYgJyu5Ti9fWY68w="
+    onload="hljs.initHighlightingOnLoad();"></script>
+<script>
+    window.onload = function () {
+        if (localStorage.getItem("menu-scroll-position")) {
+            document.getElementById('menu').scrollLeft = localStorage.getItem("menu-scroll-position");
+        }
+    }
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+    function menu_on_scroll() {
+        localStorage.setItem("menu-scroll-position", document.getElementById('menu').scrollLeft);
+    }
+
+</script>
+
+</body>
+
+</html>
