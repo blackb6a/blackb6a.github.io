@@ -17,10 +17,7 @@
       <pubDate>Thu, 11 Feb 2021 02:01:00 +0800</pubDate>
       
       <guid>https://b6a.black/posts/2021-02-09-dicectf-liye/</guid>
-      <description>Challenge Summary Lost in Your Eyes is a reverse engineering challenge in DiceCTF 2021 with ten solves (334 points).
- Your eyes are like a maze, and I hate mazes, so help me escape.
- We are given a binary which takes an input and outputs either :) or :(. If you win a smiley face on the remote server, you are additionally given the flag.
-Solution This challenge is solved by harrier in collaboration with Mystiz.</description>
+      <description>Lost in Your Eyes is a reverse engineering challenge in DiceCTF 2021 with ten solves (334 points). We are given a binary which takes an input and outputs either :) or :(. If you win a smiley face on the remote server, you are additionally given the flag.</description>
     </item>
     
   </channel>
