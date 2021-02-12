@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>dicectf on Black Bauhinia</title>
+    <link>https://b6a.black/tags/dicectf/</link>
+    <description>Recent content in dicectf on Black Bauhinia</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Thu, 11 Feb 2021 02:01:00 +0800</lastBuildDate>
+    
+	<atom:link href="https://b6a.black/tags/dicectf/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>DiceCTF 2021: Lost in your Eyes</title>
+      <link>https://b6a.black/posts/2021-02-09-dicectf-liye/</link>
+      <pubDate>Thu, 11 Feb 2021 02:01:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/posts/2021-02-09-dicectf-liye/</guid>
+      <description>Lost in Your Eyes is a reverse engineering challenge in DiceCTF 2021 with ten solves (334 points). We are given a binary which takes an input and outputs either :) or :(. If you win a smiley face on the remote server, you are additionally given the flag.</description>
+    </item>
+    
+  </channel>
+</rss>
