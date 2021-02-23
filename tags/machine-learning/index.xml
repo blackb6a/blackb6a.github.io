@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>machine-learning on Black Bauhinia</title>
+    <link>https://b6a.black/tags/machine-learning/</link>
+    <description>Recent content in machine-learning on Black Bauhinia</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 22 Jul 2020 18:55:00 +0800</lastBuildDate>
+    
+	<atom:link href="https://b6a.black/tags/machine-learning/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>UIUCTF 2020: Bot Protection IV</title>
+      <link>https://b6a.black/posts/2020-07-22-uiuctf-bot-protection-iv/</link>
+      <pubDate>Wed, 22 Jul 2020 18:55:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/posts/2020-07-22-uiuctf-bot-protection-iv/</guid>
+      <description>@font-face { font-family: &#39;minecraft-enchantment&#39;; src: url(&#39;/images/2020-07-22-uiuctf-bot-protection-iv/minecraft-enchantment.ttf&#39;); }  
+In this challenge, we have a website with captcha. Base on the question, we need to solve 500 captcha within 10 minutes. Very easy right?
+
+However, the language of this captcha is the Standard Galactic Alphabet (Minecraft enchantment glyphs).
+The character mapping:
+
+From the source code, there is a curious comment:
+&amp;lt;!--TODO: we don&amp;#39;t need /captchas.zip anymore now that we dynamically create captchas.</description>
+    </item>
+    
+  </channel>
+</rss>

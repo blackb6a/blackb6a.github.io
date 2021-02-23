@@ -12,6 +12,22 @@
     
     
     <item>
+      <title>UIUCTF 2020: Bot Protection IV</title>
+      <link>https://b6a.black/posts/2020-07-22-uiuctf-bot-protection-iv/</link>
+      <pubDate>Wed, 22 Jul 2020 18:55:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/posts/2020-07-22-uiuctf-bot-protection-iv/</guid>
+      <description>@font-face { font-family: &#39;minecraft-enchantment&#39;; src: url(&#39;/images/2020-07-22-uiuctf-bot-protection-iv/minecraft-enchantment.ttf&#39;); }  
+In this challenge, we have a website with captcha. Base on the question, we need to solve 500 captcha within 10 minutes. Very easy right?
+
+However, the language of this captcha is the Standard Galactic Alphabet (Minecraft enchantment glyphs).
+The character mapping:
+
+From the source code, there is a curious comment:
+&amp;lt;!--TODO: we don&amp;#39;t need /captchas.zip anymore now that we dynamically create captchas.</description>
+    </item>
+    
+    <item>
       <title>UIUCTF 2020: deserializeme</title>
       <link>https://b6a.black/posts/2020-07-22-uiuctf-deserializeme/</link>
       <pubDate>Wed, 22 Jul 2020 18:55:00 +0800</pubDate>
