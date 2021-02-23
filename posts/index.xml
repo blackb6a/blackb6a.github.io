@@ -20,5 +20,17 @@
       <description>Lost in Your Eyes is a reverse engineering challenge in DiceCTF 2021 with ten solves (334 points). We are given a binary which takes an input and outputs either :) or :(. If you win a smiley face on the remote server, you are additionally given the flag.</description>
     </item>
     
+    <item>
+      <title>TokyoWesterns CTF 6th 2020 Writeup</title>
+      <link>https://b6a.black/posts/2020-09-23-twctf/</link>
+      <pubDate>Fri, 09 Oct 2020 00:53:29 +0800</pubDate>
+      
+      <guid>https://b6a.black/posts/2020-09-23-twctf/</guid>
+      <description>urlcheck v1 (Web, 98 points) Solved by Ozetta.
+Objective: SSRF http://127.0.0.1/admin-status The input needs to fulfil the pattern &#39;\A(\d+)\.(\d+)\.(\d+)\.(\d+)\Z&#39; and the first octet cannot be 0 or 127, and some other patterns for internal IP addresses. For some reason, int(&amp;quot;0177&amp;quot;) is still 177 instead of 127 in Python, so we can use http://0177.0.0.1/admin-status
+urlcheck v2 (Web, 128 points) Solved by Ozetta.
+Objective: SSRF http://localhost/admin-status Standard TOCTOU bug, just use DNS rebinding to get access: http://23bbd91c.</description>
+    </item>
+    
   </channel>
 </rss>
