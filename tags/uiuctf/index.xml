@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>uiuctf on Black Bauhinia</title>
+    <link>https://b6a.black/tags/uiuctf/</link>
+    <description>Recent content in uiuctf on Black Bauhinia</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 22 Jul 2020 18:55:00 +0800</lastBuildDate>
+    
+	<atom:link href="https://b6a.black/tags/uiuctf/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>UIUCTF 2020: deserializeme</title>
+      <link>https://b6a.black/posts/2020-07-22-uiuctf-deserializeme/</link>
+      <pubDate>Wed, 22 Jul 2020 18:55:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/posts/2020-07-22-uiuctf-deserializeme/</guid>
+      <description>Update: It was assigned as CVE-2020-14343 after the contest.
+ This was a fun challenge exploiting a deserialize service in Python.
+The server is using pyYAML and Flask, with the source code below:
+from flask import Flask, session, request, make_response import yaml import re import os app = Flask(__name__) app.secret_key = os.urandom(16) @app.route(&amp;#39;/&amp;#39;, methods=[&amp;#34;POST&amp;#34;]) def pwnme(): if not re.fullmatch(b&amp;#34;^[\n --/-\]a-}]*$&amp;#34;, request.data, flags=re.MULTILINE): return &amp;#34;Nice try!&amp;#34;, 400 return yaml.load(request.data) if __name__ == &amp;#39;__main__&amp;#39;: app.</description>
+    </item>
+    
+    <item>
+      <title>UIUCTF 2020: nookcrypt</title>
+      <link>https://b6a.black/posts/2020-07-22-uiuctf-nookcrypt/</link>
+      <pubDate>Wed, 22 Jul 2020 18:55:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/posts/2020-07-22-uiuctf-nookcrypt/</guid>
+      <description>Challenge Summary  Tom Nook is testing a new encryption scheme for nookphones, but it seems to be a bit faulty... can you break it?
+ nookcrypt is a netcat service that have no source code released. There are two functions exposed:
+ Gets an encrypted copy of the flag (and the message hello world). Encrypts an arbitrary message.  For example, this is what I had when trying out the options:</description>
+    </item>
+    
+  </channel>
+</rss>

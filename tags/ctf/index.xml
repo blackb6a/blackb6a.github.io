@@ -21,6 +21,39 @@
     </item>
     
     <item>
+      <title>TetCTF 2021: unevaluated</title>
+      <link>https://b6a.black/posts/2021-01-03-tetctf-unevaluated/</link>
+      <pubDate>Sun, 03 Jan 2021 13:39:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/posts/2021-01-03-tetctf-unevaluated/</guid>
+      <description>TetCTF is the first CTF I have played in 2021. I recalled from last year that they have cool challenges. This year, there are three crypto challenges. In particular, unevaluated is the hardest among them. Although I did not solve them, I dug into rabbit holes and had a lot of struggle, uh, fun.
+Challenge Summary There is a 128-bit prime $p$. Define $\cdot: \mathbb{Z}_{p^2}^2\times\mathbb{Z}_{p^2}^2\rightarrow\mathbb{Z}_{p^2}^2$ by
+\[(x_1, y_1)\cdot(x_2, y_2) := \left(\left(x_1x_2-y_1y_2\right)\ \text{mod}\ p^2, \left(x_1y_2+y_1x_2\right)\ \text{mod}\ p^2\right),\]</description>
+    </item>
+    
+    <item>
+      <title>hxp CTF 2020: Hyper</title>
+      <link>https://b6a.black/posts/2020-12-20-hxpctf-hyper/</link>
+      <pubDate>Sun, 20 Dec 2020 23:53:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/posts/2020-12-20-hxpctf-hyper/</guid>
+      <description>I was teamed up to play hxp CTF as @blackb6a last week. The hxp team had come up with a collection of hard challenges. In particular, there are two series of crypto challenges with a total of five parts. I will be writing on the hyper challenge and some follow-up and unanswered questions regarding to hyperelliptic curves.
+ⓘ 𝗢𝗳𝗳𝗶𝗰𝗶𝗮𝗹 𝘀𝗼𝘂𝗿𝗰𝗲𝘀 𝘀𝘁𝗮𝘁𝗲𝗱 𝘁𝗵𝗮𝘁 𝘁𝗵𝗶𝘀 𝗶𝘀 𝗺𝗶𝘀𝗹𝗲𝗮𝗱𝗶𝗻𝗴
+Seriously. I knew nothing on hyperelliptic curves prior to the CTF.</description>
+    </item>
+    
+    <item>
+      <title>Dragon CTF 2020 Writeup</title>
+      <link>https://b6a.black/posts/2020-11-23-dragonctf/</link>
+      <pubDate>Mon, 23 Nov 2020 04:33:50 +0800</pubDate>
+      
+      <guid>https://b6a.black/posts/2020-11-23-dragonctf/</guid>
+      <description>Dragon CTF 2020 is definitely had my best CTF moments. There are big brain moments and I have been mind-blown for multiple times during the game. This time we have teamed up with @blackb6a. I have solved all the crypto challenges and two challenges with my teammates.
+There are three challenges writeup in this post:
+ Bit Flip (parts 2 and 3) Frying in motion babykok  Bit Flip (Crypto, 155+324+343 points) Solved by Mystiz.</description>
+    </item>
+    
+    <item>
       <title>TokyoWesterns CTF 6th 2020 Writeup</title>
       <link>https://b6a.black/posts/2020-09-23-twctf/</link>
       <pubDate>Fri, 09 Oct 2020 00:53:29 +0800</pubDate>
@@ -30,6 +63,76 @@
 Objective: SSRF http://127.0.0.1/admin-status The input needs to fulfil the pattern &#39;\A(\d+)\.(\d+)\.(\d+)\.(\d+)\Z&#39; and the first octet cannot be 0 or 127, and some other patterns for internal IP addresses. For some reason, int(&amp;quot;0177&amp;quot;) is still 177 instead of 127 in Python, so we can use http://0177.0.0.1/admin-status
 urlcheck v2 (Web, 128 points) Solved by Ozetta.
 Objective: SSRF http://localhost/admin-status Standard TOCTOU bug, just use DNS rebinding to get access: http://23bbd91c.</description>
+    </item>
+    
+    <item>
+      <title>CONFidence 2020 CTF: Team Trees</title>
+      <link>https://b6a.black/posts/2020-09-08-confidencectf-team-trees/</link>
+      <pubDate>Tue, 08 Sep 2020 18:30:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/posts/2020-09-08-confidencectf-team-trees/</guid>
+      <description>This week, we have teamed up as @blackb6a to play CONFidence 2020 CTF. We end up ranked 15, but we are more proud of ourselves able to solve a reversing challenge called Team Trees (395 points, 5 solves).
+In particular, we are the first-to-solve to the challenge. It took us around two hours to win the flag. This writeup is written by @harrier_lcc and @mystiz613.
+Challenge Summary  We wanted to plant a lot of trees, but it&#39;s going kinda slow.</description>
+    </item>
+    
+    <item>
+      <title>Google CTF 2020: Oracle</title>
+      <link>https://b6a.black/posts/2020-08-25-google-ctf-oracle/</link>
+      <pubDate>Tue, 25 Aug 2020 16:15:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/posts/2020-08-25-google-ctf-oracle/</guid>
+      <description>I was teamed-up with @blackb6a on Google CTF this time. I have solved 7 challenges alone and 3 challenges with my teammates.
+In particular, Oracle is a crypto challenge with 13 solves. It has got me spending 12 hours. All in all, it was a great experience in terms of learning, but my liver hurts. This piece of writeup may be very computation intensive, just because I would like to make everything clear.</description>
+    </item>
+    
+    <item>
+      <title>3kCTF-2020 Writeup</title>
+      <link>https://b6a.black/posts/2020-07-28-3kctf/</link>
+      <pubDate>Tue, 28 Jul 2020 11:36:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/posts/2020-07-28-3kctf/</guid>
+      <description>reporter (Web; 498 points) Solved by apple.
+Author: rekter0
+ Reporter is an online markdown reporting tool. it&#39;s free to use for everyone. there&#39;s a secret report we need located here
+source
+ Walkthrough The application provide markdown hosting service and it will automatically download and embed external images (or any files) to the &#39;report&#39;.
+There are 4 buttons on the interface: Edit, Preview, Save, and Deliver.
+The first target of the challenge is to access the secret_report.</description>
+    </item>
+    
+    <item>
+      <title>UIUCTF 2020: deserializeme</title>
+      <link>https://b6a.black/posts/2020-07-22-uiuctf-deserializeme/</link>
+      <pubDate>Wed, 22 Jul 2020 18:55:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/posts/2020-07-22-uiuctf-deserializeme/</guid>
+      <description>Update: It was assigned as CVE-2020-14343 after the contest.
+ This was a fun challenge exploiting a deserialize service in Python.
+The server is using pyYAML and Flask, with the source code below:
+from flask import Flask, session, request, make_response import yaml import re import os app = Flask(__name__) app.secret_key = os.urandom(16) @app.route(&amp;#39;/&amp;#39;, methods=[&amp;#34;POST&amp;#34;]) def pwnme(): if not re.fullmatch(b&amp;#34;^[\n --/-\]a-}]*$&amp;#34;, request.data, flags=re.MULTILINE): return &amp;#34;Nice try!&amp;#34;, 400 return yaml.load(request.data) if __name__ == &amp;#39;__main__&amp;#39;: app.</description>
+    </item>
+    
+    <item>
+      <title>UIUCTF 2020: nookcrypt</title>
+      <link>https://b6a.black/posts/2020-07-22-uiuctf-nookcrypt/</link>
+      <pubDate>Wed, 22 Jul 2020 18:55:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/posts/2020-07-22-uiuctf-nookcrypt/</guid>
+      <description>Challenge Summary  Tom Nook is testing a new encryption scheme for nookphones, but it seems to be a bit faulty... can you break it?
+ nookcrypt is a netcat service that have no source code released. There are two functions exposed:
+ Gets an encrypted copy of the flag (and the message hello world). Encrypts an arbitrary message.  For example, this is what I had when trying out the options:</description>
+    </item>
+    
+    <item>
+      <title>PwnThyBytes CTF 2019 Writeup</title>
+      <link>https://b6a.black/posts/2019-10-02-pwnthybytes/</link>
+      <pubDate>Wed, 02 Oct 2019 23:20:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/posts/2019-10-02-pwnthybytes/</guid>
+      <description>Pass the Hash (Warmup/Learning; 50 points) Solved by Mystiz.
+Challenge Summary We are given a peculiar hash algorithm that generates 64-byte long hashes, which wraps of sha0, sha1, sha256 and ripemd160. The hash takes two arguments, salt (20 bytes) and password (22 bytes). We are allowed to control the salt, whilst the goal is to find the password within 1024 queries.
+Hash construction We are given a peculiar hash algorithm that generates 64-byte long hashes, which wraps of sha0, sha1, sha256 and ripemd160.</description>
     </item>
     
   </channel>

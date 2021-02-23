@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>hxpctf on Black Bauhinia</title>
+    <link>https://b6a.black/tags/hxpctf/</link>
+    <description>Recent content in hxpctf on Black Bauhinia</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sun, 20 Dec 2020 23:53:00 +0800</lastBuildDate>
+    
+	<atom:link href="https://b6a.black/tags/hxpctf/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>hxp CTF 2020: Hyper</title>
+      <link>https://b6a.black/posts/2020-12-20-hxpctf-hyper/</link>
+      <pubDate>Sun, 20 Dec 2020 23:53:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/posts/2020-12-20-hxpctf-hyper/</guid>
+      <description>I was teamed up to play hxp CTF as @blackb6a last week. The hxp team had come up with a collection of hard challenges. In particular, there are two series of crypto challenges with a total of five parts. I will be writing on the hyper challenge and some follow-up and unanswered questions regarding to hyperelliptic curves.
+ⓘ 𝗢𝗳𝗳𝗶𝗰𝗶𝗮𝗹 𝘀𝗼𝘂𝗿𝗰𝗲𝘀 𝘀𝘁𝗮𝘁𝗲𝗱 𝘁𝗵𝗮𝘁 𝘁𝗵𝗶𝘀 𝗶𝘀 𝗺𝗶𝘀𝗹𝗲𝗮𝗱𝗶𝗻𝗴
+Seriously. I knew nothing on hyperelliptic curves prior to the CTF.</description>
+    </item>
+    
+  </channel>
+</rss>

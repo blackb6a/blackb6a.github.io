@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>google-ctf on Black Bauhinia</title>
+    <link>https://b6a.black/tags/google-ctf/</link>
+    <description>Recent content in google-ctf on Black Bauhinia</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Tue, 25 Aug 2020 16:15:00 +0800</lastBuildDate>
+    
+	<atom:link href="https://b6a.black/tags/google-ctf/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Google CTF 2020: Oracle</title>
+      <link>https://b6a.black/posts/2020-08-25-google-ctf-oracle/</link>
+      <pubDate>Tue, 25 Aug 2020 16:15:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/posts/2020-08-25-google-ctf-oracle/</guid>
+      <description>I was teamed-up with @blackb6a on Google CTF this time. I have solved 7 challenges alone and 3 challenges with my teammates.
+In particular, Oracle is a crypto challenge with 13 solves. It has got me spending 12 hours. All in all, it was a great experience in terms of learning, but my liver hurts. This piece of writeup may be very computation intensive, just because I would like to make everything clear.</description>
+    </item>
+    
+  </channel>
+</rss>

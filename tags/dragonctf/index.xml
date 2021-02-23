@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>dragonctf on Black Bauhinia</title>
+    <link>https://b6a.black/tags/dragonctf/</link>
+    <description>Recent content in dragonctf on Black Bauhinia</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 23 Nov 2020 04:33:50 +0800</lastBuildDate>
+    
+	<atom:link href="https://b6a.black/tags/dragonctf/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Dragon CTF 2020 Writeup</title>
+      <link>https://b6a.black/posts/2020-11-23-dragonctf/</link>
+      <pubDate>Mon, 23 Nov 2020 04:33:50 +0800</pubDate>
+      
+      <guid>https://b6a.black/posts/2020-11-23-dragonctf/</guid>
+      <description>Dragon CTF 2020 is definitely had my best CTF moments. There are big brain moments and I have been mind-blown for multiple times during the game. This time we have teamed up with @blackb6a. I have solved all the crypto challenges and two challenges with my teammates.
+There are three challenges writeup in this post:
+ Bit Flip (parts 2 and 3) Frying in motion babykok  Bit Flip (Crypto, 155+324+343 points) Solved by Mystiz.</description>
+    </item>
+    
+  </channel>
+</rss>

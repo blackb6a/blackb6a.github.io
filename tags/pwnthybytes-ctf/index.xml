@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>pwnthybytes-ctf on Black Bauhinia</title>
+    <link>https://b6a.black/tags/pwnthybytes-ctf/</link>
+    <description>Recent content in pwnthybytes-ctf on Black Bauhinia</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Tue, 28 Jul 2020 11:36:00 +0800</lastBuildDate>
+    
+	<atom:link href="https://b6a.black/tags/pwnthybytes-ctf/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>3kCTF-2020 Writeup</title>
+      <link>https://b6a.black/posts/2020-07-28-3kctf/</link>
+      <pubDate>Tue, 28 Jul 2020 11:36:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/posts/2020-07-28-3kctf/</guid>
+      <description>reporter (Web; 498 points) Solved by apple.
+Author: rekter0
+ Reporter is an online markdown reporting tool. it&#39;s free to use for everyone. there&#39;s a secret report we need located here
+source
+ Walkthrough The application provide markdown hosting service and it will automatically download and embed external images (or any files) to the &#39;report&#39;.
+There are 4 buttons on the interface: Edit, Preview, Save, and Deliver.
+The first target of the challenge is to access the secret_report.</description>
+    </item>
+    
+    <item>
+      <title>PwnThyBytes CTF 2019 Writeup</title>
+      <link>https://b6a.black/posts/2019-10-02-pwnthybytes/</link>
+      <pubDate>Wed, 02 Oct 2019 23:20:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/posts/2019-10-02-pwnthybytes/</guid>
+      <description>Pass the Hash (Warmup/Learning; 50 points) Solved by Mystiz.
+Challenge Summary We are given a peculiar hash algorithm that generates 64-byte long hashes, which wraps of sha0, sha1, sha256 and ripemd160. The hash takes two arguments, salt (20 bytes) and password (22 bytes). We are allowed to control the salt, whilst the goal is to find the password within 1024 queries.
+Hash construction We are given a peculiar hash algorithm that generates 64-byte long hashes, which wraps of sha0, sha1, sha256 and ripemd160.</description>
+    </item>
+    
+  </channel>
+</rss>

@@ -30,6 +30,15 @@
     </item>
     
     <item>
+      <title>reverse</title>
+      <link>https://b6a.black/tags/reverse/</link>
+      <pubDate>Thu, 11 Feb 2021 02:01:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/tags/reverse/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>reverse-engineering</title>
       <link>https://b6a.black/tags/reverse-engineering/</link>
       <pubDate>Thu, 11 Feb 2021 02:01:00 +0800</pubDate>
@@ -48,11 +57,101 @@
     </item>
     
     <item>
+      <title>crypto</title>
+      <link>https://b6a.black/tags/crypto/</link>
+      <pubDate>Sun, 03 Jan 2021 13:39:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/tags/crypto/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>discrete-logarithm</title>
+      <link>https://b6a.black/tags/discrete-logarithm/</link>
+      <pubDate>Sun, 03 Jan 2021 13:39:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/tags/discrete-logarithm/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>tetctf</title>
+      <link>https://b6a.black/tags/tetctf/</link>
+      <pubDate>Sun, 03 Jan 2021 13:39:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/tags/tetctf/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>hxpctf</title>
+      <link>https://b6a.black/tags/hxpctf/</link>
+      <pubDate>Sun, 20 Dec 2020 23:53:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/tags/hxpctf/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>hyperelliptic-curves</title>
+      <link>https://b6a.black/tags/hyperelliptic-curves/</link>
+      <pubDate>Sun, 20 Dec 2020 23:53:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/tags/hyperelliptic-curves/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>dragonctf</title>
+      <link>https://b6a.black/tags/dragonctf/</link>
+      <pubDate>Mon, 23 Nov 2020 04:33:50 +0800</pubDate>
+      
+      <guid>https://b6a.black/tags/dragonctf/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>tokyowesterns-ctf</title>
       <link>https://b6a.black/tags/tokyowesterns-ctf/</link>
       <pubDate>Fri, 09 Oct 2020 00:53:29 +0800</pubDate>
       
       <guid>https://b6a.black/tags/tokyowesterns-ctf/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>confidence-ctf</title>
+      <link>https://b6a.black/tags/confidence-ctf/</link>
+      <pubDate>Tue, 08 Sep 2020 18:30:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/tags/confidence-ctf/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>google-ctf</title>
+      <link>https://b6a.black/tags/google-ctf/</link>
+      <pubDate>Tue, 25 Aug 2020 16:15:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/tags/google-ctf/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>pwnthybytes-ctf</title>
+      <link>https://b6a.black/tags/pwnthybytes-ctf/</link>
+      <pubDate>Tue, 28 Jul 2020 11:36:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/tags/pwnthybytes-ctf/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>uiuctf</title>
+      <link>https://b6a.black/tags/uiuctf/</link>
+      <pubDate>Wed, 22 Jul 2020 18:55:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/tags/uiuctf/</guid>
       <description></description>
     </item>
     

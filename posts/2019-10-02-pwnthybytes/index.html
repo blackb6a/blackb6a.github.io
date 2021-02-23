@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>PwnThyBytes CTF 2019 Writeup | Black Bauhinia</title>
+
+<meta name="keywords" content="ctf, pwnthybytes-ctf" />
+<meta name="description" content="Pass the Hash (Warmup/Learning; 50 points) Solved by Mystiz.
+Challenge Summary We are given a peculiar hash algorithm that generates 64-byte long hashes, which wraps of sha0, sha1, sha256 and ripemd160. The hash takes two arguments, salt (20 bytes) and password (22 bytes). We are allowed to control the salt, whilst the goal is to find the password within 1024 queries.
+Hash construction We are given a peculiar hash algorithm that generates 64-byte long hashes, which wraps of sha0, sha1, sha256 and ripemd160.">
+<meta name="author" content="Mystiz, harrier">
+<link rel="canonical" href="https://b6a.black/posts/2019-10-02-pwnthybytes/" />
+<link href="/assets/css/stylesheet.min.9733bd0dca4a7fe1379bd36836878b5b67d7a574e270b0fd4860e518a432e117.css" integrity="sha256-lzO9DcpKf&#43;E3m9NoNoeLW2fXpXTicLD9SGDlGKQy4Rc=" rel="preload stylesheet"
+    as="style">
+
+<link rel="icon" href="https://b6a.black/favicon.ico">
+
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<meta name="generator" content="Hugo 0.68.3" />
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-M67YZZ2MP1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-M67YZZ2MP1');
+</script>
+
+
+
+<script src="https://kit.fontawesome.com/fbbadced05.js" crossorigin="anonymous"></script>
+
+
+
+<meta property="og:title" content="PwnThyBytes CTF 2019 Writeup" />
+<meta property="og:description" content="Pass the Hash (Warmup/Learning; 50 points) Solved by Mystiz.
+Challenge Summary We are given a peculiar hash algorithm that generates 64-byte long hashes, which wraps of sha0, sha1, sha256 and ripemd160. The hash takes two arguments, salt (20 bytes) and password (22 bytes). We are allowed to control the salt, whilst the goal is to find the password within 1024 queries.
+Hash construction We are given a peculiar hash algorithm that generates 64-byte long hashes, which wraps of sha0, sha1, sha256 and ripemd160." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://b6a.black/posts/2019-10-02-pwnthybytes/" />
+<meta property="article:published_time" content="2019-10-02T23:20:00+08:00" />
+<meta property="article:modified_time" content="2019-10-02T23:20:00+08:00" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="PwnThyBytes CTF 2019 Writeup"/>
+<meta name="twitter:description" content="Pass the Hash (Warmup/Learning; 50 points) Solved by Mystiz.
+Challenge Summary We are given a peculiar hash algorithm that generates 64-byte long hashes, which wraps of sha0, sha1, sha256 and ripemd160. The hash takes two arguments, salt (20 bytes) and password (22 bytes). We are allowed to control the salt, whilst the goal is to find the password within 1024 queries.
+Hash construction We are given a peculiar hash algorithm that generates 64-byte long hashes, which wraps of sha0, sha1, sha256 and ripemd160."/>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "PwnThyBytes CTF 2019 Writeup",
+  "name": "PwnThyBytes CTF 2019 Writeup",
+  "description": "Pass the Hash (Warmup/Learning; 50 points) Solved by Mystiz.\nChallenge Summary We are given a peculiar hash algorithm that generates 64-byte long hashes, which wraps of sha0, sha1, …",
+  "keywords": [
+    "ctf", "pwnthybytes-ctf"
+  ],
+  "articleBody": "Pass the Hash (Warmup/Learning; 50 points) Solved by Mystiz.\nChallenge Summary We are given a peculiar hash algorithm that generates 64-byte long hashes, which wraps of sha0, sha1, sha256 and ripemd160. The hash takes two arguments, salt (20 bytes) and password (22 bytes). We are allowed to control the salt, whilst the goal is to find the password within 1024 queries.\nHash construction We are given a peculiar hash algorithm that generates 64-byte long hashes, which wraps of sha0, sha1, sha256 and ripemd160.\nThe hash is defined by:\n $L_0, R_0 = \\text{password}\\ |\\ \\text{salt}\\ |\\ \\text{password}$ ($L_0, R_0$ separate the 64-byte block) $L_{i+1} = L_i \\oplus h_R(R_i), R_{i+1} = R_i \\oplus h_L(L_i)$, for $i = 0, 1, ..., 15$.  Here $h_L$ and $h_R$ are the two hash algorithms that uses one of the commonly used hash algorithms based on the content. As this is a 32-byte block, if the hash algorithm itself does not consist 32 bytes, it would repeat itself until there are 32 bytes.\nSolution Part I: Repeat, repeat, repeat One question that had brought up to my mind is: What if the $h_L$ and $h_R$ uses solely the 20-byte hash algorithms (i.e., all but sha256)?  Assume that 20-byte hash algorithms are used. Let's see what will happen in a round.\nDefine $s_0\\ |\\ s_1\\ |\\ ...\\ |\\ s_9 := L_i\\ | \\ R_i$ and $t_0\\ |\\ t_1\\ |\\ ...\\ |\\ t_9 := L_{i+1}\\ | \\ R_{i+1}$, where:\n $s_0, s_2, s_3, s_6, s_7, s_9, t_0, t_2, t_3, t_6, t_7, t_9$ are 8 bytes long, and $s_1, s_4, s_5, s_8, t_1, t_4, t_5, t_8$ are 4 bytes long.  Then we have:\n $t_0\\ |\\ t_1\\ |\\ ...\\ |\\ t_4 = s_0\\ |\\ s_1\\ |\\ ...\\ |\\ s_4\\ |\\ h_R(s_5\\ |\\ s_6\\ |\\ ...\\ |\\ s_9)$, and $t_5\\ |\\ t_6\\ |\\ ...\\ |\\ t_9 = s_5\\ |\\ s_6\\ |\\ ...\\ |\\ s_9\\ |\\ h_L(s_0\\ |\\ s_1\\ |\\ ...\\ |\\ s_4)$.  However, since the first and last 12 bytes of $h_R(\\cdot)$ are equal, we have\n $s_0 \\oplus t_0 = s_3 \\oplus t_3$, and $s_1 \\oplus t_1 = s_4 \\oplus t_4$.  The assumption applies on $h_L(\\cdot)$ as well. Thus we have\n$s_5 \\oplus t_5 = s_8 \\oplus t_8$, and $s_6 \\oplus t_6 = s_9 \\oplus t_9$.  If we define $L_0, R_0$ by $a_0, a_1, …, a_9$ and $L_{16}, R_{16}$ by $b_0, b_1, …, b_9$ (their lengths are respectively equal to $s_0, s_1, …, s_9$), we still have the below properties:\n $b_0 \\oplus b_3 = a_0 \\oplus a_3$, $b_1 \\oplus b_4 = a_1 \\oplus a_4$, $b_5 \\oplus b_8 = a_5 \\oplus a_8$, and $b_6 \\oplus b_9 = a_6 \\oplus a_9$.   Part II: What does it mean? Let's look back how $L_0, R_0$ is defined - $\\text{password}\\ |\\ \\text{salt}\\ |\\ \\text{password}$. This gives us two more properties:\n$a_0 = a_7, a_1 = a_8, a_2 = a_9$ (derived from passwords), and we can control the values of $a_3, a_4, a_5, a_6$.  So... assuming that $h_L$ and $h_R$ uses solely the 20-byte hash algorithms, we can effectively find the password (namely $a_0, a_1, a_2$):\n $a_0 = a_3 \\oplus b_0 \\oplus b_3$, $a_1 = a_4 \\oplus b_1 \\oplus b_4$ and $a_2 = a_9 = a_6 \\oplus b_6 \\oplus b_9$.  Part III: But the assumption is too good to be true! As stated from the title, the assumption is quite hard to satisfy. What we need is, in each of the 16 rounds, $h_L$ and $h_R$ needs to pick an 20-byte hash algorithm instead of the 32-byte hash algorithm... Very difficult isn't it?\nThe answer is not really. The probability to use 20-byte hash algorithms all along is $0.75^{32}\\approx 0.000145257$, which is approximately one out of 10000. We can visit the oracle 10 times, in average, to compute the password from the hash algorithm.\nIt is very easy to know when we had the hash algorithm. From properties 2 and 3, we have:\n\\[b_1 \\oplus b_4 \\oplus b_5 \\oplus b_8 = a_1 \\oplus a_4 \\oplus a_5 \\oplus a_8 = a_4 \\oplus a_5.\\]\nWriting the exploit script solving the challenge, we have the flag: PTBCTF{420199e572e685af8e1782fde58fd0e9}.\nAvec? (Cryptanalysis; 856 points) Solved by harrier.\nChallenge Summary This is a interesting question where we are given a ciphertext, encrypted using AES-GCM, with key and nonce generated by polish_key(os.urandom(8)) and concat itself. The key and nonce is not provided though, so we have to somehow reverse the polish_key process to know more about the key and nonce.\nSolution I first thought this is a GCM nonce collision problem, but the 12 bytes nonce and nonce generation rejects this thought.\nThe polish_key function is the following:\ndef polish_key(key): key = bytes_to_long(key[::-1]) key = GF(2**64).fetch_int(key) key = key ** 0xbcafffff435 key = long_to_bytes( key.integer_representation() )[::-1] assert len(key) == 8 return key Which 0xbcafffff435 is can be factored into $3\\times5\\times7\\times257\\times3019\\times65537$. Knowing that $3^{32} - 1 = 3\\times5\\times7\\times257\\times65537$, the key is of order $3^{32}+1$ (or a factor of it). Hence, the entropy for key and nonce are 32 bits. Exhausting both of them at the same time requires $2^{64}$ trials... or really?\nBecause the cipher is under GCM and with a known AAD, given a key $k$ and a ciphertext $c$, we can compute $\\text{GHASH}_{k,c}(\\text{AAD})$.\nConsider the GCM mode with its tag generation. The tag generation is given by $\\text{tag} = E_k(\\text{nonce}) \\oplus \\text{GHASH}_{k,c}(\\text{AAD})$. Therefore, with known key $k$, one can find out the key-correspondent nonce by $\\text{nonce} = D_k(\\text{tag} \\oplus \\text{GHASH}_{k,c}(\\text{AAD}))$.\nTherefore we can exhaust the key $k$ with $2^{32} + 1$ trials, for each key $k$ find its corresponding $nonce$ and see whether it is the correct one.\nWe can even make it quickly by identifying the $\\text{nonce}$ should end with \\x00\\x00\\x00\\x01 with this method, as it is using a 12-byte nonce.\nWe initially use Sage to deal with the challenge, but it was way too slow (to generate the possible keys) and decided to use Python instead. But we don't want to use other language other than Sage to generate the keys...\nSo what we have done is a simple multi-thread Sage key generator and a Python solver. And it was wayyyyyyyyyyyy too slow... even with pypy.\nBoth the key generator and the pypy solver are terribly slow. I cannot find a simple GHASH implementation to do the brute-forcing part. Computing $2^{16}$ keys takes me more than 3 mins in pypy... I just wanted to use something fast to test through the keys. BearSSL saids it can process 1000MBps according to its benchmark. Maybe I should use a language with fast compiled code.\nI am a Rustacean, so why not to do it in Rust? The result is blazingly fast. It could be solved within an hour with a 64-core computer (from one of my teammates). Sage was then the bottleneck, and thus I did not bother to improve the performance of the Rust solver.\nI should use Rust to generate keys to speedup the whole thing, but anyway, we solved it! :)\nWrong Ring (Cryptanalysis; 936 points) Solved by Mystiz.\nChallenge Summary I personally see this is a cumbersome math. One of my teammates pointed out that this is similar to a ring-LWE. But anyway, knowing that is a ring-LWE does not help much.\nOkay, let's get back on track. A secret polynomial, $S$, is generated to derive the key. We are given eight polynomial pairs of $(A_k, B_k)$ such that $B_k(x) \\equiv A_k(x)S(x) + \\varepsilon_k(x)\\ (\\text{mod}\\ p(x))$, where $\\varepsilon_k$ is an error polynomial and $p(x) = x^{256} + 1486$.\nSolution Part I: Complicating the problem a bit Let's make the polynomial concrete! Define:\n\\[A_k(x) = \\sum_{i=0}^{255} a_{ki} x^i, B_k(x) = \\sum_{i=0}^{255} b_{ki} x^i, \\varepsilon_k(x) = \\sum_{i=0}^{255} e_{ki} x^i, S(x) = \\sum_{i=0}^{255} s_i x^i.\\]\n$a_{ki}, b_{ki}, s_i$ are all integers in the set $[0, 1486]$, while $e_{ki}$ are small real numbers.\nThen we have\n\\[\\begin{aligned} \\sum_{i=0}^{255} b_{ki} x^i \u0026\\equiv \\left(\\sum_{i=0}^{255} a_{ki} x^i\\right)\\left(\\sum_{i=0}^{255} s_i x^i\\right) + \\sum_{i=0}^{255} e_i x^i \\\\ \u0026\\equiv \\sum_{i=0}^{510}\\left(\\sum_{j=\\text{max}(0,i-255)}^{\\text{min}(255,i)} a_{kj}s_{i-j}\\right)x^i + \\sum_{i=0}^{255} e_i x^i \\\\ \u0026\\equiv \\sum_{i=0}^{255}\\left(\\sum_{j=\\text{max}(0,i-255)}^{\\text{min}(255,i)} a_{kj}s_{i-j}\\right)x^i + \\sum_{i=256}^{510}\\left(\\sum_{j=\\text{max}(0,i-255)}^{\\text{min}(255,i)} a_{kj}s_{i-j}\\right)x^i + \\sum_{i=0}^{255} e_i x^i \\\\ \u0026\\equiv \\sum_{i=0}^{255}\\left(\\sum_{j=0}^i a_{kj}s_{i-j}\\right)x^i + \\sum_{i=256}^{510}\\left(\\sum_{j=i-255}^{255} a_{kj}s_{i-j}\\right)x^i + \\sum_{i=0}^{255} e_i x^i \\\\ \u0026\\equiv \\sum_{i=0}^{255}\\left(\\sum_{j=0}^i a_{kj}s_{i-j}\\right)x^i - 1486\\sum_{i=256}^{510}\\left(\\sum_{j=i-255}^{255} a_{kj}s_{i-j}\\right)x^{i-256} + \\sum_{i=0}^{255} e_i x^i \\\\ \u0026\\equiv \\sum_{i=0}^{255}\\left(\\sum_{j=0}^i a_{kj}s_{i-j}\\right)x^i - 1486\\sum_{i=0}^{254}\\left(\\sum_{j=i+1}^{255} a_{kj}s_{i-j+256}\\right)x^{i} + \\sum_{i=0}^{255} e_i x^i \\\\ \u0026\\equiv \\sum_{i=0}^{255}\\left(\\sum_{j=0}^i a_{kj}s_{i-j} - 1486 \\sum_{j=i+1}^{255} a_{kj}s_{i-j+256} + e_i\\right)x^i \\\\ \u0026\\equiv \\sum_{i=0}^{255}\\left(\\sum_{j=0}^i a_{k,{i-j}}s_j - 1486 \\sum_{j=i+1}^{255} a_{k,i-j+256}s_j + e_i\\right)x^i \\end{aligned}\\]\nExplanations: Under modulo $p(x)$, $x^{256} = -1486$ - so we have $$\\sum_{i=256}^{510}\\left(\\sum_{j=i-255}^{255} a_{kj}s_{i-j}\\right)x^i = - 1486\\sum_{i=256}^{510}\\left(\\sum_{j=i-255}^{255} a_{kj}s_{i-j}\\right)x^{i-256}.$$  Very complicated right? Yes... But we have a conclusion for this part:\nFor each $i = 0, 1, …, 255$ and $k = 1, 2, …, 8$, we have: $$b_{ki} = \\sum_{j=0}^i a_{k,{i-j}}s_j - 1486 \\sum_{j=i+1}^{255} a_{k,i-j+256}s_j + e_i.$$  Part II: An insight I have noticed that the coefficients for $x^{240}, x^{241}, ..., x^{255}$ in the error polynomial would be very small (less than 0.1 in magnitude). So why don't we compare the coefficients directly?\nFor each $i = 240, 241, ..., 255$ and $k = 1, 2, ..., 8$, we have a corresponding equation:\n\\[\\text{round}(b_{ki}) = \\sum_{j=0}^i a_{k,{i-j}}s_j - 1486 \\sum_{j=i+1}^{255} a_{k,i-j+256}s_j.\\]\nSince there are 256 unknowns ($s_0, s_1, ..., s_{255}$) and 256 equations, we can hopefully solve the equation. This gives us the key, hence the flag.\nLOTR (Cryptanalysis; 936 points) Solved by Mystiz.\nChallenge Summary This is an attempt to implement an anonymous signature scheme using RSA. In short, given $m$ parties with public keys being $n_1, n_2, ..., n_m$, the signature generated by this group is defined by $(c_1, c_2, ..., c_m)$, where\n\\[\\sum_{k=1}^m \\text{RSAEncrypt}(c_k, n_k)\\equiv\\text{hash}\\ (\\text{mod}\\ 2^{256}),\\]\nand $2^{2175} + 2^{2048} \\leq c_k \\leq 2^{2176} - 2^{2048}$ for each of the $k$'s.\nThere is a catch: if $c = qn + r$ with $0 \\leq r Solution Part I: Simplify the challenge as much as possible $\\text{RSAEncrypt}(qn + r, n) = qn + [r^e\\ (\\text{mod}\\ n)]$ is cumbersome. Why don't we just assume $r = 0$ so that $\\text{RSAEncrypt}$ is just an identity function?\nPart II: The main dish Note: The $c_k$ and $c_k'$ defined below are multiples of $n_k$. This is what we had from the above part for the simplicity’s sake.  My approach is to generate two ciphertexts, namely, $c_k$ and $c_k'$ for the $k$-th party. In this way, we have 243 ciphertext pairs. We are looking for $x_1, x_2, ..., x_{243}\\in{0, 1}$ such that\n\\[\\bigoplus_{k=1}^m [(1 - x_k) \\text{RSAEncrypt}(c_k, n_k) + x_k \\text{RSAEncrypt}(c_k', n_k)] \\equiv \\text{hash}\\ (\\text{mod}\\ 2^{256}).\\]\nSimplifying, we have:\n\\[\\bigoplus_{k=1}^m [x_k (c_k - c_k')] \\equiv \\text{hash} \\oplus \\bigoplus_{k=1}^m c_k\\ (\\text{mod}\\ 2^{256}).\\]\nIdea: My approach is to check if one of the $2^{243}$ possible generated ciphertexts covers the target hash. If not, generate another set.  The above equation is just an linear equation! Solving it we had the values of $x_k$'s. If $x_k = 0$ we pick $c_k$, and $c_k'$ otherwise. After all we have forged a signature.\nPrimitive Obsession (Reverse Engineering; 936 points) Solved by Mystiz.\nChallenge Summary This is a crackme with a 260-byte long input. Conditions involves basic math operations after casting some of the bytes into various types.\nSolution My first thought is to use Angr! Unfortunately I am not a good Angr user - so it took me a long while to give up. I have finally adopted an ultra-naive approach...\n  That is, I have extracted the expressions one by one manually and pass them to z3. After all, I admit my stupidity - it took me six hours to solve it...\n",
+  "wordCount" : "1900",
+  "inLanguage": "en",
+  "datePublished": "2019-10-02T23:20:00+08:00",
+  "dateModified": "2019-10-02T23:20:00+08:00",
+  "author":[{
+    "@type": "Person",
+    "name": "Mystiz"
+  }, {
+    "@type": "Person",
+    "name": "harrier"
+  }],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://b6a.black/posts/2019-10-02-pwnthybytes/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Black Bauhinia",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://b6a.black/favicon.ico"
+    }
+  }
+}
+</script>
+
+
+
+</head>
+
+<body class=" dark" id="top">
+<noscript>
+    <style type="text/css">
+        .theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+</noscript>
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://b6a.black/" accesskey="h" title="Black Bauhinia (Alt + H)">Black Bauhinia</a>
+            <span class="logo-switches">
+                
+                
+            </span>
+        </div>
+        <ul id="menu" onscroll="menu_on_scroll()">
+            <li>
+                <a href="https://b6a.black/about-us/" title="About Us">
+                    <span>About Us</span>
+                </a>
+            </li></ul>
+    </nav>
+</header>
+
+    <main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+
+    <h1 class="post-title">
+      PwnThyBytes CTF 2019 Writeup
+    </h1>
+    <div class="post-meta">
+
+October 2, 2019&nbsp;·&nbsp;Mystiz, harrier
+
+</div>
+  </header>
+  
+  
+  <div class="post-content">
+<h2 id="pass-the-hash-warmuplearning-50-points">Pass the Hash (Warmup/Learning; 50 points)<a hidden class="anchor" aria-hidden="true" href="#pass-the-hash-warmuplearning-50-points">#</a></h2>
+
+<p>Solved by <em>Mystiz</em>.</p>
+
+<h3 id="challenge-summary">Challenge Summary<a hidden class="anchor" aria-hidden="true" href="#challenge-summary">#</a></h3>
+
+<p>We are given a <em>peculiar</em> hash algorithm that generates 64-byte long hashes, which wraps of <em>sha0</em>, <em>sha1</em>, <em>sha256</em> and <em>ripemd160</em>. The hash takes two arguments, <em>salt</em> (20 bytes) and <em>password</em> (22 bytes). We are allowed to control the salt, whilst the goal is to find the password within 1024 queries.</p>
+
+<h4 id="hash-construction">Hash construction<a hidden class="anchor" aria-hidden="true" href="#hash-construction">#</a></h4>
+
+<p>We are given a <em>peculiar</em> hash algorithm that generates 64-byte long hashes, which wraps of <em>sha0</em>, <em>sha1</em>, <em>sha256</em> and <em>ripemd160</em>.</p>
+
+<p>The hash is defined by:</p>
+
+<ol>
+<li>$L_0, R_0 = \text{password}\ |\ \text{salt}\ |\ \text{password}$ ($L_0, R_0$ separate the 64-byte block)</li>
+<li>$L_{i+1} = L_i \oplus h_R(R_i), R_{i+1} = R_i \oplus h_L(L_i)$, for $i = 0, 1, ..., 15$.</li>
+</ol>
+
+<p>Here $h_L$ and $h_R$ are the two hash algorithms that uses one of the commonly used hash algorithms based on the content. As this is a 32-byte block, if the hash algorithm itself does not consist 32 bytes, it would repeat itself until there are 32 bytes.</p>
+
+<h3 id="solution">Solution<a hidden class="anchor" aria-hidden="true" href="#solution">#</a></h3>
+
+<h4 id="part-i-repeat-repeat-repeat">Part I: Repeat, repeat, repeat<a hidden class="anchor" aria-hidden="true" href="#part-i-repeat-repeat-repeat">#</a></h4>
+
+<div class="alert info">
+  One question that had brought up to my mind is: What if the $h_L$ and $h_R$ uses solely the 20-byte hash algorithms (i.e., all but sha256)?
+</div>
+  
+
+<p>Assume that 20-byte hash algorithms are used. Let's see what will happen in a round.</p>
+
+<p>Define $s_0\ |\ s_1\ |\ ...\ |\ s_9 := L_i\ | \ R_i$ and $t_0\ |\ t_1\ |\ ...\ |\ t_9 := L_{i+1}\ | \ R_{i+1}$, where:</p>
+
+<ul>
+<li>$s_0, s_2, s_3, s_6, s_7, s_9, t_0, t_2, t_3, t_6, t_7, t_9$ are 8 bytes long, and</li>
+<li>$s_1, s_4, s_5, s_8, t_1, t_4, t_5, t_8$ are 4 bytes long.</li>
+</ul>
+
+<p>Then we have:</p>
+
+<ol>
+<li>$t_0\ |\ t_1\ |\ ...\ |\ t_4 = s_0\ |\ s_1\ |\ ...\ |\ s_4\ |\ h_R(s_5\ |\ s_6\ |\ ...\ |\ s_9)$, and</li>
+<li>$t_5\ |\ t_6\ |\ ...\ |\ t_9 = s_5\ |\ s_6\ |\ ...\ |\ s_9\ |\ h_L(s_0\ |\ s_1\ |\ ...\ |\ s_4)$.</li>
+</ol>
+
+<p>However, since the first and last 12 bytes of $h_R(\cdot)$ are equal, we have</p>
+
+<ol>
+<li>$s_0 \oplus t_0 = s_3 \oplus t_3$, and</li>
+<li>$s_1 \oplus t_1 = s_4 \oplus t_4$.</li>
+</ol>
+
+<p>The assumption applies on $h_L(\cdot)$ as well. Thus we have</p>
+
+<ol start="3">
+<li>$s_5 \oplus t_5 = s_8 \oplus t_8$, and</li>
+<li>$s_6 \oplus t_6 = s_9 \oplus t_9$.</li>
+</ol>
+
+<div class="alert info">
+  If we define $L_0, R_0$ by $a_0, a_1, &hellip;, a_9$ and $L_{16}, R_{16}$ by $b_0, b_1, &hellip;, b_9$ (their lengths are respectively equal to $s_0, s_1, &hellip;, s_9$), we still have the below properties:</p>
+<ol>
+<li>$b_0 \oplus b_3 = a_0 \oplus a_3$,</li>
+<li>$b_1 \oplus b_4 = a_1 \oplus a_4$,</li>
+<li>$b_5 \oplus b_8 = a_5 \oplus a_8$, and</li>
+<li>$b_6 \oplus b_9 = a_6 \oplus a_9$.</li>
+</ol>
+</div>
+  
+
+<h4 id="part-ii-what-does-it-mean">Part II: What does it mean?<a hidden class="anchor" aria-hidden="true" href="#part-ii-what-does-it-mean">#</a></h4>
+
+<p>Let's look back how $L_0, R_0$ is defined - $\text{password}\ |\ \text{salt}\ |\ \text{password}$. This gives us two more properties:</p>
+
+<ol start="5">
+<li>$a_0 = a_7, a_1 = a_8, a_2 = a_9$ (derived from passwords), and</li>
+<li>we can control the values of $a_3, a_4, a_5, a_6$.</li>
+</ol>
+
+<p>So... assuming that $h_L$ and $h_R$ uses solely the 20-byte hash algorithms, we can effectively find the password (namely $a_0, a_1, a_2$):</p>
+
+<ol>
+<li>$a_0 = a_3 \oplus b_0 \oplus b_3$,</li>
+<li>$a_1 = a_4 \oplus b_1 \oplus b_4$ and</li>
+<li>$a_2 = a_9 = a_6 \oplus b_6 \oplus b_9$.</li>
+</ol>
+
+<h4 id="part-iii-but-the-assumption-is-too-good-to-be-true">Part III: But the assumption is <em>too</em> good to be true!<a hidden class="anchor" aria-hidden="true" href="#part-iii-but-the-assumption-is-too-good-to-be-true">#</a></h4>
+
+<p>As stated from the title, the assumption is quite hard to satisfy. What we need is, in each of the 16 rounds, $h_L$ and $h_R$ needs to pick an 20-byte hash algorithm instead of the 32-byte hash algorithm... Very difficult isn't it?</p>
+
+<p>The answer is <em>not really</em>. The probability to use 20-byte hash algorithms all along is $0.75^{32}\approx 0.000145257$, which is approximately one out of 10000. We can visit the oracle 10 times, in average, to compute the password from the hash algorithm.</p>
+
+<p>It is very easy to know when we had the hash algorithm. From properties 2 and 3, we have:</p>
+
+<p><span  class="math">\[b_1 \oplus b_4 \oplus b_5 \oplus b_8 = a_1 \oplus a_4 \oplus a_5 \oplus a_8 = a_4 \oplus a_5.\]</span></p>
+
+<p>Writing the exploit script solving the challenge, we have the flag: <code>PTBCTF{420199e572e685af8e1782fde58fd0e9}</code>.</p>
+
+<h2 id="avec-cryptanalysis-856-points">Avec? (Cryptanalysis; 856 points)<a hidden class="anchor" aria-hidden="true" href="#avec-cryptanalysis-856-points">#</a></h2>
+
+<p>Solved by <em>harrier</em>.</p>
+
+<h3 id="challenge-summary-1">Challenge Summary<a hidden class="anchor" aria-hidden="true" href="#challenge-summary-1">#</a></h3>
+
+<p>This is a interesting question where we are given a ciphertext, encrypted using AES-GCM, with key and nonce generated by <code>polish_key(os.urandom(8))</code> and concat itself.
+The key and nonce is not provided though, so we have to somehow reverse the <code>polish_key</code> process to know more about the key and nonce.</p>
+
+<h3 id="solution-1">Solution<a hidden class="anchor" aria-hidden="true" href="#solution-1">#</a></h3>
+
+<p>I first thought this is a GCM nonce collision problem, but the 12 bytes nonce and nonce generation rejects this thought.</p>
+
+<p>The <code>polish_key</code> function is the following:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">polish_key</span>(key):
+	key <span style="color:#f92672">=</span> bytes_to_long(key[::<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>])
+	key <span style="color:#f92672">=</span> GF(<span style="color:#ae81ff">2</span><span style="color:#f92672">**</span><span style="color:#ae81ff">64</span>)<span style="color:#f92672">.</span>fetch_int(key)
+	key <span style="color:#f92672">=</span> key <span style="color:#f92672">**</span> <span style="color:#ae81ff">0xbcafffff435</span>
+	key <span style="color:#f92672">=</span> long_to_bytes( key<span style="color:#f92672">.</span>integer_representation() )[::<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>]
+	<span style="color:#66d9ef">assert</span> len(key) <span style="color:#f92672">==</span> <span style="color:#ae81ff">8</span>
+	<span style="color:#66d9ef">return</span> key</code></pre></div>
+<p>Which <code>0xbcafffff435</code> is can be factored into $3\times5\times7\times257\times3019\times65537$. Knowing that $3^{32} - 1 = 3\times5\times7\times257\times65537$, the key is of order $3^{32}+1$ (or a factor of it). Hence, the entropy for key and nonce are 32 bits. Exhausting both of them at the same time requires $2^{64}$ trials... or really?</p>
+
+<p>Because the cipher is under GCM and with a known AAD, given a key $k$ and a ciphertext $c$, we can compute $\text{GHASH}_{k,c}(\text{AAD})$.</p>
+
+<p>Consider the GCM mode with its tag generation. The tag generation is given by $\text{tag} = E_k(\text{nonce}) \oplus \text{GHASH}_{k,c}(\text{AAD})$. Therefore, with known key $k$, one can find out the key-correspondent nonce by $\text{nonce} = D_k(\text{tag} \oplus \text{GHASH}_{k,c}(\text{AAD}))$.</p>
+
+<p>Therefore we can exhaust the key $k$ with $2^{32} + 1$ trials, for each key $k$ find its corresponding $nonce$ and see whether it is the correct one.</p>
+
+<p>We can even make it quickly by identifying the $\text{nonce}$ should end with <code>\x00\x00\x00\x01</code> with this method, as it is using a 12-byte nonce.</p>
+
+<p>We initially use Sage to deal with the challenge, but it was way too slow (to generate the possible keys) and decided to use Python instead. But we don't want to use other language other than Sage to generate the keys...</p>
+
+<p>So what we have done is a simple multi-thread Sage key generator and a Python solver. And it was <em>wayyyyyyyyyyyy</em> too slow... even with pypy.</p>
+
+<p>Both the key generator and the pypy solver are terribly slow. I cannot find a simple GHASH implementation to do the brute-forcing part. Computing $2^{16}$ keys takes me more than 3 mins in pypy... I just wanted to use something fast to test through the keys. BearSSL saids it can process &gt;1000MBps according to its <a href="https://www.bearssl.org/speed.html">benchmark</a>. Maybe I should use a language with fast compiled code.</p>
+
+<p>I am a Rustacean, so why not to do it in Rust? The result is blazingly fast. It could be solved within an hour with a 64-core computer (from one of my teammates). Sage was then the bottleneck, and thus I did not bother to improve the performance of the Rust solver.</p>
+
+<p>I should use Rust to generate keys to speedup the whole thing, but anyway, we solved it! :)</p>
+
+<h2 id="wrong-ring-cryptanalysis-936-points">Wrong Ring (Cryptanalysis; 936 points)<a hidden class="anchor" aria-hidden="true" href="#wrong-ring-cryptanalysis-936-points">#</a></h2>
+
+<p>Solved by <em>Mystiz</em>.</p>
+
+<h3 id="challenge-summary-2">Challenge Summary<a hidden class="anchor" aria-hidden="true" href="#challenge-summary-2">#</a></h3>
+
+<p>I personally see this is a cumbersome math. One of my teammates pointed out that this is similar to a <em>ring-LWE</em>. But anyway, knowing that is a <em>ring-LWE</em> does not help much.</p>
+
+<p>Okay, let's get back on track. A secret polynomial, $S$, is generated to derive the key. We are given eight polynomial pairs of $(A_k, B_k)$ such that $B_k(x) \equiv A_k(x)S(x) + \varepsilon_k(x)\ (\text{mod}\ p(x))$, where $\varepsilon_k$ is an error polynomial and $p(x) = x^{256} + 1486$.</p>
+
+<h3 id="solution-2">Solution<a hidden class="anchor" aria-hidden="true" href="#solution-2">#</a></h3>
+
+<h4 id="part-i-complicating-the-problem-a-bit">Part I: Complicating the problem a bit<a hidden class="anchor" aria-hidden="true" href="#part-i-complicating-the-problem-a-bit">#</a></h4>
+
+<p>Let's make the polynomial concrete! Define:</p>
+
+<p><span  class="math">\[A_k(x) = \sum_{i=0}^{255} a_{ki} x^i, B_k(x) = \sum_{i=0}^{255} b_{ki} x^i, \varepsilon_k(x) = \sum_{i=0}^{255} e_{ki} x^i, S(x) = \sum_{i=0}^{255} s_i x^i.\]</span></p>
+
+<p>$a_{ki}, b_{ki}, s_i$ are all integers in the set $[0, 1486]$, while $e_{ki}$ are small real numbers.</p>
+
+<p>Then we have</p>
+
+<p><span  class="math">\[\begin{aligned}
+\sum_{i=0}^{255} b_{ki} x^i &\equiv \left(\sum_{i=0}^{255} a_{ki} x^i\right)\left(\sum_{i=0}^{255} s_i x^i\right) + \sum_{i=0}^{255} e_i x^i \\
+&\equiv \sum_{i=0}^{510}\left(\sum_{j=\text{max}(0,i-255)}^{\text{min}(255,i)} a_{kj}s_{i-j}\right)x^i + \sum_{i=0}^{255} e_i x^i \\
+&\equiv \sum_{i=0}^{255}\left(\sum_{j=\text{max}(0,i-255)}^{\text{min}(255,i)} a_{kj}s_{i-j}\right)x^i + \sum_{i=256}^{510}\left(\sum_{j=\text{max}(0,i-255)}^{\text{min}(255,i)} a_{kj}s_{i-j}\right)x^i + \sum_{i=0}^{255} e_i x^i \\
+&\equiv \sum_{i=0}^{255}\left(\sum_{j=0}^i a_{kj}s_{i-j}\right)x^i + \sum_{i=256}^{510}\left(\sum_{j=i-255}^{255} a_{kj}s_{i-j}\right)x^i + \sum_{i=0}^{255} e_i x^i \\
+&\equiv \sum_{i=0}^{255}\left(\sum_{j=0}^i a_{kj}s_{i-j}\right)x^i - 1486\sum_{i=256}^{510}\left(\sum_{j=i-255}^{255} a_{kj}s_{i-j}\right)x^{i-256} + \sum_{i=0}^{255} e_i x^i \\
+&\equiv \sum_{i=0}^{255}\left(\sum_{j=0}^i a_{kj}s_{i-j}\right)x^i - 1486\sum_{i=0}^{254}\left(\sum_{j=i+1}^{255} a_{kj}s_{i-j+256}\right)x^{i} + \sum_{i=0}^{255} e_i x^i \\
+&\equiv \sum_{i=0}^{255}\left(\sum_{j=0}^i a_{kj}s_{i-j} - 1486 \sum_{j=i+1}^{255} a_{kj}s_{i-j+256} + e_i\right)x^i \\
+&\equiv \sum_{i=0}^{255}\left(\sum_{j=0}^i a_{k,{i-j}}s_j - 1486 \sum_{j=i+1}^{255} a_{k,i-j+256}s_j + e_i\right)x^i
+\end{aligned}\]</span></p>
+
+<div class="alert info">
+  <strong>Explanations:</strong>
+Under modulo $p(x)$, $x^{256} = -1486$ - so we have $$\sum_{i=256}^{510}\left(\sum_{j=i-255}^{255} a_{kj}s_{i-j}\right)x^i = - 1486\sum_{i=256}^{510}\left(\sum_{j=i-255}^{255} a_{kj}s_{i-j}\right)x^{i-256}.$$
+</div>
+  
+
+<p>Very complicated right? Yes... But we have a conclusion for this part:</p>
+
+<div class="alert success">
+  For each $i = 0, 1, &hellip;, 255$ and $k = 1, 2, &hellip;, 8$, we have:
+$$b_{ki} = \sum_{j=0}^i a_{k,{i-j}}s_j - 1486 \sum_{j=i+1}^{255} a_{k,i-j+256}s_j + e_i.$$
+</div>
+  
+
+<h4 id="part-ii-an-insight">Part II: An insight<a hidden class="anchor" aria-hidden="true" href="#part-ii-an-insight">#</a></h4>
+
+<p>I have noticed that the coefficients for $x^{240}, x^{241}, ..., x^{255}$ in the error polynomial would be very small (less than 0.1 in magnitude). So why don't we compare the coefficients directly?</p>
+
+<p>For each $i = 240, 241, ..., 255$ and $k = 1, 2, ..., 8$, we have a corresponding equation:</p>
+
+<p><span  class="math">\[\text{round}(b_{ki}) = \sum_{j=0}^i a_{k,{i-j}}s_j - 1486 \sum_{j=i+1}^{255} a_{k,i-j+256}s_j.\]</span></p>
+
+<p>Since there are 256 unknowns ($s_0, s_1, ..., s_{255}$) and 256 equations, we can hopefully solve the equation. This gives us the key, hence the flag.</p>
+
+<h2 id="lotr-cryptanalysis-936-points">LOTR (Cryptanalysis; 936 points)<a hidden class="anchor" aria-hidden="true" href="#lotr-cryptanalysis-936-points">#</a></h2>
+
+<p>Solved by <em>Mystiz</em>.</p>
+
+<h3 id="challenge-summary-3">Challenge Summary<a hidden class="anchor" aria-hidden="true" href="#challenge-summary-3">#</a></h3>
+
+<p>This is an attempt to implement an anonymous signature scheme using RSA. In short, given $m$ parties with public keys being $n_1, n_2, ..., n_m$, the signature generated by this group is defined by $(c_1, c_2, ..., c_m)$, where</p>
+
+<p><span  class="math">\[\sum_{k=1}^m \text{RSAEncrypt}(c_k, n_k)\equiv\text{hash}\ (\text{mod}\ 2^{256}),\]</span></p>
+
+<p>and $2^{2175} + 2^{2048} \leq c_k \leq 2^{2176} - 2^{2048}$ for each of the $k$'s.</p>
+
+<p>There is a catch: if $c = qn + r$ with $0 \leq r &lt; q$, $\text{RSAEncrypt}(c, n) = qn + [r^e\ (\text{mod}\ n)]$.</p>
+
+<h3 id="solution-3">Solution<a hidden class="anchor" aria-hidden="true" href="#solution-3">#</a></h3>
+
+<h4 id="part-i-simplify-the-challenge-as-much-as-possible">Part I: Simplify the challenge <em>as much as possible</em><a hidden class="anchor" aria-hidden="true" href="#part-i-simplify-the-challenge-as-much-as-possible">#</a></h4>
+
+<p>$\text{RSAEncrypt}(qn + r, n) = qn + [r^e\ (\text{mod}\ n)]$ is cumbersome. Why don't we just assume $r = 0$ so that $\text{RSAEncrypt}$ is just an identity function?</p>
+
+<h4 id="part-ii-the-main-dish">Part II: The main dish<a hidden class="anchor" aria-hidden="true" href="#part-ii-the-main-dish">#</a></h4>
+
+<div class="alert info">
+  <strong>Note:</strong> The $c_k$ and $c_k'$ defined below are multiples of $n_k$. This is what we had from the above part for the simplicity&rsquo;s sake.
+</div>
+  
+
+<p>My approach is to generate two ciphertexts, namely, $c_k$ and $c_k'$ for the $k$-th party. In this way, we have 243 ciphertext pairs. We are looking for $x_1, x_2, ..., x_{243}\in{0, 1}$ such that</p>
+
+<p><span  class="math">\[\bigoplus_{k=1}^m [(1 - x_k) \text{RSAEncrypt}(c_k, n_k) + x_k \text{RSAEncrypt}(c_k', n_k)] \equiv \text{hash}\ (\text{mod}\ 2^{256}).\]</span></p>
+
+<p>Simplifying, we have:</p>
+
+<p><span  class="math">\[\bigoplus_{k=1}^m [x_k (c_k - c_k')] \equiv \text{hash} \oplus \bigoplus_{k=1}^m c_k\ (\text{mod}\ 2^{256}).\]</span></p>
+
+<div class="alert info">
+  <strong>Idea:</strong> My approach is to check if one of the $2^{243}$ possible generated ciphertexts covers the target hash. If not, generate another set.
+</div>
+  
+
+<p>The above equation is just an linear equation! Solving it we had the values of $x_k$'s. If $x_k = 0$ we pick $c_k$, and $c_k'$ otherwise. After all we have forged a signature.</p>
+
+<h2 id="primitive-obsession-reverse-engineering-936-points">Primitive Obsession (Reverse Engineering; 936 points)<a hidden class="anchor" aria-hidden="true" href="#primitive-obsession-reverse-engineering-936-points">#</a></h2>
+
+<p>Solved by <em>Mystiz</em>.</p>
+
+<h3 id="challenge-summary-4">Challenge Summary<a hidden class="anchor" aria-hidden="true" href="#challenge-summary-4">#</a></h3>
+
+<p>This is a crackme with a 260-byte long input. Conditions involves basic math operations after casting some of the bytes into various types.</p>
+
+<h3 id="solution-4">Solution<a hidden class="anchor" aria-hidden="true" href="#solution-4">#</a></h3>
+
+<p>My first thought is to use Angr! Unfortunately I am not a good Angr user - so it took me a long while to give up. I have finally adopted an <em>ultra-naive</em> approach...</p>
+
+<figure>
+    <img src="/images/2019-10-02-pwnthybytes/ida.png"/> 
+</figure>
+
+
+<p>That is, I have extracted the expressions one by one <em>manually</em> and pass them to z3. After all, I admit my stupidity - it took me <em>six</em> hours to solve it...</p>
+
+</div>
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://b6a.black/tags/ctf/">ctf</a></li>
+      <li><a href="https://b6a.black/tags/pwnthybytes-ctf/">pwnthybytes-ctf</a></li>
+    </ul>
+    <nav class="paginav">
+      <a class="prev" href="https://b6a.black/posts/2020-07-22-uiuctf-nookcrypt/">
+        <span class="title">« Prev Page</span>
+        <br>
+        <span>UIUCTF 2020: nookcrypt</span>
+      </a>
+    </nav>
+  </footer>
+</article>
+    </main><footer class="footer">
+    <span>&copy; 2021 <a href="https://b6a.black/">Black Bauhinia</a></span>
+    <span>&middot;</span>
+    <span>Powered by <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a></span>
+    <span>&middot;</span>
+    <span>Theme <a href="https://git.io/hugopapermod" rel="noopener" target="_blank">PaperMod</a></span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)">
+    <button class="top-link" id="top-link" type="button" accesskey="g">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+            <path d="M12 6H0l6-6z" />
+        </svg>
+    </button>
+</a>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css"
+  integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.js"
+  integrity="sha384-g7c+Jr9ZivxKLnZTDUhnkOnsh30B4H0rpLUpJ4jAIKs4fnJI+sEnkvrMWph2EDg4" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/contrib/auto-render.min.js"
+  integrity="sha384-mll67QQFJfxn0IYznZYonOWZ644AWYC+Pt2cHqMaRhXVrursRwvLnLaebdGIlYNa" crossorigin="anonymous"
+  onload="renderMathInElement(document.body, { delimiters: [{ left: '$$', right: '$$', display: true }, { left: '\\[', right: '\\]', display: true }, { left: '$', right: '$', display: false }, { left: '\\(', right: '\\)', display: false }]})"></script>
+
+
+
+<script defer src="/assets/js/highlight.min.27cd435cc9ed6abb4b496581b151804f79f366c412620272bb94e2f5f598ebcc.js" integrity="sha256-J81DXMntartLSWWBsVGAT3nzZsQSYgJyu5Ti9fWY68w="
+    onload="hljs.initHighlightingOnLoad();"></script>
+<script>
+    window.onload = function () {
+        if (localStorage.getItem("menu-scroll-position")) {
+            document.getElementById('menu').scrollLeft = localStorage.getItem("menu-scroll-position");
+        }
+    }
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+    function menu_on_scroll() {
+        localStorage.setItem("menu-scroll-position", document.getElementById('menu').scrollLeft);
+    }
+
+</script>
+
+</body>
+
+</html>

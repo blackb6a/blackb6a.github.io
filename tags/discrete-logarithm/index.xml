@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>discrete-logarithm on Black Bauhinia</title>
+    <link>https://b6a.black/tags/discrete-logarithm/</link>
+    <description>Recent content in discrete-logarithm on Black Bauhinia</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sun, 03 Jan 2021 13:39:00 +0800</lastBuildDate>
+    
+	<atom:link href="https://b6a.black/tags/discrete-logarithm/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>TetCTF 2021: unevaluated</title>
+      <link>https://b6a.black/posts/2021-01-03-tetctf-unevaluated/</link>
+      <pubDate>Sun, 03 Jan 2021 13:39:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/posts/2021-01-03-tetctf-unevaluated/</guid>
+      <description>TetCTF is the first CTF I have played in 2021. I recalled from last year that they have cool challenges. This year, there are three crypto challenges. In particular, unevaluated is the hardest among them. Although I did not solve them, I dug into rabbit holes and had a lot of struggle, uh, fun.
+Challenge Summary There is a 128-bit prime $p$. Define $\cdot: \mathbb{Z}_{p^2}^2\times\mathbb{Z}_{p^2}^2\rightarrow\mathbb{Z}_{p^2}^2$ by
+\[(x_1, y_1)\cdot(x_2, y_2) := \left(\left(x_1x_2-y_1y_2\right)\ \text{mod}\ p^2, \left(x_1y_2+y_1x_2\right)\ \text{mod}\ p^2\right),\]</description>
+    </item>
+    
+  </channel>
+</rss>
