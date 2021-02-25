@@ -158,6 +158,21 @@
   </url>
   
   <url>
+    <loc>https://b6a.black/tags/browser-exploit/</loc>
+    <lastmod>2020-07-01T15:30:00+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://b6a.black/tags/chrome/</loc>
+    <lastmod>2020-07-01T15:30:00+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://b6a.black/posts/2020-07-01-confidencectf-teaser-chromatic/</loc>
+    <lastmod>2020-07-01T15:30:00+08:00</lastmod>
+  </url>
+  
+  <url>
     <loc>https://b6a.black/posts/2019-10-02-pwnthybytes/</loc>
     <lastmod>2019-10-02T23:20:00+08:00</lastmod>
   </url>
