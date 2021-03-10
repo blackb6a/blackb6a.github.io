@@ -3,12 +3,12 @@
   <channel>
     <title>tetctf on Black Bauhinia</title>
     <link>https://b6a.black/tags/tetctf/</link>
-    <description>Black Bauhinia (tetctf)</description>
+    <description>Recent content in tetctf on Black Bauhinia</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Sun, 03 Jan 2021 13:39:00 +0800</lastBuildDate>
     
-    <atom:link href="https://b6a.black/tags/tetctf/index.xml" rel="self" type="application/rss+xml" />
+	<atom:link href="https://b6a.black/tags/tetctf/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
@@ -17,122 +17,9 @@
       <pubDate>Sun, 03 Jan 2021 13:39:00 +0800</pubDate>
       
       <guid>https://b6a.black/posts/2021-01-03-tetctf-unevaluated/</guid>
-      <description>&lt;p&gt;TetCTF is the first CTF I have played in 2021. I recalled from last year that they have cool challenges. This year, there are three crypto challenges. In particular, &lt;em&gt;unevaluated&lt;/em&gt; is the hardest among them. Although I did not solve them, I dug into rabbit holes and had a lot of struggle, uh, fun.&lt;/p&gt;
-
-&lt;h2 id=&#34;challenge-summary&#34;&gt;Challenge Summary&lt;/h2&gt;
-
-&lt;p&gt;There is a 128-bit prime $p$. Define $\cdot: \mathbb{Z}_{p^2}^2\times\mathbb{Z}_{p^2}^2\rightarrow\mathbb{Z}_{p^2}^2$ by&lt;/p&gt;
-
-&lt;p&gt;&lt;span  class=&#34;math&#34;&gt;\[(x_1, y_1)\cdot(x_2, y_2) := \left(\left(x_1x_2-y_1y_2\right)\ \text{mod}\ p^2, \left(x_1y_2+y_1x_2\right)\ \text{mod}\ p^2\right),\]&lt;/span&gt;&lt;/p&gt;
-
-&lt;p&gt;where $(x_1, y_1), (x_2, y_2) \in \mathbb{Z}_{p^2}^2$. Also, define for $k\in\mathbb{N}$ and $G \in \mathbb{Z}_{p^2}^2$, $G^k = G \cdot G \cdot ... \cdot G$. Given that $G, H \in \mathbb{Z}_{p^2}^2$, the objective is to find $k\in\mathbb{N}\cap\left[0, 2^{256}\right)$ such that $H = G^k$.&lt;/p&gt;
-
-&lt;h2 id=&#34;solution&#34;&gt;Solution&lt;/h2&gt;
-
-&lt;div class=&#34;alert warning&#34;&gt;
-  &lt;strong&gt;Clickbaited!&lt;/strong&gt; This writeup is not original and has referred (or stolen) to several sources (Thanks rkm0959 and CryptoHack!). I would like to write this up for my own reference. Anyway, this is more like a story than a solution.
-&lt;/div&gt;
-  
-
-&lt;h3 id=&#34;part-i-what-is-the-order-composed-of&#34;&gt;Part I: What is the order composed of?&lt;/h3&gt;
-
-&lt;p&gt;Since $p$ and $k$ are respectively 128 and 256 bits long, it is expected to recover two out of $k\ \text{mod}\ p$, $k\ \text{mod}\ q$ and $k\ \text{mod}\ r$ to compute $k$. It is interesting to see the order being a product of three primes $p, q, r$, with $q | (p-1)$ and $r | (p+1)$.&lt;/p&gt;
-
-&lt;p&gt;I have defined $\text{norm}: \mathbb{Z}_{p^2}^2 \rightarrow \mathbb{Z}_{p^2}$ by $\text{norm}(x, y) = (x^2 + y^2)\ \text{mod}\ p^2$ and experimented a bit and discovered some of the properties:&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;The imaginary part of $G^{pr}$ is zero.&lt;/li&gt;
-&lt;li&gt;$\text{norm}(G^{pq}) = 1$, and&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;If we are working on $\mathbb{Z}_p$ instead of $\mathbb{Z}_{p^2}^2$, then&lt;/p&gt;
-
-&lt;ul&gt;
-&lt;li&gt;The imaginary part of $G^r$ is zero.&lt;/li&gt;
-&lt;li&gt;$\text{norm}(G^q) = 1$, and&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;The following code snipped is used to verify the above properties.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# Under mod n&lt;/span&gt;
-P &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; complex_pow(G, p&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;r, n)           &lt;span style=&#34;color:#75715e&#34;&gt;# P.im == 0&lt;/span&gt;
-dQ &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; norm(complex_pow(G, p&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;q, n), n) &lt;span style=&#34;color:#75715e&#34;&gt;# dQ == 1&lt;/span&gt;
-
-&lt;span style=&#34;color:#75715e&#34;&gt;# Under mod p&lt;/span&gt;
-P &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; complex_pow(G, r, p)             &lt;span style=&#34;color:#75715e&#34;&gt;# P.im == 0&lt;/span&gt;
-dQ &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; norm(complex_pow(G, q, p), p)   &lt;span style=&#34;color:#75715e&#34;&gt;# dQ == 1&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-&lt;p&gt;This make me think: If we consider a &lt;em&gt;polar coordinate representation&lt;/em&gt; where $G = \rho e^{i\theta}$, with $\rho\in R$ and $\theta\in A$, then $R \cong \mathbb{Z}_{pq}$ and $A \cong \mathbb{Z}_{pr}$. Hence, we can imagine that the subgroup that $G$ generates is isomorphic to $\mathbb{Z}_{pq}\times\mathbb{Z}_{pr}$.&lt;/p&gt;
-
-&lt;div class=&#34;alert warning&#34;&gt;
-  Well, they are not important though. This is interesting however.
-&lt;/div&gt;
-  
-
-&lt;h3 id=&#34;part-ii-stealing-the-ideas-from-an-existing-cryptosystem&#34;&gt;Part II: Stealing the ideas from an existing cryptosystem&lt;/h3&gt;
-
-&lt;p&gt;Solving discrete log under modulo $n^2$ does not seem difficult. For example, we can see from Paillier cryptosystem that discrete logarithms under modulo $n^2$ can be computed easily. In this way, we can compute $x\ \text{mod}\ p$ with:&lt;/p&gt;
-
-&lt;p&gt;&lt;span  class=&#34;math&#34;&gt;\[x \equiv \frac{\mathcal{L}(h^{p-1}\ \text{mod}\ p^2)}{\mathcal{L}(g^{p-1}\ \text{mod}\ p^2)}\ (\text{mod}\ p),\]&lt;/span&gt;&lt;/p&gt;
-
-&lt;p&gt;where $\mathcal{L}(x) = \frac{x-1}{p}$, like how a ciphertext is decrypted with the Paillier cryptosystem. Hence we have $x\ \text{mod}\ p$.&lt;/p&gt;
-
-&lt;div class=&#34;alert info&#34;&gt;
-  &lt;strong&gt;Mini Checklist&lt;/strong&gt;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;input checked=&#34;&#34; disabled=&#34;&#34; type=&#34;checkbox&#34;&gt; $x\ \text{mod}\ p$&lt;/li&gt;
-&lt;li&gt;&lt;input disabled=&#34;&#34; type=&#34;checkbox&#34;&gt; $x\ \text{mod}\ q$&lt;/li&gt;
-&lt;li&gt;&lt;input disabled=&#34;&#34; type=&#34;checkbox&#34;&gt; $x\ \text{mod}\ r$&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/div&gt;
-  
-
-&lt;h3 id=&#34;part-iii-solving-128bit-discrete-logarithm&#34;&gt;Part III: Solving 128-bit discrete logarithm&lt;/h3&gt;
-
-&lt;p&gt;Let&#39;s try to work on $\mathbb{Z}_{p}^2$ instead of $\mathbb{Z}_{p^2}^2$. This reminded me the challenge &lt;em&gt;galiver&lt;/em&gt; in ASIS CTF Finals 2020. I searched the discussion on CryptoHack&#39;s Discord server, and found...&lt;/p&gt;
-
-&lt;figure&gt;
-    &lt;img src=&#34;https://b6a.black/images/2021-01-03-tetctf/hellman-on-galiver.png&#34;
-         alt=&#34;hellman&amp;amp;rsquo;s comment on galiver back then.&#34;/&gt; &lt;figcaption&gt;
-            &lt;p&gt;hellman&amp;rsquo;s comment on galiver back then.&lt;/p&gt;
-        &lt;/figcaption&gt;
-&lt;/figure&gt;
-
-
-&lt;p&gt;Okay, &lt;em&gt;works for 128-bit $p$ rather fast&lt;/em&gt;. So this must be discrete logarithm. Let&#39;s try it? Since the imaginary part for $G^r, H^r$ are zero, I tried &lt;code&gt;discrete_log(H^r, G^r, q)&lt;/code&gt; on Sage. After five minutes, my PC crashed. I could not solve it during the CTF. After the game, rkm0959 publishes the &lt;a href=&#34;https://rkm0959.tistory.com/192&#34;&gt;writeup&lt;/a&gt; on the CTF and he used &lt;code&gt;h.log(g)&lt;/code&gt; and have got it working. In his writeup, he uses a &lt;em&gt;norm map&lt;/em&gt; which is isomorphic to the subgroup that $G^r$ generates.&lt;/p&gt;
-&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;p &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;206109322179011817882783419945552366363&lt;/span&gt;
-q &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;103054661089505908941391709972776183181&lt;/span&gt;
-r &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;17175776848250984823565284995462697197&lt;/span&gt;
-G &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; (&lt;span style=&#34;color:#ae81ff&#34;&gt;20878314020629522511110696411629430299663617500650083274468525283663940214962&lt;/span&gt;,
-     &lt;span style=&#34;color:#ae81ff&#34;&gt;16739915489749335460111660035712237713219278122190661324570170645550234520364&lt;/span&gt;)
-H &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; (&lt;span style=&#34;color:#ae81ff&#34;&gt;11048898386036746197306883207419421777457078734258168057000593553461884996107&lt;/span&gt;,
-     &lt;span style=&#34;color:#ae81ff&#34;&gt;34230477038891719323025391618998268890391645779869016241994899690290519616973&lt;/span&gt;)
-
-Zp &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; GF(p)
-
-g &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; Zp(G[&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;]&lt;span style=&#34;color:#f92672&#34;&gt;**&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; G[&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;]&lt;span style=&#34;color:#f92672&#34;&gt;**&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;) &lt;span style=&#34;color:#75715e&#34;&gt;# equivalently, g = Zp(complex_pow(G, r, p).re)&lt;/span&gt;
-h &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; Zp(H[&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;]&lt;span style=&#34;color:#f92672&#34;&gt;**&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; H[&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;]&lt;span style=&#34;color:#f92672&#34;&gt;**&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;) &lt;span style=&#34;color:#75715e&#34;&gt;# and           h = Zp(complex_pow(H, r, p).re)&lt;/span&gt;
-
-&lt;span style=&#34;color:#66d9ef&#34;&gt;assert&lt;/span&gt; g&lt;span style=&#34;color:#f92672&#34;&gt;^&lt;/span&gt;q &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;
-x_mod_q &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; h&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;log(g)
-&lt;span style=&#34;color:#66d9ef&#34;&gt;print&lt;/span&gt;(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;x % q =&amp;#39;&lt;/span&gt;, x_mod_q) &lt;span style=&#34;color:#75715e&#34;&gt;# 26176203815975575469683683780455489251&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
-&lt;div class=&#34;alert success&#34;&gt;
-  &lt;strong&gt;Takeaway.&lt;/strong&gt; Sage is powerful. It tooks 3 minutes for my PC to compute the discrete log, where the time complexity should be $\mathcal{O}(\sqrt{q})$. Also, &lt;em&gt;do not use&lt;/em&gt; &lt;code&gt;discrete_log(h, g)&lt;/code&gt;. Use &lt;code&gt;h.log(g)&lt;/code&gt; instead.
-&lt;/div&gt;
-  
-
-&lt;div class=&#34;alert info&#34;&gt;
-  &lt;strong&gt;Mini Checklist&lt;/strong&gt;&lt;/p&gt;
-&lt;ul&gt;
-&lt;li&gt;&lt;input checked=&#34;&#34; disabled=&#34;&#34; type=&#34;checkbox&#34;&gt; $x\ \text{mod}\ p$&lt;/li&gt;
-&lt;li&gt;&lt;input checked=&#34;&#34; disabled=&#34;&#34; type=&#34;checkbox&#34;&gt; $x\ \text{mod}\ q$&lt;/li&gt;
-&lt;li&gt;&lt;input disabled=&#34;&#34; type=&#34;checkbox&#34;&gt; $x\ \text{mod}\ r$&lt;/li&gt;
-&lt;/ul&gt;
-&lt;/div&gt;
-  
-
-&lt;h3 id=&#34;part-iv-combining-the-building-blocks&#34;&gt;Part IV: Combining the building blocks&lt;/h3&gt;
-
-&lt;p&gt;With Chinese remainder theorem, we are able to recover $x_0 := x\ \text{mod}\ pq$. It may not equal to $x$, but they are differ from a small multiple of $pq$. We can simply compute $x_0 + kpq$ for some small $k\in\mathbb{N}$ until $k$ is obtained. After that we have the flag - &lt;code&gt;TetCTF{h0m0m0rph1sm_1s_0ur_fr13nd-mobi:*100*231199111007#}&lt;/code&gt;. This challenge makes me think more about discrete logarithm, and I am amazed by the capability of Sage. I am still wondering why discrete logarithm of a 128-bit prime can be computed in just a few minutes...&lt;/p&gt;
-</description>
+      <description>TetCTF is the first CTF I have played in 2021. I recalled from last year that they have cool challenges. This year, there are three crypto challenges. In particular, unevaluated is the hardest among them. Although I did not solve them, I dug into rabbit holes and had a lot of struggle, uh, fun.
+Challenge Summary There is a 128-bit prime $p$. Define $\cdot: \mathbb{Z}_{p^2}^2\times\mathbb{Z}_{p^2}^2\rightarrow\mathbb{Z}_{p^2}^2$ by
+\[(x_1, y_1)\cdot(x_2, y_2) := \left(\left(x_1x_2-y_1y_2\right)\ \text{mod}\ p^2, \left(x_1y_2+y_1x_2\right)\ \text{mod}\ p^2\right),\]</description>
     </item>
     
   </channel>

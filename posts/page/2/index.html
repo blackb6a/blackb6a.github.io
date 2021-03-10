@@ -5,12 +5,12 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="robots" content="index, follow">
-<title>pwnthybytes-ctf | Black Bauhinia</title>
+<title>Posts | Black Bauhinia</title>
 
 <meta name="keywords" content="" />
 <meta name="description" content="">
 <meta name="author" content="">
-<link rel="canonical" href="https://b6a.black/tags/pwnthybytes-ctf/" />
+<link rel="canonical" href="https://b6a.black/posts/" />
 <link href="/assets/css/stylesheet.min.06c29a64914f09761dd752339de2cbb79790d8c7354bb1fe8dda89ba8b5d05a5.css" integrity="sha256-BsKaZJFPCXYd11IzneLLt5eQ2Mc1S7H&#43;jdqJuotdBaU=" rel="preload stylesheet"
     as="style">
 
@@ -19,7 +19,7 @@
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
 <meta name="generator" content="Hugo 0.68.3" />
-<link rel="alternate" type="application/rss&#43;xml" href="https://b6a.black/tags/pwnthybytes-ctf/index.xml">
+<link rel="alternate" type="application/rss&#43;xml" href="https://b6a.black/posts/index.xml">
 
 
 
@@ -42,13 +42,13 @@
 <link href="https://fonts.googleapis.com/css2?family=Recursive&display=swap" rel="stylesheet"> 
 
 
-<meta property="og:title" content="pwnthybytes-ctf" />
+<meta property="og:title" content="Posts" />
 <meta property="og:description" content="" />
 <meta property="og:type" content="website" />
-<meta property="og:url" content="https://b6a.black/tags/pwnthybytes-ctf/" />
-<meta property="og:updated_time" content="2020-07-28T11:36:00+08:00" />
+<meta property="og:url" content="https://b6a.black/posts/" />
+<meta property="og:updated_time" content="2021-02-11T02:01:00+08:00" />
 <meta name="twitter:card" content="summary"/>
-<meta name="twitter:title" content="pwnthybytes-ctf"/>
+<meta name="twitter:title" content="Posts"/>
 <meta name="twitter:description" content=""/>
 
 
@@ -86,34 +86,48 @@
     <main class="main"> 
 <header class="page-header">
 
-  <h1>pwnthybytes-ctf</h1>
+  <h1>Posts</h1>
 </header>
 
 
 
-<article class="post-entry tag-entry"> 
+<article class="post-entry"> 
 
   <header class="entry-header">
     <h2>
-      3kCTF-2020 Writeup
+      UIUCTF 2020: nookcrypt
     </h2>
   </header>
   <section class="entry-content">
-    <p>reporter (Web; 498 points) Solved by apple.
-Author: rekter0
- Reporter is an online markdown reporting tool. it&#39;s free to use for everyone. there&#39;s a secret report we need located here
-source
- Walkthrough The application provide markdown hosting service and it will automatically download and embed external images (or any files) to the &#39;report&#39;.
-There are 4 buttons on the interface: Edit, Preview, Save, and Deliver.
-The first target of the challenge is to access the secret_report....</p>
+    <p>Challenge Summary  Tom Nook is testing a new encryption scheme for nookphones, but it seems to be a bit faulty... can you break it?
+ nookcrypt is a netcat service that have no source code released. There are two functions exposed:
+ Gets an encrypted copy of the flag (and the message hello world). Encrypts an arbitrary message.  For example, this is what I had when trying out the options:...</p>
   </section>
   <footer class="entry-footer">
 
-July 28, 2020&nbsp;·&nbsp;apple, cire meat pop, eriri, Mystiz, ozetta
+July 22, 2020&nbsp;·&nbsp;Mystiz
 </footer>
-  <a class="entry-link" aria-label="post link to 3kCTF-2020 Writeup" href="https://b6a.black/posts/2020-07-28-3kctf/"></a>
+  <a class="entry-link" aria-label="post link to UIUCTF 2020: nookcrypt" href="https://b6a.black/posts/2020-07-22-uiuctf-nookcrypt/"></a>
 </article>
-<article class="post-entry tag-entry"> 
+<article class="post-entry"> 
+<figure class="entry-cover"><img src="https://b6a.black/images/2020-07-01-confidencectf/2.png" alt="" style="object-fit: cover; max-height: 200px;">
+</figure>
+
+  <header class="entry-header">
+    <h2>
+      CONFidence 2020 Teaser CTF: Chromatic Aberration
+    </h2>
+  </header>
+  <section class="entry-content">
+    <p>In this CTF Question, author introduced a OOB read and arbitary write to the Array.fill of the V8 engine. So, our exploitation will be very straightforward. First, we will set up an array of BitInts with 0x33313131 as marking for arbitary write after we collect sufficient primitive with the OOB....</p>
+  </section>
+  <footer class="entry-footer">
+
+July 1, 2020&nbsp;·&nbsp;wwkenwong
+</footer>
+  <a class="entry-link" aria-label="post link to CONFidence 2020 Teaser CTF: Chromatic Aberration" href="https://b6a.black/posts/2020-07-01-confidencectf-teaser-chromatic/"></a>
+</article>
+<article class="post-entry"> 
 
   <header class="entry-header">
     <h2>
@@ -131,6 +145,11 @@ October 2, 2019&nbsp;·&nbsp;Mystiz, harrier
 </footer>
   <a class="entry-link" aria-label="post link to PwnThyBytes CTF 2019 Writeup" href="https://b6a.black/posts/2019-10-02-pwnthybytes/"></a>
 </article>
+<footer class="page-footer">
+  <nav class="pagination">
+    <a class="prev" href="https://b6a.black/posts/">« Prev Page</a>
+  </nav>
+</footer>
 
     </main><footer class="footer">
     <span>&copy; 2021 <a href="https://b6a.black/">Black Bauhinia</a></span>
