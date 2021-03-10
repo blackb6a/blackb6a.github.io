@@ -13,7 +13,7 @@
  Gets an encrypted copy of the flag (and the message hello world). Encrypts an arbitrary message.  For example, this is what I had when trying out the options:">
 <meta name="author" content="Mystiz">
 <link rel="canonical" href="https://b6a.black/posts/2020-07-22-uiuctf-nookcrypt/" />
-<link href="/assets/css/stylesheet.min.06c29a64914f09761dd752339de2cbb79790d8c7354bb1fe8dda89ba8b5d05a5.css" integrity="sha256-BsKaZJFPCXYd11IzneLLt5eQ2Mc1S7H&#43;jdqJuotdBaU=" rel="preload stylesheet"
+<link href="/assets/css/stylesheet.min.cbea6e4569d868c2099732a453af991f3a66132125fdf174125d43fc613d6e0d.css" integrity="sha256-y&#43;puRWnYaMIJlzKkU6&#43;ZHzpmEyEl/fF0El1D/GE9bg0=" rel="preload stylesheet"
     as="style">
 
 <link rel="icon" href="https://b6a.black/favicon.ico">
@@ -67,7 +67,7 @@
   "keywords": [
     "ctf", "uiuctf"
   ],
-  "articleBody": "Challenge Summary  Tom Nook is testing a new encryption scheme for nookphones, but it seems to be a bit faulty... can you break it?\n nookcrypt is a netcat service that have no source code released. There are two functions exposed:\n Gets an encrypted copy of the flag (and the message hello world). Encrypts an arbitrary message.  For example, this is what I had when trying out the options:\nOption: 1 enc(FLAG) = (0xf31ce7cb1f2c6e7107318d76bdda50c5, 0x02d979fc3122bbaffcc1111953bc184f) enc('hello world') = (0x4cf5afcc9bc1db0118172129b713d86a, 0xe41d8761370768aa9694b164c843dde9) Option: 2 msg: hello world enc(0x68656c6c6f20776f726c64) = (0x4cf5afcc9bc1db0118172129b713d86a, 0xe41d8761370768aa9694b164c843dde9) Since the response is consistent after reconnecting to the netcat service for multiple times, I assume that the parameters are constant.\nSolution Part I: Recovering the curve parameters in a stupid way Since it is mentioning elliptic curves in its services, the first thing I was doing is to recover the parameters, namely, $a$, $b$ and $p$ for the elliptic curve $y^2 \\equiv x^3 + ax + b\\ (\\text{mod}\\ p)$.\nMy attempt is to encrypt a bunch of messages:\nmsg: a enc(0x61) = (0xb2d6c27a99b52aec6e243d4e4f67cb71, 0x9dfa2bd87ea1e09388493137132cc534) msg: b enc(0x62) = (0x99b8150ebf23c69ee1056f0e329496ae, 0xe1febe35a5877f00f3876c2a24fb9164) msg: c enc(0x63) = (0x3e7ef6d1106382119a0fa8c966f6d1df, 0x89d81b9fab5336a227414491881bbee8) msg: d enc(0x64) = (0x985dbb38a65f4e69bfc602d7e114cad9, 0xcad1cb62a3d30b05093575f3a22f7e3c) ... Define $C_i = (x_i, y_i)$ be the ciphertexts of some message $m_i$. By direct substitution, we have $y_i^2 \\equiv x_i^3 + ax_i + b\\ (\\text{mod}\\ p)$ for all $i$.\nAssume that we have three ciphertexts. We can deduce that:\n $a(x_1 - x_2) \\equiv y_1^2 - y_2^2 - x_1^3 + x_2^3 \\ (\\text{mod}\\ p)$ and $a(x_2 - x_3) \\equiv y_2^2 - y_3^2 - x_2^3 + x_3^3 \\ (\\text{mod}\\ p)$.  From above, we know $(y_1^2 - y_2^2 - x_1^3 + x_2^3)(x_2 - x_3) - (y_2^2 - y_3^2 - x_2^3 + x_3^3)(x_1 - x_2)$ is a multiple of $p$.\nSo we have collected a bunch of \"multiples of $p$\" and take their gcd. We have recovered that $p = 340282366762482138434845932244680310783$.\nThen it is rather obvious to recover $a = 284470887156368047300405921324061011681$ and $b = 126188322377389722996253562430093625949$.\nQuestion. What if it is not defined on a prime field? Well… I didn’t think of that. But who cares? I could probably observe this if my approach doesn’t work out.  Part II: A reflection on the \"after-math\" Note. I did not think of this during the game. Stupid me.  Knowing that the ciphertext $C$ is a multiple of the message $m$, i.e., $C = mG$, we can simply encrypt $m = 1$:\n[+] Opening connection to chal.uiuc.tf on port 2006: Done [DEBUG] Received 0x123 bytes: b'\\n' b'========================================\\n' b'Welcome to NookCrypt! Here we use fancy\\n' b'elliptic curve encryption to keep your \\n' b'messages safe! Try it out!\\n' b'========================================\\n' b'1. get (encrypted) flag\\n' b'2. encrypt message\\n' b'3. quit\\n' b'========================================\\n' b'\\n' b'Option: ' [DEBUG] Sent 0x2 bytes: b'2\\n' [DEBUG] Received 0x5 bytes: b'msg: ' [DEBUG] Sent 0x2 bytes: 00000000 01 0a │··│ 00000002 [DEBUG] Received 0x178 bytes: b'enc(0x01) = (0x7b6aa5d85e572983e6fb32a7cdebc140, 0x27b6916a894d3aee7106fe805fc34b44)\\n' b'\\n' b'========================================\\n' b'Welcome to NookCrypt! Here we use fancy\\n' b'elliptic curve encryption to keep your \\n' b'messages safe! Try it out!\\n' b'========================================\\n' b'1. get (encrypted) flag\\n' b'2. encrypt message\\n' b'3. quit\\n' b'========================================\\n' b'\\n' b'Option: ' What can we do? Since this is $G$, we can simply search this on Google:\n  Ta-da :tada: - it is the generator for curve secp128r2. You would think this is a ta-da moment, I would say that this is a facepalm moment. I could spent much less time on recovering the parameters in such a way.\nWell, I was even more confused to notice that is a secure curve. I personally don't have a backdoor of secp128r2 (I am much appreciated if you tell me if you do) and thought the challenge isn't doable.\nPart III: \"Hint for nookcrypt (crypto 500)\" Fours hours later the organizers released a hint in the Discord server:\n  When I was being played writing an interactor with the service, I observed that there was a strange behaviour regarding to the flag encryption method:\n======================================== Welcome to NookCrypt! Here we use fancy elliptic curve encryption to keep your messages safe! Try it out! ======================================== 1. get (encrypted) flag 2. encrypt message 3. quit ======================================== Option: 1 err Oh. So the error was caused by the cosmic ray. Okay.\nDid you really get it instantly when the hint is announced? No.  Part IV: Somebody made a breakthrough Ten hours later, somebody from Discord claimed that he has a strange observation:\n  Who was the somebody? Me.  We made a bunch of assumptions. Cutting the crap, we assumed that the same generator $G = (x_G, y_G)$ is being multipled in a same way, except that the curve is operated on new modulo $p'$. This matches the author's statement regarding on the prime being corrupted.\nHowever, obviously, it is very likely that $G$ may not be a point the above curve. Luckily (or unluckily), we can assume that it is operating on another curve $y^2 \\equiv x^3 + ax + b'\\ (\\text{mod}\\ p')$, such that $G$ is on it.\nFor now, we are given two points on this curve (the ciphertexts of the flag $F = (x_F, y_F)$ and the message hello world $M = (x_M, y_M)$). Since $a$ is known we can easily recover $p'$ by:\n\\[\\begin{aligned} p' = \\text{gcd}( \u0026(y_F^2 - x_F^3 - ax_F - b') - (y_G^2 - x_G^3 - ax_G - b'), \\\\ \u0026 (y_M^2 - x_M^3 - ax_M - b') - (y_G^2 - x_G^3 - ax_G - b')) \\end{aligned} \\]\nThe order of the generator should be a large prime for an elliptic curve to be secure. Clearly this property may not hold on those new modulos struck by cosmic may. For instance, suppose that we have $p' = 340282366762482138434845932242512471141$. Since 67 is a factor of $p'$, we are indeed working on the curve $y^2 \\equiv x^3 + ax + b'\\ (\\text{mod}\\ 67)$. $G$ has a order 74, and $F = fG = 21G$. It implies that $f \\equiv 21\\ (\\text{mod}\\ 74)$.\nBy collecting a bunch of linear congruences, we can find $f$ by the Chinese Remainder Theorem. Eventually we have the flag: uiuctf{th4t_5ur3_w4s_f4ulty_huh?}.\n",
+  "articleBody": "Challenge Summary  Tom Nook is testing a new encryption scheme for nookphones, but it seems to be a bit faulty... can you break it?\n nookcrypt is a netcat service that have no source code released. There are two functions exposed:\n Gets an encrypted copy of the flag (and the message hello world). Encrypts an arbitrary message.  For example, this is what I had when trying out the options:\nOption: 1 enc(FLAG) = (0xf31ce7cb1f2c6e7107318d76bdda50c5, 0x02d979fc3122bbaffcc1111953bc184f) enc('hello world') = (0x4cf5afcc9bc1db0118172129b713d86a, 0xe41d8761370768aa9694b164c843dde9) Option: 2 msg: hello world enc(0x68656c6c6f20776f726c64) = (0x4cf5afcc9bc1db0118172129b713d86a, 0xe41d8761370768aa9694b164c843dde9) Since the response is consistent after reconnecting to the netcat service for multiple times, I assume that the parameters are constant.\nSolution Part I: Recovering the curve parameters in a stupid way Since it is mentioning elliptic curves in its services, the first thing I was doing is to recover the parameters, namely, $a$, $b$ and $p$ for the elliptic curve $y^2 \\equiv x^3 + ax + b\\ (\\text{mod}\\ p)$.\nMy attempt is to encrypt a bunch of messages:\nmsg: a enc(0x61) = (0xb2d6c27a99b52aec6e243d4e4f67cb71, 0x9dfa2bd87ea1e09388493137132cc534) msg: b enc(0x62) = (0x99b8150ebf23c69ee1056f0e329496ae, 0xe1febe35a5877f00f3876c2a24fb9164) msg: c enc(0x63) = (0x3e7ef6d1106382119a0fa8c966f6d1df, 0x89d81b9fab5336a227414491881bbee8) msg: d enc(0x64) = (0x985dbb38a65f4e69bfc602d7e114cad9, 0xcad1cb62a3d30b05093575f3a22f7e3c) ... Define $C_i = (x_i, y_i)$ be the ciphertexts of some message $m_i$. By direct substitution, we have $y_i^2 \\equiv x_i^3 + ax_i + b\\ (\\text{mod}\\ p)$ for all $i$.\nAssume that we have three ciphertexts. We can deduce that:\n $a(x_1 - x_2) \\equiv y_1^2 - y_2^2 - x_1^3 + x_2^3 \\ (\\text{mod}\\ p)$ and $a(x_2 - x_3) \\equiv y_2^2 - y_3^2 - x_2^3 + x_3^3 \\ (\\text{mod}\\ p)$.  From above, we know $(y_1^2 - y_2^2 - x_1^3 + x_2^3)(x_2 - x_3) - (y_2^2 - y_3^2 - x_2^3 + x_3^3)(x_1 - x_2)$ is a multiple of $p$.\nSo we have collected a bunch of \"multiples of $p$\" and take their gcd. We have recovered that $p = 340282366762482138434845932244680310783$.\nThen it is rather obvious to recover $a = 284470887156368047300405921324061011681$ and $b = 126188322377389722996253562430093625949$.\nQuestion. What if it is not defined on a prime field? Well… I didn’t think of that. But who cares? I could probably observe this if my approach doesn’t work out.  Part II: A reflection on the \"after-math\" Note. I did not think of this during the game. Stupid me.  Knowing that the ciphertext $C$ is a multiple of the message $m$, i.e., $C = mG$, we can simply encrypt $m = 1$:\n[+] Opening connection to chal.uiuc.tf on port 2006: Done [DEBUG] Received 0x123 bytes: b'\\n' b'========================================\\n' b'Welcome to NookCrypt! Here we use fancy\\n' b'elliptic curve encryption to keep your \\n' b'messages safe! Try it out!\\n' b'========================================\\n' b'1. get (encrypted) flag\\n' b'2. encrypt message\\n' b'3. quit\\n' b'========================================\\n' b'\\n' b'Option: ' [DEBUG] Sent 0x2 bytes: b'2\\n' [DEBUG] Received 0x5 bytes: b'msg: ' [DEBUG] Sent 0x2 bytes: 00000000 01 0a │··│ 00000002 [DEBUG] Received 0x178 bytes: b'enc(0x01) = (0x7b6aa5d85e572983e6fb32a7cdebc140, 0x27b6916a894d3aee7106fe805fc34b44)\\n' b'\\n' b'========================================\\n' b'Welcome to NookCrypt! Here we use fancy\\n' b'elliptic curve encryption to keep your \\n' b'messages safe! Try it out!\\n' b'========================================\\n' b'1. get (encrypted) flag\\n' b'2. encrypt message\\n' b'3. quit\\n' b'========================================\\n' b'\\n' b'Option: ' What can we do? Since this is $G$, we can simply search this on Google:\n Ta-da :tada: - it is the generator for curve secp128r2. You would think this is a ta-da moment, I would say that this is a facepalm moment. I could spent much less time on recovering the parameters in such a way.\nWell, I was even more confused to notice that is a secure curve. I personally don't have a backdoor of secp128r2 (I am much appreciated if you tell me if you do) and thought the challenge isn't doable.\nPart III: \"Hint for nookcrypt (crypto 500)\" Fours hours later the organizers released a hint in the Discord server:\n When I was being played writing an interactor with the service, I observed that there was a strange behaviour regarding to the flag encryption method:\n======================================== Welcome to NookCrypt! Here we use fancy elliptic curve encryption to keep your messages safe! Try it out! ======================================== 1. get (encrypted) flag 2. encrypt message 3. quit ======================================== Option: 1 err Oh. So the error was caused by the cosmic ray. Okay.\nDid you really get it instantly when the hint is announced? No.  Part IV: Somebody made a breakthrough Ten hours later, somebody from Discord claimed that he has a strange observation:\n Who was the somebody? Me.  We made a bunch of assumptions. Cutting the crap, we assumed that the same generator $G = (x_G, y_G)$ is being multipled in a same way, except that the curve is operated on new modulo $p'$. This matches the author's statement regarding on the prime being corrupted.\nHowever, obviously, it is very likely that $G$ may not be a point the above curve. Luckily (or unluckily), we can assume that it is operating on another curve $y^2 \\equiv x^3 + ax + b'\\ (\\text{mod}\\ p')$, such that $G$ is on it.\nFor now, we are given two points on this curve (the ciphertexts of the flag $F = (x_F, y_F)$ and the message hello world $M = (x_M, y_M)$). Since $a$ is known we can easily recover $p'$ by:\n\\[\\begin{aligned} p' = \\text{gcd}( \u0026(y_F^2 - x_F^3 - ax_F - b') - (y_G^2 - x_G^3 - ax_G - b'), \\\\ \u0026 (y_M^2 - x_M^3 - ax_M - b') - (y_G^2 - x_G^3 - ax_G - b')) \\end{aligned} \\]\nThe order of the generator should be a large prime for an elliptic curve to be secure. Clearly this property may not hold on those new modulos struck by cosmic may. For instance, suppose that we have $p' = 340282366762482138434845932242512471141$. Since 67 is a factor of $p'$, we are indeed working on the curve $y^2 \\equiv x^3 + ax + b'\\ (\\text{mod}\\ 67)$. $G$ has a order 74, and $F = fG = 21G$. It implies that $f \\equiv 21\\ (\\text{mod}\\ 74)$.\nBy collecting a bunch of linear congruences, we can find $f$ by the Chinese Remainder Theorem. Eventually we have the flag: uiuctf{th4t_5ur3_w4s_f4ulty_huh?}.\n",
   "wordCount" : "996",
   "inLanguage": "en",
   "datePublished": "2020-07-22T18:55:00+08:00",
@@ -154,13 +154,13 @@ July 22, 2020&nbsp;·&nbsp;Mystiz
 </ol>
 
 <p>For example, this is what I had when trying out the options:</p>
-<pre><code>Option: 1
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">Option: 1
 enc(FLAG) = (0xf31ce7cb1f2c6e7107318d76bdda50c5, 0x02d979fc3122bbaffcc1111953bc184f)
 enc(&#39;hello world&#39;) = (0x4cf5afcc9bc1db0118172129b713d86a, 0xe41d8761370768aa9694b164c843dde9)
 
 Option: 2
 msg: hello world
-enc(0x68656c6c6f20776f726c64) = (0x4cf5afcc9bc1db0118172129b713d86a, 0xe41d8761370768aa9694b164c843dde9)</code></pre>
+enc(0x68656c6c6f20776f726c64) = (0x4cf5afcc9bc1db0118172129b713d86a, 0xe41d8761370768aa9694b164c843dde9)</code></pre></div>
 <p>Since the response is consistent after reconnecting to the netcat service for multiple times, I assume that the parameters are constant.</p>
 
 <h2 id="solution">Solution<a hidden class="anchor" aria-hidden="true" href="#solution">#</a></h2>
@@ -170,7 +170,7 @@ enc(0x68656c6c6f20776f726c64) = (0x4cf5afcc9bc1db0118172129b713d86a, 0xe41d87613
 <p>Since it is mentioning elliptic curves in its services, the first thing I was doing is to recover the parameters, namely, $a$, $b$ and $p$ for the elliptic curve $y^2 \equiv x^3 + ax + b\ (\text{mod}\ p)$.</p>
 
 <p>My attempt is to encrypt a bunch of messages:</p>
-<pre><code>msg: a
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">msg: a
 enc(0x61) = (0xb2d6c27a99b52aec6e243d4e4f67cb71, 0x9dfa2bd87ea1e09388493137132cc534)
 
 msg: b
@@ -182,7 +182,7 @@ enc(0x63) = (0x3e7ef6d1106382119a0fa8c966f6d1df, 0x89d81b9fab5336a227414491881bb
 msg: d
 enc(0x64) = (0x985dbb38a65f4e69bfc602d7e114cad9, 0xcad1cb62a3d30b05093575f3a22f7e3c)
 
-...</code></pre>
+...</code></pre></div>
 <p>Define $C_i = (x_i, y_i)$ be the ciphertexts of some message $m_i$. By direct substitution, we have $y_i^2 \equiv x_i^3 + ax_i + b\ (\text{mod}\ p)$ for all $i$.</p>
 
 <p>Assume that we have three ciphertexts. We can deduce that:</p>
@@ -211,7 +211,7 @@ enc(0x64) = (0x985dbb38a65f4e69bfc602d7e114cad9, 0xcad1cb62a3d30b05093575f3a22f7
   
 
 <p>Knowing that the ciphertext $C$ is a multiple of the message $m$, i.e., $C = mG$, we can simply encrypt $m = 1$:</p>
-<pre><code>[+] Opening connection to chal.uiuc.tf on port 2006: Done
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">[+] Opening connection to chal.uiuc.tf on port 2006: Done
 [DEBUG] Received 0x123 bytes:
     b&#39;\n&#39;
     b&#39;========================================\n&#39;
@@ -245,12 +245,15 @@ enc(0x64) = (0x985dbb38a65f4e69bfc602d7e114cad9, 0xcad1cb62a3d30b05093575f3a22f7
     b&#39;3. quit\n&#39;
     b&#39;========================================\n&#39;
     b&#39;\n&#39;
-    b&#39;Option: &#39;</code></pre>
+    b&#39;Option: &#39;</code></pre></div>
 <p>What can we do? Since this is $G$, we can simply search this on Google:</p>
 
-<figure>
-    <img src="/images/2020-07-22-uiuctf-nookcrypt/secp128r2.png"/> 
-</figure>
+
+  <figure class="center" >
+    <img src="/images/2020-07-22-uiuctf-nookcrypt/secp128r2.png"   />
+    
+  </figure>
+
 
 
 <p>Ta-da :tada: - it is the generator for curve <em>secp128r2</em>. You would think this is a ta-da moment, I would say that this is a facepalm moment. I could spent much less time on recovering the parameters in such a way.</p>
@@ -261,13 +264,16 @@ enc(0x64) = (0x985dbb38a65f4e69bfc602d7e114cad9, 0xcad1cb62a3d30b05093575f3a22f7
 
 <p>Fours hours later the organizers released a hint in the Discord server:</p>
 
-<figure>
-    <img src="/images/2020-07-22-uiuctf-nookcrypt/announcement.png"/> 
-</figure>
+
+  <figure class="center" >
+    <img src="/images/2020-07-22-uiuctf-nookcrypt/announcement.png"   />
+    
+  </figure>
+
 
 
 <p>When I was <del>being played</del> writing an interactor with the service, I observed that there was a strange behaviour regarding to the flag encryption method:</p>
-<pre><code>========================================
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">========================================
 Welcome to NookCrypt! Here we use fancy
 elliptic curve encryption to keep your 
 messages safe! Try it out!
@@ -278,7 +284,7 @@ messages safe! Try it out!
 ========================================
 
 Option: 1
-err</code></pre>
+err</code></pre></div>
 <p>Oh. So the error was caused by the cosmic ray. Okay.</p>
 
 <div class="alert info">
@@ -290,9 +296,12 @@ err</code></pre>
 
 <p>Ten hours later, <em>somebody</em> from Discord claimed that he has a strange observation:</p>
 
-<figure>
-    <img src="/images/2020-07-22-uiuctf-nookcrypt/breakthrough.png"/> 
-</figure>
+
+  <figure class="center" >
+    <img src="/images/2020-07-22-uiuctf-nookcrypt/breakthrough.png"   />
+    
+  </figure>
+
 
 
 <div class="alert info">

