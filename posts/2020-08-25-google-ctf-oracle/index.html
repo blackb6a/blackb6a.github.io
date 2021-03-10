@@ -1,41 +1,40 @@
 <!DOCTYPE html>
-<html lang="en" dir="auto">
 
-<head><meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="robots" content="index, follow">
-<title>Google CTF 2020: Oracle | Black Bauhinia</title>
 
-<meta name="keywords" content="ctf, google-ctf, crypto" />
-<meta name="description" content="I was teamed-up with @blackb6a on Google CTF this time. I have solved 7 challenges alone and 3 challenges with my teammates.
-In particular, Oracle is a crypto challenge with 13 solves. It has got me spending 12 hours. All in all, it was a great experience in terms of learning, but my liver hurts. This piece of writeup may be very computation intensive, just because I would like to make everything clear.">
-<meta name="author" content="Mystiz">
-<link rel="canonical" href="https://b6a.black/posts/2020-08-25-google-ctf-oracle/" />
-<link href="/assets/css/stylesheet.min.9733bd0dca4a7fe1379bd36836878b5b67d7a574e270b0fd4860e518a432e117.css" integrity="sha256-lzO9DcpKf&#43;E3m9NoNoeLW2fXpXTicLD9SGDlGKQy4Rc=" rel="preload stylesheet"
-    as="style">
+    
 
-<link rel="icon" href="https://b6a.black/favicon.ico">
+<html lang="en-us" data-theme="dark">
+<head>
+    
+        
+<meta charset="utf-8">
+<meta name="HandheldFriendly" content="True">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="no-referrer-when-downgrade">
 
-<meta name="theme-color" content="#2e2e33">
-<meta name="msapplication-TileColor" content="#2e2e33">
-<meta name="generator" content="Hugo 0.68.3" />
+<title>Google CTF 2020: Oracle - Black Bauhinia</title>
+<meta name="description" content="">
+
+<link rel="icon" type="image/x-icon" href="https://b6a.black/favicon.ico">
+<link rel="apple-touch-icon-precomposed" href="https://b6a.black/favicon.png">
 
 
 
-
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-M67YZZ2MP1"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-M67YZZ2MP1');
-</script>
+    
 
 
 
-<script src="https://kit.fontawesome.com/fbbadced05.js" crossorigin="anonymous"></script>
+
+
+    
+    
+    
+
+    
+        <link rel="stylesheet" href="https://b6a.black/css/style.09c94e06b3ec0503263ea0297febd3b62f3d6b2dafd8e813aa92a479e82bc955.css" integrity="sha256-CclOBrPsBQMmPqApf&#43;vTti89ay2v2OgTqpKkeegryVU=">
+    
+
+
 
 
 
@@ -46,105 +45,65 @@ In particular, Oracle is a crypto challenge with 13 solves. It has got me spendi
 <meta property="og:url" content="https://b6a.black/posts/2020-08-25-google-ctf-oracle/" />
 <meta property="article:published_time" content="2020-08-25T16:15:00+08:00" />
 <meta property="article:modified_time" content="2020-08-25T16:15:00+08:00" />
+
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="Google CTF 2020: Oracle"/>
 <meta name="twitter:description" content="I was teamed-up with @blackb6a on Google CTF this time. I have solved 7 challenges alone and 3 challenges with my teammates.
 In particular, Oracle is a crypto challenge with 13 solves. It has got me spending 12 hours. All in all, it was a great experience in terms of learning, but my liver hurts. This piece of writeup may be very computation intensive, just because I would like to make everything clear."/>
 
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "BlogPosting",
-  "headline": "Google CTF 2020: Oracle",
-  "name": "Google CTF 2020: Oracle",
-  "description": "I was teamed-up with @blackb6a on Google CTF this time. I have solved 7 challenges alone and 3 challenges with my teammates.\nIn particular, Oracle is a crypto challenge with 13 …",
-  "keywords": [
-    "ctf", "google-ctf", "crypto"
-  ],
-  "articleBody": "I was teamed-up with @blackb6a on Google CTF this time. I have solved 7 challenges alone and 3 challenges with my teammates.\nIn particular, Oracle is a crypto challenge with 13 solves. It has got me spending 12 hours. All in all, it was a great experience in terms of learning, but my liver hurts. This piece of writeup may be very computation intensive, just because I would like to make everything clear.\nChallenge Summary There are two parts of the challenges. In the first part, we are required to recover an internal state for AEGIS-128L given the encryption oracle. For the second part, we are required to forge a ciphertext given an error oracle from decryption.\nSolution Part I: A brief summary for the state in AEGIS-128L AEGIS-128L has an internal state that is initially computed solely by the key and the IV. It is of 128 bytes, broken into eight 16-byte blocks. Let's $S_i$ is updated to $S_{i+1}$ given 32-byte payload $M$. Let's define $S_i = (s_{i, 0}, s_{i, 1}, ..., s_{i, 7})$ and $M = (m_0, m_1)$. We have:\n $s_{i+1, 0} \\leftarrow \\text{AESEnc}(s_{i, 7}, s_{i, 0}) \\oplus m_0$, $s_{i+1, 4} \\leftarrow \\text{AESEnc}(s_{i, 3}, s_{i, 4}) \\oplus m_1$, and $s_{i+1, j} \\leftarrow \\text{AESEnc}(s_{i, j-1}, s_{i, j})$ for $j = 1, 2, 3, 5, 6, 7$.  But what is AESEnc? Let's see the implementation.\ndef aes_enc(s: block, t: block) - block: \"\"\"Performs the AESENC operation with tables.\"\"\" t0 = (te0[s[0]] ^ te1[s[5]] ^ te2[s[10]] ^ te3[s[15]]) t1 = (te0[s[4]] ^ te1[s[9]] ^ te2[s[14]] ^ te3[s[3]]) t2 = (te0[s[8]] ^ te1[s[13]] ^ te2[s[2]] ^ te3[s[7]]) t3 = (te0[s[12]] ^ te1[s[1]] ^ te2[s[6]] ^ te3[s[11]]) s = _block_from_ints([t0, t1, t2, t3]) return _xor(s, t) Well... we will go through this later. Let's introduce how keystreams are generated from the state. It is (relatively) simple. The keystream $(k_{i, 0}, k_{i, 1})$ for the $i$-th round is given by:\n\\[ k_{i, 0} = (s_{i, 2} \\wedge s_{i, 3}) \\oplus s_{i, 1} \\oplus s_{i, 6}, \\\\ k_{i, 1} = (s_{i, 6} \\wedge s_{i, 7}) \\oplus s_{i, 5} \\oplus s_{i, 2}. \\]\nPart II: Recovering part of the state Now we are given that key and IV are unchanged. This implies that the initial state, i.e., $s_{00}, s_{01}, ..., s_{09}$ are constants too.\nSuppose that we have two 96-byte messages $M^{(1)}$ and $M^{(2)}$ with only the first two blocks are different (Formally, if $M^{(k)} := (m^{(k)}_{00}, m^{(k)}_{01}, ..., m^{(k)}_{21}$), then $m^{(1)}_{ij} = m^{(2)}_{ij}$ if and only if $i \\neq 0$).\nThe following table summarizes which of the $s_{ij}$'s that would be different (marked by an !), when encrypting $M^{(1)}$ and $M^{(2)}$ respectively.\n   $i$ \\ $j$ 0 1 2 3 4 5 6 7     0           1 !    !      2 ! !   ! !      What does this imply? Knowing that $s^{(1)}_{2,j} = s^{(2)}_{2,j}$ for $j = 2, 3, 6, 7$. Let's look closely on the last 32 bytes of the keystream:\n\\[ \\begin{aligned} k^{(1)}_{20} \\oplus k^{(2)}_{20} \u0026= m^{(1)}_{20} \\oplus c^{(1)}_{20} \\oplus m^{(2)}_{20} \\oplus c^{(2)}_{20} \\\\ \u0026= \\left[ (s^{(1)}_{22} \\wedge s^{(1)}_{23}) \\oplus s^{(1)}_{21} \\oplus s^{(1)}_{26} \\right] \\oplus \\left[ (s^{(2)}_{22} \\wedge s^{(2)}_{23}) \\oplus s^{(2)}_{21} \\oplus s^{(2)}_{26} \\right] \\\\ \u0026= s^{(1)}_{21} \\oplus s^{(2)}_{21}. \\end{aligned} \\]\nAnd similarly $k^{(1)}_{21} \\oplus k^{(2)}_{21} = s^{(1)}_{25} \\oplus s^{(2)}_{25}$.\nWhy is it useful? Let's define a new function, p:\ndef p(s: block) - block: t0 = (te0[s[0]] ^ te1[s[5]] ^ te2[s[10]] ^ te3[s[15]]) t1 = (te0[s[4]] ^ te1[s[9]] ^ te2[s[14]] ^ te3[s[3]]) t2 = (te0[s[8]] ^ te1[s[13]] ^ te2[s[2]] ^ te3[s[7]]) t3 = (te0[s[12]] ^ te1[s[1]] ^ te2[s[6]] ^ te3[s[11]]) return _block_from_ints([t0, t1, t2, t3]) Déjà vu? It is more or less the same with AESEnc. We can state that AESEnc(s, t) == p(s) ^ t too. Looking even more closely, one could observe that the first four bytes from p solely depends on bytes 0, 5, 10 and 15 from s.\nKnowing this, we can further expand $k^{(1)}_{20} \\oplus k^{(2)}_{20}$:\n\\[\\begin{aligned} k^{(1)}_{20} \\oplus k^{(2)}_{20} \u0026= s^{(1)}_{21} \\oplus s^{(2)}_{21} \\\\ \u0026= \\text{AESEnc}(s^{(1)}_{10}, s^{(1)}_{11}) \\oplus \\text{AESEnc}(s^{(2)}_{10}, s^{(2)}_{11}) \\\\ \u0026= p(s^{(1)}_{10}) \\oplus s^{(1)}_{11} \\oplus p(s^{(2)}_{10}) \\oplus s^{(2)}_{11} \\\\ \u0026= p(s^{(1)}_{10}) \\oplus p(s^{(2)}_{10}) \\\\ \u0026= p\\left(\\text{AESEnc}(s^{(1)}_{07}, s^{(1)}_{00}) \\oplus m^{(1)}_{00}\\right) \\oplus p\\left(\\text{AESEnc}(s^{(2)}_{07}, s^{(2)}_{00}) \\oplus m^{(2)}_{00}\\right) \\\\ \u0026= p(x \\oplus m^{(1)}_{00}) \\oplus p(x \\oplus m^{(2)}_{00}). \\end{aligned}\\]\n(We define $x := \\text{AESEnc}(s_{07}, s_{00}) = s_{10} \\oplus m^{(1)}_{00}$ for ease of reading.)\nAnd now the only unknown is $x$. Can we solve it easily? Yes indeed: we can compute bytes 0, 5, 10, 15 of $x$ from the first four bytes of $k^{(1)}_{20} \\oplus k^{(2)}_{20}$. Along with three more equalities from p, we are able to recover $x$ completely. I used an meet-in-the-middle approach to solve for $x$ in five seconds.\n  But wait. There is a problem: I am able to find 65536 candidates (or even more) instead of 1, but I am unable to eliminate the rest. The possible number of states will be growing exponentally! What can I do? The solution is actually simple: Just send $M^{(3)}$ and compute another solution set of $x$. After all, it is very likely that $x$ is the only element in the intersection of the two sets. With $x$, we are able to compute $s_{10}$ (respectively $s_{14}$).\nPart III: Finishing the first part of the challenge We can extend the above idea to leak more. By sending two 128-byte messages with blocks 3 and 4 being different, we are able to recover $s_{20}$ and $s_{24}$. We are able to leak $s_{30}$ and $s_{34}$ with the same idea.\nTwo more questions remain: How is it made possible in seven queries? And more importantly, how can we recover $s_{ij}$ for all $j$, for some $i$ (preferably $i = 0\\ \\text{or}\\ 1$)?\nChallenge 1. Recover the above states in 7 queries.\nIn short, we are encrypting these seven plaintexts (each 0 represents 16 \\x00's, etc):\n 0000000000 0000110000 0000220000 - Derive $s_{10}$ and $s_{14}$ uniquely with (1) and (2) 0000001100 0000002200 - Derive $s_{20}$ and $s_{24}$ uniquely with (1) and (4) 0000000011 0000000022 - Derive $s_{30}$ and $s_{34}$ uniquely with (1) and (6)  Challenge 2. Recover $s_{1, j}$ for all $j$.\nFrom above, we are able to derive $s_{i, 0}$ and $s_{i, 4}$ for $i = 1, 2, 3$ with $m_{ij} = 0$. Hence, the state transition would be $s_{i+1, j} \\leftarrow p(s_{i, j-1}) \\oplus s_{ij}$ for all $i, j$. Equivalently $s_{i, j-1} = p^{-1}(s_{i+1, j} \\oplus s_{ij})$.\nWe are able to compute inverses of $p^{-1}$ easily. Solving system of linear equations would be all good, but I'm doing it with meet-in-the-middle. Code reuse for the win! For now, let's visualize how $s_{1, j}$'s can be derived.\ndigraph { rankdir=BT s₁₀[fillcolor=yellow,style=filled] s₁₄[fillcolor=yellow,style=filled] s₂₀[fillcolor=yellow,style=filled] s₂₄[fillcolor=yellow,style=filled] s₃₀[fillcolor=yellow,style=filled] s₃₄[fillcolor=yellow,style=filled] s₂₀ - s₂₇ s₃₀ - s₂₇ s₂₄ - s₂₃ s₃₄ - s₂₃ s₁₄ - s₁₃ s₂₄ - s₁₃ s₁₃ - s₁₂ s₂₃ - s₁₂ s₁₀ - s₁₇ s₂₀ - s₁₇ s₁₇ - s₁₆ s₂₇ - s₁₆ s₁₂ - s₁₁ s₁₃ - s₁₁ s₁₆ - s₁₁ s₁₆ - s₁₅ s₁₇ - s₁₅ s₁₂ - s₁₅ } After all, the first part of the challenge is done.\nPart IV: AEGIS-128 vs AEGIS-128L For the second part, AEGIS-128 is used. The state is now 80 bytes (five 16-byte blocks). The payload size has been reduced to one block (let's denote it by $m$). This is how the state transited:\n $s_{i+1, 0} \\leftarrow p(s_{i, 4}) \\oplus s_{i, 0} \\oplus m$, and $s_{i+1, j} \\leftarrow p(s_{i, j-1}) \\oplus s_{i, j}$ for $1 \\leq j \\leq 4$.  Moreover, the keystream $k_i$ for the $i$-th round is also altered: $k_i = (s_{i, 2} \\wedge s_{i, 3}) \\oplus s_{i, 1} \\oplus s_{i, 4}$.\nPart V: Exploring the challenge I have no idea what's going on, so I decided to recover the printable secret_plaintext first.\nIt is pretty easy, and is made possible because we are able to receive the error from the oracle. In particular, from pt.decode(\"ascii\").\nWe are able to recover the plaintext with bit-flipping. To begin with, we can flip the whole ciphertext by \\x80. The first 32 bytes for the plaintext would be flipped by \\x80 as well. If we send the flipped ciphertext (denote by $c_?$) to the oracle, we will obtain:\nUnicodeDecodeError: 'ascii' codec can't decode byte 0xe7 in position 0: ordinal not in range(128) This means that the first byte of the flipped plaintext would be \\xe7. Hence, the first byte of the plaintext is \\x67 (g). We then flip the first byte of $c_?$ by \\x80 and send it to the oracle, we will be receiving another error:\nUnicodeDecodeError: 'ascii' codec can't decode byte 0xc6 in position 1: ordinal not in range(128) This recovers the second byte - x46 (F). Since the secret plaintext is 96-byte long, we can recover it with 96 oracle calls.\nREMAINING ORACLE CALLS: 231 - 96 = 135.\nWith a plaintext recovered, it is time for us to try to recover the internal state. Can we devise a similar strategy that is similar to the first part of the challenge? Formally, what will happen if we have two 48-byte messages $M^{(1)} := (m^{(1)}_0, m^{(1)}_1, m^{(1)}_2)$ and $M^{(2)} := (m^{(2)}_0, m^{(2)}_1, m^{(2)}_2)$ with only the first block being different. Then the last 16 bytes in the keystream will be:\n\\[ \\begin{aligned} k^{(1)}_2 \\oplus k^{(2)}_2 \u0026= \\left[ (s^{(1)}_{22} \\wedge s^{(1)}_{23}) \\oplus s^{(1)}_{21} \\oplus s^{(1)}_{24} \\right] \\oplus \\left[ (s^{(2)}_{22} \\wedge s^{(2)}_{23}) \\oplus s^{(2)}_{21} \\oplus s^{(2)}_{24} \\right] \\\\ \u0026= s^{(1)}_{21} \\oplus s^{(2)}_{21} \\\\ \u0026= p(s^{(1)}_{10}) \\oplus s^{(1)}_{11} \\oplus p(s^{(2)}_{10}) \\oplus s^{(2)}_{11} \\\\ \u0026= p(s^{(1)}_{10}) \\oplus p(s^{(2)}_{10}) \\\\ \u0026= p\\left(\\text{AESEnc}(s^{(1)}_{04}, s^{(1)}_{00}) \\oplus m^{(1)}_1\\right) \\oplus p\\left(\\text{AESEnc}(s^{(2)}_{04}, s^{(2)}_{00}) \\oplus m^{(2)}_1\\right) \\\\ \u0026= p(x \\oplus m^{(1)}_0) \\oplus p(x \\oplus m^{(2)}_0). \\end{aligned} \\]\nHereby denote $x := \\text{AESEnc}(s_{04}, s_{00}) = s_{10} \\oplus m^{(1)}_0$. Simply put, if we have the ciphertexts for $M^{(1)}$ and $M^{(2)}$ (denote it as $C^{(k)} = (c^{(k)}_0, c^{(k)}_1, c^{(k)}_2)$), we are able to recover one-fifths of the state if this happens.\nHow are we able to do it? Well actually, we have recovered the secret plaintext above. We can flip the first block of the ciphertext arbitrarily (to $C_?$).\nHowever, since $k^{(2)}_2$ is altered, the third block of the message would be updated. Luckily we are able to recover the message in 17 oracle calls. Here's how:\n Sends $C_?$. We will obtain something like this: UnicodeDecodeError: 'ascii' codec can't decode byte 0xe8 in position 34... Flips the 35th byte by \\xe8 in $C_?$. Sends the patched $C_?$: UnicodeDecodeError: 'ascii' codec can't decode byte 0xcb in position 35... Flips the 36th byte by \\xcb in $C_?$. Repeat the process until we receive OK, meaning that the plaintext is now ASCII-encoded. For now, we have recovered a subset of message bytes. We then flip the unknown bytes by \\x80 (for example, bytes 33 and 34) to throw errors from the oracle. Repeat step 1 until all unknown bytes are recovered.  In short, we spent 16 oracle calls to recover the message, and one oracle call to indicate us to flip all the bytes those were originally printable. We are then able to recover a possible set of $s_{10}$ with 65536 entries (or more). We can spend another 17 queries to find the actual $s_{10}$, however.\nREMAINING ORACLE CALLS: 135 - 17×2 = 101.\nWith the same idea, we can recover $s_{20}, s_{30}, s_{40}$ with 17×6 queries. This would allow us to recover $s_{10}, s_{11}, ..., s_{14}$ and hence forging arbitrary messages (along with a slightly longer AD).\nREMAINING ORACLE CALLS: 101 - 17×6 = -1.\nShoot - we are one query short. Since we are able to recover one byte of the plaintext in each of the queries, so it doesn't hurt to sacrifice one oracle calls by guessing one byte. So... in theory, we are able to finish the challenge with once every 256 times.\nLuckily, if we are given a incorrect plaintext (actually keystream), we are unable to recover a single $s_*$. That's pretty good, we are able to solve the challenge every time.\nREMAINING ORACLE CALLS: -1 + 1 = :tada:.\nWith the exploit script written, I am able to reach the very end locally. Congratulations to me!\nPart IV: Wait... Aren't we done? No... When I am interacting to the server, I am always disconnected while sending one of the 231 oracle calls. Asking the organizers in IRC, knowing that there was an 1-minute timeout - it was later increased to 10 minutes. Unfortunately, my solution runs for around 5 minutes. I have two choices:\n Wait until the challenge has a 10-minute timeout, or Optimize the script and have it completed in one minute.  Seeing that there are already few teams solving the challenge, I think (2) would be fun.\n6.1. Reducing online complexity For inputs that does not require immediate feedbacks, we can send them at the same time. This is an example when I am recovering secret_plaintext in the second part.\n# Before optimization test_ciphertext = bytes([c^0x80 for c in ciphertext]) m0 = b'' for i in range(96): r.sendline(base64.b64encode(test_ciphertext)) test_ciphertext = cxor(test_ciphertext, i, 0x80) p, mc = try_decrypt_read(r) assert p == i m0 += bytes([mc^0x80]) # After optimization test_ciphertext = bytes([c^0x80 for c in ciphertext]) m0 = b'' for i in range(96): r.sendline(base64.b64encode(test_ciphertext)) test_ciphertext = cxor(test_ciphertext, i, 0x80) for i in range(96): p, mc = try_decrypt_read(r) assert p == i m0 += bytes([mc^0x80]) 6.2. Reducing offline complexity For example, this is the method I implemented to solve for $x$ from $p(x \\oplus a) \\oplus p(x \\oplus b) = c$ - it takes one second each time:\ndef px_subsolve(a_sub, b_sub, c_sub): # Given a_sub, b_sub, c_sub (4 bytes), find x_sub such that # te0[(x_sub ^ a_sub)[0]] ^ te1[(x_sub ^ a_sub)[1]] ^ te2[(x_sub ^ a_sub)[2]] ^ te3[(x_sub ^ a_sub)[3]] # ^ te0[(x_sub ^ a_sub)[0]] ^ te1[(x_sub ^ a_sub)[1]] ^ te2[(x_sub ^ a_sub)[2]] ^ te3[(x_sub ^ a_sub)[3]] # = c_sub # Reformulating: # te0[(x_sub ^ a_sub)[0]] ^ te1[(x_sub ^ a_sub)[1]] ^ te0[(x_sub ^ a_sub)[0]] ^ te1[(x_sub ^ a_sub)[1]] ^ c_sub # = te2[(x_sub ^ a_sub)[2]] ^ te3[(x_sub ^ a_sub)[3]] ^ te2[(x_sub ^ a_sub)[2]] ^ te3[(x_sub ^ a_sub)[3]] lhss = {} for x0, x1 in itertools.product(range(256), repeat=2): # LHS xs = [be0[x0^a_sub[0]], be0[x0^b_sub[0]], be1[x1^a_sub[1]], be1[x1^b_sub[1]], c_sub] y = reduce(_xor, xs) lhss[y] = lhss.get(y, []) + [(x0, x1)] solns = [] for x2, x3 in itertools.product(range(256), repeat=2): # RHS xs = [be2[x2^a_sub[2]], be2[x2^b_sub[2]], be3[x3^a_sub[3]], be3[x3^b_sub[3]]] y = reduce(_xor, xs) for x0, x1 in lhss.get(y, []): solns.append(bytes([x0, x1, x2, x3])) return solns However, if we force a_sub == b'\\0'*4 and b_sub == b'\\1'*4 or b_sub == b'\\2'*4, the right hand side can be precomputed. We are able to solve for $x$ once every 0.2 second.\nAt last - we are able to get the flag in 30 seconds locally and around 55 seconds online! :tada:\n Credits  Thanks @harrier_lcc who noticed that my lever did not hurt. Playing Minecraft too much, I misspelt liver. Thanks @hellman1908 for pointing that we are able to bruteforce byte by byte instead of bruteforcing columns, since that we can apply MixColumns inverse.  ",
-  "wordCount" : "2471",
-  "inLanguage": "en",
-  "datePublished": "2020-08-25T16:15:00+08:00",
-  "dateModified": "2020-08-25T16:15:00+08:00",
-  "author":[{
-    "@type": "Person",
-    "name": "Mystiz"
-  }],
-  "mainEntityOfPage": {
-    "@type": "WebPage",
-    "@id": "https://b6a.black/posts/2020-08-25-google-ctf-oracle/"
-  },
-  "publisher": {
-    "@type": "Organization",
-    "name": "Black Bauhinia",
-    "logo": {
-      "@type": "ImageObject",
-      "url": "https://b6a.black/favicon.ico"
-    }
-  }
-}
-</script>
 
 
 
+
+
+
+
+
+
+
+
+    
 </head>
+<body>
+    <a class="skip-main" href="#main">Skip to main content</a>
+    <div class="container">
+        <header class="common-header"> 
+            
+                <h1 class="site-title">
+    <a href="/">Black Bauhinia</a>
+</h1>
 
-<body class=" dark" id="top">
-<noscript>
-    <style type="text/css">
-        .theme-toggle,
-        .top-link {
-            display: none;
-        }
-
-    </style>
-</noscript>
-<header class="header">
-    <nav class="nav">
-        <div class="logo">
-            <a href="https://b6a.black/" accesskey="h" title="Black Bauhinia (Alt + H)">Black Bauhinia</a>
-            <span class="logo-switches">
-                
-                
-            </span>
-        </div>
-        <ul id="menu" onscroll="menu_on_scroll()">
-            <li>
-                <a href="https://b6a.black/about-us/" title="About Us">
-                    <span>About Us</span>
-                </a>
-            </li></ul>
+    <nav>
+        
+        
+        <a class="" href="https://b6a.black/about-us/" title="">About Us</a>
+        
     </nav>
-</header>
 
-    <main class="main">
 
-<article class="post-single">
-  <header class="post-header">
 
-    <h1 class="post-title">
-      Google CTF 2020: Oracle
-    </h1>
-    <div class="post-meta">
-
-August 25, 2020&nbsp;·&nbsp;Mystiz
-
-</div>
-  </header>
-  
-  
-  <div class="post-content">
-<p>I was teamed-up with @blackb6a on Google CTF this time. I have solved 7 challenges alone and 3 challenges with my teammates.</p>
+            
+        </header>
+        <main id="main" tabindex="-1"> 
+            
+    
+    
+    <article class="post h-entry">
+        <header class="post-header">
+            <h1 class="p-name post-title">Google CTF 2020: Oracle</h1>
+        </header>
+        <div class="content e-content">
+            <p>I was teamed-up with @blackb6a on Google CTF this time. I have solved 7 challenges alone and 3 challenges with my teammates.</p>
 
 <p>In particular, <em>Oracle</em> is a crypto challenge with 13 solves. It has got me spending 12 hours. All in all, it was a great experience in terms of learning, but my liver hurts. This piece of writeup may be <em>very</em> computation intensive, just because I would like to make everything clear.</p>
 
-<h2 id="challenge-summary">Challenge Summary<a hidden class="anchor" aria-hidden="true" href="#challenge-summary">#</a></h2>
+<h2 id="challenge-summary">Challenge Summary</h2>
 
 <p>There are two parts of the challenges. In the first part, we are required to recover an internal state for AEGIS-128L given the encryption oracle. For the second part, we are required to forge a ciphertext given an error oracle from decryption.</p>
 
-<h2 id="solution">Solution<a hidden class="anchor" aria-hidden="true" href="#solution">#</a></h2>
+<h2 id="solution">Solution</h2>
 
-<h3 id="part-i-a-brief-summary-for-the-state-in-aegis128l">Part I: A brief summary for the state in AEGIS-128L<a hidden class="anchor" aria-hidden="true" href="#part-i-a-brief-summary-for-the-state-in-aegis128l">#</a></h3>
+<h3 id="part-i-a-brief-summary-for-the-state-in-aegis128l">Part I: A brief summary for the state in AEGIS-128L</h3>
 
 <p>AEGIS-128L has an internal state that is initially computed solely by the <em>key</em> and the <em>IV</em>. It is of 128 bytes, broken into eight 16-byte blocks. Let's $S_i$ is updated to $S_{i+1}$ given 32-byte payload $M$. Let's define $S_i = (s_{i, 0}, s_{i, 1}, ..., s_{i, 7})$ and $M = (m_0, m_1)$. We have:</p>
 
@@ -170,7 +129,7 @@ k_{i, 0} = (s_{i, 2} \wedge s_{i, 3}) \oplus s_{i, 1} \oplus s_{i, 6}, \\
 k_{i, 1} = (s_{i, 6} \wedge s_{i, 7}) \oplus s_{i, 5} \oplus s_{i, 2}.
 \]</span></p>
 
-<h3 id="part-ii-recovering-part-of-the-state">Part II: Recovering part of the state<a hidden class="anchor" aria-hidden="true" href="#part-ii-recovering-part-of-the-state">#</a></h3>
+<h3 id="part-ii-recovering-part-of-the-state">Part II: Recovering part of the state</h3>
 
 <p>Now we are given that key and IV are unchanged. This implies that the initial state, i.e., $s_{00}, s_{01}, ..., s_{09}$ are constants too.</p>
 
@@ -277,7 +236,7 @@ k^{(1)}_{20} \oplus k^{(2)}_{20}
 
 <p>But wait. There is a problem: I am able to find 65536 candidates (or even more) instead of 1, but I am <em>unable</em> to eliminate the rest. The possible number of states will be growing exponentally! What can I do? The solution is actually simple: Just send $M^{(3)}$ and compute another solution set of $x$. After all, it is very likely that $x$ is the only element in the intersection of the two sets. With $x$, we are able to compute $s_{10}$ (respectively $s_{14}$).</p>
 
-<h3 id="part-iii-finishing-the-first-part-of-the-challenge">Part III: Finishing the first part of the challenge<a hidden class="anchor" aria-hidden="true" href="#part-iii-finishing-the-first-part-of-the-challenge">#</a></h3>
+<h3 id="part-iii-finishing-the-first-part-of-the-challenge">Part III: Finishing the first part of the challenge</h3>
 
 <p>We can extend the above idea to leak more. By sending two 128-byte messages with blocks 3 and 4 being different, we are able to recover $s_{20}$ and $s_{24}$. We are able to leak $s_{30}$ and $s_{34}$ with the same idea.</p>
 
@@ -339,7 +298,7 @@ k^{(1)}_{20} \oplus k^{(2)}_{20}
 }</code></pre>
 <p>After all, the first part of the challenge is done.</p>
 
-<h3 id="part-iv-aegis128-vs-aegis128l">Part IV: AEGIS-128 vs AEGIS-128L<a hidden class="anchor" aria-hidden="true" href="#part-iv-aegis128-vs-aegis128l">#</a></h3>
+<h3 id="part-iv-aegis128-vs-aegis128l">Part IV: AEGIS-128 vs AEGIS-128L</h3>
 
 <p>For the second part, AEGIS-128 is used. The state is now 80 bytes (five 16-byte blocks). The payload size has been reduced to one block (let's denote it by $m$). This is how the state transited:</p>
 
@@ -350,7 +309,7 @@ k^{(1)}_{20} \oplus k^{(2)}_{20}
 
 <p>Moreover, the keystream $k_i$ for the $i$-th round is also altered: $k_i = (s_{i, 2} \wedge s_{i, 3}) \oplus s_{i, 1} \oplus s_{i, 4}$.</p>
 
-<h3 id="part-v-exploring-the-challenge">Part V: Exploring the challenge<a hidden class="anchor" aria-hidden="true" href="#part-v-exploring-the-challenge">#</a></h3>
+<h3 id="part-v-exploring-the-challenge">Part V: Exploring the challenge</h3>
 
 <p>I have no idea what's going on, so I decided to recover the printable <code>secret_plaintext</code> first.</p>
 
@@ -410,7 +369,7 @@ k^{(1)}_2 \oplus k^{(2)}_2
 
 <p>With the exploit script written, I am able to reach the very end locally. Congratulations to me!</p>
 
-<h3 id="part-iv-wait-arent-we-done">Part IV: Wait... Aren't we done?<a hidden class="anchor" aria-hidden="true" href="#part-iv-wait-arent-we-done">#</a></h3>
+<h3 id="part-iv-wait-arent-we-done">Part IV: Wait... Aren't we done?</h3>
 
 <p>No... When I am interacting to the server, I am <em>always</em> disconnected while sending one of the 231 oracle calls. Asking the organizers in IRC, knowing that there was an 1-minute timeout - it was later increased to 10 minutes. Unfortunately, my solution runs for around 5 minutes. I have two choices:</p>
 
@@ -421,7 +380,7 @@ k^{(1)}_2 \oplus k^{(2)}_2
 
 <p>Seeing that there are already few teams solving the challenge, I think (2) would be fun.</p>
 
-<h4 id="61-reducing-online-complexity">6.1. Reducing online complexity<a hidden class="anchor" aria-hidden="true" href="#61-reducing-online-complexity">#</a></h4>
+<h4 id="61-reducing-online-complexity">6.1. Reducing online complexity</h4>
 
 <p>For inputs that does not require immediate feedbacks, we can send them at the same time. This is an example when I am recovering <code>secret_plaintext</code> in the second part.</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e"># Before optimization</span>
@@ -444,7 +403,7 @@ m0 <span style="color:#f92672">=</span> <span style="color:#e6db74">b</span><spa
     p, mc <span style="color:#f92672">=</span> try_decrypt_read(r)
     <span style="color:#66d9ef">assert</span> p <span style="color:#f92672">==</span> i
     m0 <span style="color:#f92672">+=</span> bytes([mc<span style="color:#f92672">^</span><span style="color:#ae81ff">0x80</span>])</code></pre></div>
-<h4 id="62-reducing-offline-complexity">6.2. Reducing offline complexity<a hidden class="anchor" aria-hidden="true" href="#62-reducing-offline-complexity">#</a></h4>
+<h4 id="62-reducing-offline-complexity">6.2. Reducing offline complexity</h4>
 
 <p>For example, this is the method I implemented to solve for $x$ from $p(x \oplus a) \oplus p(x \oplus b) = c$ - it takes one second each time:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">px_subsolve</span>(a_sub, b_sub, c_sub):
@@ -478,50 +437,63 @@ m0 <span style="color:#f92672">=</span> <span style="color:#e6db74">b</span><spa
 
 <hr>
 
-<h2 id="credits">Credits<a hidden class="anchor" aria-hidden="true" href="#credits">#</a></h2>
+<h2 id="credits">Credits</h2>
 
 <ul>
 <li>Thanks @harrier_lcc who noticed that my <em>lever</em> did not hurt. Playing Minecraft too much, I misspelt liver.</li>
 <li>Thanks @hellman1908 for pointing that we are able to bruteforce byte by byte instead of bruteforcing columns, since that we can apply <code>MixColumns</code> inverse.</li>
 </ul>
 
-</div>
-  <footer class="post-footer">
-    <ul class="post-tags">
-      <li><a href="https://b6a.black/tags/ctf/">ctf</a></li>
-      <li><a href="https://b6a.black/tags/crypto/">crypto</a></li>
-      <li><a href="https://b6a.black/tags/google-ctf/">google-ctf</a></li>
-    </ul>
-    <nav class="paginav">
-      <a class="prev" href="https://b6a.black/posts/2020-09-08-confidencectf-team-trees/">
-        <span class="title">« Prev Page</span>
-        <br>
-        <span>CONFidence 2020 CTF: Team Trees</span>
-      </a>
-      <a class="next" href="https://b6a.black/posts/2020-07-28-3kctf/">
-        <span class="title">Next Page »</span>
-        <br>
-        <span>3kCTF-2020 Writeup</span>
-      </a>
-    </nav>
-  </footer>
-</article>
-    </main><footer class="footer">
-    <span>&copy; 2021 <a href="https://b6a.black/">Black Bauhinia</a></span>
-    <span>&middot;</span>
-    <span>Powered by <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a></span>
-    <span>&middot;</span>
-    <span>Theme <a href="https://git.io/hugopapermod" rel="noopener" target="_blank">PaperMod</a></span>
-</footer>
-<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)">
-    <button class="top-link" id="top-link" type="button" accesskey="g">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
-            <path d="M12 6H0l6-6z" />
-        </svg>
-    </button>
-</a>
+        </div>
+        
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css"
+
+<div class="post-info">
+    
+        <div class="post-date dt-published">2020-08-25</div>
+    
+    
+    <a class="post-hidden-url u-url" href="https://b6a.black/posts/2020-08-25-google-ctf-oracle/">https://b6a.black/posts/2020-08-25-google-ctf-oracle/</a>
+    <a href=https://b6a.black/ class="p-name p-author post-hidden-author h-card" rel="me">[Mystiz]</a>
+
+
+    <div class="post-taxonomies">
+        
+            
+                <ul class="post-tags">
+                    
+                        <li><a href="https://b6a.black/tags/ctf">#ctf</a></li>
+                    
+                        <li><a href="https://b6a.black/tags/google-ctf">#google-ctf</a></li>
+                    
+                        <li><a href="https://b6a.black/tags/crypto">#crypto</a></li>
+                    
+                </ul>
+        
+    </div>
+</div>
+
+    </article>
+
+    
+
+    
+
+    
+
+
+        </main>
+        
+            <footer class="common-footer">
+    
+    
+
+    <div class="common-footer-bottom">
+        
+        <div class="copyright">
+            <p>© 2021<br>
+            Powered by <a target="_blank" rel="noopener noreferrer" href="https://gohugo.io/">Hugo</a>, theme <a target="_blank" rel="noopener noreferrer" href="https://github.com/mitrichius/hugo-theme-anubis">Anubis</a>.<br>
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css"
   integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.js"
   integrity="sha384-g7c+Jr9ZivxKLnZTDUhnkOnsh30B4H0rpLUpJ4jAIKs4fnJI+sEnkvrMWph2EDg4" crossorigin="anonymous"></script>
@@ -529,51 +501,28 @@ m0 <span style="color:#f92672">=</span> <span style="color:#e6db74">b</span><spa
   integrity="sha384-mll67QQFJfxn0IYznZYonOWZ644AWYC+Pt2cHqMaRhXVrursRwvLnLaebdGIlYNa" crossorigin="anonymous"
   onload="renderMathInElement(document.body, { delimiters: [{ left: '$$', right: '$$', display: true }, { left: '\\[', right: '\\]', display: true }, { left: '$', right: '$', display: false }, { left: '\\(', right: '\\)', display: false }]})"></script>
 
+            </p>  
+        </div> 
+
+        
+
+    
 
 
-<script defer src="/assets/js/highlight.min.27cd435cc9ed6abb4b496581b151804f79f366c412620272bb94e2f5f598ebcc.js" integrity="sha256-J81DXMntartLSWWBsVGAT3nzZsQSYgJyu5Ti9fWY68w="
-    onload="hljs.initHighlightingOnLoad();"></script>
-<script>
-    window.onload = function () {
-        if (localStorage.getItem("menu-scroll-position")) {
-            document.getElementById('menu').scrollLeft = localStorage.getItem("menu-scroll-position");
-        }
-    }
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener("click", function (e) {
-            e.preventDefault();
-            var id = this.getAttribute("href").substr(1);
-            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
-                    behavior: "smooth"
-                });
-            } else {
-                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
-            }
-            if (id === "top") {
-                history.replaceState(null, null, " ");
-            } else {
-                history.pushState(null, null, `#${id}`);
-            }
-        });
-    });
-    var mybutton = document.getElementById("top-link");
-    window.onscroll = function () {
-        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
-            mybutton.style.visibility = "visible";
-            mybutton.style.opacity = "1";
-        } else {
-            mybutton.style.visibility = "hidden";
-            mybutton.style.opacity = "0";
-        }
-    };
+   
+    </div>
 
-    function menu_on_scroll() {
-        localStorage.setItem("menu-scroll-position", document.getElementById('menu').scrollLeft);
-    }
+    <p class="h-card vcard">
 
-</script>
+    <a href=https://b6a.black/ class="p-name u-url url fn" rel="me"></a> 
 
+    
+
+    
+</p> 
+</footer>
+
+        
+    </div>
 </body>
-
 </html>

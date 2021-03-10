@@ -3,12 +3,12 @@
   <channel>
     <title>machine-learning on Black Bauhinia</title>
     <link>https://b6a.black/tags/machine-learning/</link>
-    <description>Recent content in machine-learning on Black Bauhinia</description>
+    <description>Black Bauhinia (machine-learning)</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Wed, 22 Jul 2020 18:55:00 +0800</lastBuildDate>
     
-	<atom:link href="https://b6a.black/tags/machine-learning/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="https://b6a.black/tags/machine-learning/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
@@ -17,7 +17,161 @@
       <pubDate>Wed, 22 Jul 2020 18:55:00 +0800</pubDate>
       
       <guid>https://b6a.black/posts/2020-07-22-uiuctf-bot-protection-iv/</guid>
-      <description>In this challenge, we have a website with captcha. Base on the question, we need to solve 500 captcha within 10 minutes. Very easy right?</description>
+      <description>&lt;style&gt;
+@font-face {
+    font-family: &#39;minecraft-enchantment&#39;;
+    src: url(&#39;/images/2020-07-22-uiuctf-bot-protection-iv/minecraft-enchantment.ttf&#39;);
+}
+&lt;/style&gt;
+
+&lt;p&gt;&lt;font style=&#34;font-family: minecraft-enchantment;&#34;&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;figure&gt;&lt;img src=&#34;https://b6a.black/images/2020-07-22-uiuctf-bot-protection-iv/chall.jpg&#34; alt=&#34;&#34;&gt;&lt;/figure&gt;&lt;/p&gt;
+
+&lt;p&gt;In this challenge, we have a website with captcha. Base on the question, we need to solve 500 captcha within 10 minutes. Very easy right?&lt;/p&gt;
+
+&lt;p&gt;&lt;figure&gt;&lt;img src=&#34;https://b6a.black/images/2020-07-22-uiuctf-bot-protection-iv/mainpage.jpg&#34; alt=&#34;&#34;&gt;&lt;/figure&gt;&lt;/p&gt;
+
+&lt;p&gt;However, the language of this captcha is the &lt;a href=&#34;https://minecraft.gamepedia.com/Enchanting_Table#Standard_Galactic_Alphabet&#34;&gt;Standard Galactic Alphabet&lt;/a&gt; (Minecraft enchantment glyphs).&lt;/p&gt;
+
+&lt;p&gt;The character mapping:&lt;/p&gt;
+
+&lt;p&gt;&lt;figure&gt;&lt;img src=&#34;https://b6a.black/images/2020-07-22-uiuctf-bot-protection-iv/charset.jpg&#34; alt=&#34;&#34;&gt;&lt;/figure&gt;&lt;/p&gt;
+
+&lt;p&gt;From the source code, there is a curious comment:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-html&#34; data-lang=&#34;html&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&amp;lt;!--TODO: we don&amp;#39;t need /captchas.zip anymore now that we dynamically create captchas. We should delete this file.--&amp;gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;We are able to obtain ~70k samples &lt;a href=&#34;https://captcha.chal.uiuc.tf/captchas.zip&#34;&gt;here&lt;/a&gt; provided by the challenge author.&lt;/p&gt;
+
+&lt;p&gt;&lt;figure&gt;&lt;img src=&#34;https://b6a.black/images/2020-07-22-uiuctf-bot-protection-iv/unzip.jpg&#34; alt=&#34;&#34;&gt;&lt;/figure&gt;&lt;/p&gt;
+
+&lt;p&gt;This is one of the sample captchas:&lt;/p&gt;
+
+&lt;p&gt;&lt;figure&gt;&lt;img src=&#34;https://b6a.black/images/2020-07-22-uiuctf-bot-protection-iv/UZNXF_54629.png&#34; alt=&#34;&#34;&gt;&lt;/figure&gt;&lt;/p&gt;
+
+&lt;p&gt;With this dataset, I think everyone can think of using neural network to solve this challenge (I guess MNIST or captcha solving should be the first example you run in deep learning course, right?)&lt;/p&gt;
+
+&lt;p&gt;From my experience, I know that it may not a good idea for me to debug/tune a neural network for doing computer vision work during a CTF. After some trial and error, I come across with this excellent github repo &lt;a href=&#34;https://github.com/nickliqian/cnn_captcha&#34;&gt;cnn_captcha&lt;/a&gt;. I also received a interactive script from my god like teammate @mystiz613.&lt;/p&gt;
+
+&lt;p&gt;In order to use this code, you need to setup the config file (&lt;code&gt;conf/sample_config.json&lt;/code&gt;) properly. This is my configuration:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-json&#34; data-lang=&#34;json&#34;&gt;{
+  &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;origin_image_dir&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;/home/xxx/solve/captchas/&amp;#34;&lt;/span&gt;,
+  &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;new_image_dir&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;/home/xxx/solve/new_train/&amp;#34;&lt;/span&gt;,
+  &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;train_image_dir&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;/home/xxx/solve/train/&amp;#34;&lt;/span&gt;,
+  &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;test_image_dir&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;/home/xxx/solve/test/&amp;#34;&lt;/span&gt;,
+  &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;api_image_dir&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;sample/api/&amp;#34;&lt;/span&gt;,
+  &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;online_image_dir&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;sample/online/&amp;#34;&lt;/span&gt;,
+  &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;local_image_dir&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;sample/local/&amp;#34;&lt;/span&gt;,
+  &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;model_save_dir&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;model_v8/&amp;#34;&lt;/span&gt;,
+  &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;image_width&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;250&lt;/span&gt;,
+  &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;image_height&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;75&lt;/span&gt;,
+  &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;max_captcha&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;5&lt;/span&gt;,
+  &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;image_suffix&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;png&amp;#34;&lt;/span&gt;,
+  &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;char_set&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;ABCDEFGHIJKLMNOPQRSTUVWXYZ&amp;#34;&lt;/span&gt;,
+  &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;use_labels_json_file&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#66d9ef&#34;&gt;false&lt;/span&gt;,
+  &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;remote_url&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;http://127.0.0.1:6100/captcha/&amp;#34;&lt;/span&gt;,
+  &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;cycle_stop&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;20000&lt;/span&gt;,
+  &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;acc_stop&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;0.99&lt;/span&gt;,
+  &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;cycle_save&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;500&lt;/span&gt;,
+  &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;enable_gpu&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;,
+  &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;train_batch_size&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;32&lt;/span&gt;,
+  &lt;span style=&#34;color:#f92672&#34;&gt;&amp;#34;test_batch_size&amp;#34;&lt;/span&gt;: &lt;span style=&#34;color:#ae81ff&#34;&gt;32&lt;/span&gt;
+}&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;h2 id=&#34;first-attempt&#34;&gt;First attempt&lt;/h2&gt;
+
+&lt;p&gt;With one &lt;em&gt;GeForce RTX 2080&lt;/em&gt;, I can train up a model with 99% accuracy within 1.5 hours. Here I didn&#39;t do a proper separate of train and test sets, but turns out this model saved me a lot later...&lt;/p&gt;
+
+&lt;p&gt;This model mostly end up in level 30 to 40 and start to fail. Anyway, it is normal. With a 99% accuracy, we only have 0.6570% to survive up to lv 500 🙁&lt;/p&gt;
+
+&lt;p&gt;&lt;figure&gt;&lt;img src=&#34;https://b6a.black/images/2020-07-22-uiuctf-bot-protection-iv/model1.jpg&#34; alt=&#34;&#34;&gt;&lt;/figure&gt;&lt;/p&gt;
+
+&lt;h2 id=&#34;second-attempt&#34;&gt;Second attempt&lt;/h2&gt;
+
+&lt;p&gt;Here, I think of &lt;a href=&#34;https://en.wikipedia.org/wiki/Ensemble_learning&#34;&gt;Ensemble Learning&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;figure&gt;&lt;img src=&#34;https://b6a.black/images/2020-07-22-uiuctf-bot-protection-iv/ensemble_learning.jpg&#34; alt=&#34;&#34;&gt;&lt;/figure&gt;&lt;/p&gt;
+
+&lt;p&gt;The idea of ensemble learning is very simple. Assume we trained multiple classifer for the same classification problem, we create a classification base on multiple classifier to our input. We apply a similar concept here, but we hope any one of them could solve the captcha even the previous model fails to do. Originally, we think of bruteforce the top 2 decision of each character, but turns out it requires 32 query, which we may run out of time...&lt;/p&gt;
+
+&lt;p&gt;To train up different models, I tried to play with the different parameters like batch size, size of evaluation set and different training set, etc.&lt;/p&gt;
+
+&lt;p&gt;I also collected extra dataset by save those captcha we solved with only 1 model and denote as good set, those with more than 2 models as benign set. We feed these data to our training script to train new model and deploy it to collect more new samples. In total, we collected 120k samples and trained 8 models through this iterating process.&lt;/p&gt;
+
+&lt;p&gt;The strategy for adding new samples to the dataset as follows, we tried to extend our dataset upto about 90k with both good set and benign set. And the last 20k is from the benign set. We also trained several models with different numbers of data samples during our data collection procedures.&lt;/p&gt;
+
+&lt;p&gt;The best result with five models is 169 levels, while I can attain reach level 225 with eight models. For 5 models to 8 models ensemble, we improve from solving 40 level before fail to average solving 60 level. However, it still very far away from solving 500 within 10 minutes.&lt;/p&gt;
+
+&lt;p&gt;At the end, my god like teammate @mystiz613 come up with an idea to solve as a hybird approach (DL model + human)... That is, if a captcha can&#39;t be solve with 8 of my models, I will do it myself...&lt;/p&gt;
+
+&lt;p&gt;After 3 trials (once timeout at 495 lv, once at 365 lv), we succesfully capture the flag with ~90 second left by luck (manually solved ~10 times in total)...&lt;/p&gt;
+
+&lt;p&gt;&lt;figure&gt;&lt;img src=&#34;https://b6a.black/images/2020-07-22-uiuctf-bot-protection-iv/solved.jpg&#34; alt=&#34;&#34;&gt;&lt;/figure&gt;&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;Level &lt;span style=&#34;color:#ae81ff&#34;&gt;497&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;is&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;not&lt;/span&gt; high enough
+Invalid captcha
+Invalid captcha
+Invalid captcha
+Invalid captcha
+Invalid captcha
+Level &lt;span style=&#34;color:#ae81ff&#34;&gt;498&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;is&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;not&lt;/span&gt; high enough
+Level &lt;span style=&#34;color:#ae81ff&#34;&gt;499&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;is&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;not&lt;/span&gt; high enough
+uiuctf{i_knew_a_guy_in_highschool_that_could_read_this}&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;h2 id=&#34;credits&#34;&gt;Credits&lt;/h2&gt;
+
+&lt;p&gt;90% of work from @mystiz613, 10% from me.&lt;/p&gt;
+
+&lt;h2 id=&#34;reflection&#34;&gt;Reflection&lt;/h2&gt;
+
+&lt;p&gt;I guess there are better way to solve it with full automation right? After submitted the flag, I tried to do cause analysis why is such hard to solve with full automation (I know that I am too weak, please don&#39;t laugh at me 😭). These are my observations:&lt;/p&gt;
+
+&lt;h3 id=&#34;duplicate-characters&#34;&gt;Duplicate characters&lt;/h3&gt;
+
+&lt;p&gt;Continuous duplicate character is hard to solve with my model.&lt;/p&gt;
+
+&lt;p&gt;JGGSS:&lt;/p&gt;
+
+&lt;p&gt;&lt;figure&gt;&lt;img src=&#34;https://b6a.black/images/2020-07-22-uiuctf-bot-protection-iv/JGGSS.png&#34; alt=&#34;&#34;&gt;&lt;/figure&gt;&lt;/p&gt;
+
+&lt;p&gt;YJKYY:&lt;/p&gt;
+
+&lt;p&gt;&lt;figure&gt;&lt;img src=&#34;https://b6a.black/images/2020-07-22-uiuctf-bot-protection-iv/YJKYY.png&#34; alt=&#34;&#34;&gt;&lt;/figure&gt;&lt;/p&gt;
+
+&lt;h3 id=&#34;j-r-p-and-y&#34;&gt;J, R, P and Y&lt;/h3&gt;
+
+&lt;p&gt;Due to similar shape to other characters or is formed by more than 2 components...&lt;/p&gt;
+
+&lt;p&gt;YJKYY:&lt;/p&gt;
+
+&lt;p&gt;&lt;figure&gt;&lt;img src=&#34;https://b6a.black/images/2020-07-22-uiuctf-bot-protection-iv/YJKYY.png&#34; alt=&#34;&#34;&gt;&lt;/figure&gt;&lt;/p&gt;
+
+&lt;p&gt;JPSCB:&lt;/p&gt;
+
+&lt;p&gt;&lt;figure&gt;&lt;img src=&#34;https://b6a.black/images/2020-07-22-uiuctf-bot-protection-iv/JPSCB.png&#34; alt=&#34;&#34;&gt;&lt;/figure&gt;&lt;/p&gt;
+
+&lt;p&gt;FDSEJ:&lt;/p&gt;
+
+&lt;p&gt;&lt;figure&gt;&lt;img src=&#34;https://b6a.black/images/2020-07-22-uiuctf-bot-protection-iv/FDSEJ.png&#34; alt=&#34;&#34;&gt;&lt;/figure&gt;&lt;/p&gt;
+
+&lt;p&gt;VJGJJ:&lt;/p&gt;
+
+&lt;p&gt;&lt;figure&gt;&lt;img src=&#34;https://b6a.black/images/2020-07-22-uiuctf-bot-protection-iv/VJGJJ.png&#34; alt=&#34;&#34;&gt;&lt;/figure&gt;&lt;/p&gt;
+
+&lt;h3 id=&#34;similar-glyphs&#34;&gt;Similar glyphs&lt;/h3&gt;
+
+&lt;p&gt;In fact, most of cases I solve manually the edit distance is between 1-2 characters and the problematic region are share by different models...&lt;/p&gt;
+
+&lt;p&gt;For example PTJYZ:&lt;/p&gt;
+
+&lt;p&gt;&lt;figure&gt;&lt;img src=&#34;https://b6a.black/images/2020-07-22-uiuctf-bot-protection-iv/PTJYZ.png&#34; alt=&#34;&#34;&gt;&lt;/figure&gt;&lt;/p&gt;
+
+&lt;p&gt;Option available:&lt;/p&gt;
+
+&lt;p&gt;&lt;figure&gt;&lt;img src=&#34;https://b6a.black/images/2020-07-22-uiuctf-bot-protection-iv/failure.jpg&#34; alt=&#34;&#34;&gt;&lt;/figure&gt;&lt;/p&gt;
+
+&lt;hr&gt;
+
+&lt;p&gt;That is it! Thanks for reading! :)&lt;/p&gt;
+
+&lt;p&gt;&lt;/font&gt;&lt;/p&gt;
+</description>
     </item>
     
   </channel>

@@ -3,12 +3,12 @@
   <channel>
     <title>google-ctf on Black Bauhinia</title>
     <link>https://b6a.black/tags/google-ctf/</link>
-    <description>Recent content in google-ctf on Black Bauhinia</description>
+    <description>Black Bauhinia (google-ctf)</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
     <lastBuildDate>Tue, 25 Aug 2020 16:15:00 +0800</lastBuildDate>
     
-	<atom:link href="https://b6a.black/tags/google-ctf/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="https://b6a.black/tags/google-ctf/index.xml" rel="self" type="application/rss+xml" />
     
     
     <item>
@@ -17,8 +17,357 @@
       <pubDate>Tue, 25 Aug 2020 16:15:00 +0800</pubDate>
       
       <guid>https://b6a.black/posts/2020-08-25-google-ctf-oracle/</guid>
-      <description>I was teamed-up with @blackb6a on Google CTF this time. I have solved 7 challenges alone and 3 challenges with my teammates.
-In particular, Oracle is a crypto challenge with 13 solves. It has got me spending 12 hours. All in all, it was a great experience in terms of learning, but my liver hurts. This piece of writeup may be very computation intensive, just because I would like to make everything clear.</description>
+      <description>&lt;p&gt;I was teamed-up with @blackb6a on Google CTF this time. I have solved 7 challenges alone and 3 challenges with my teammates.&lt;/p&gt;
+
+&lt;p&gt;In particular, &lt;em&gt;Oracle&lt;/em&gt; is a crypto challenge with 13 solves. It has got me spending 12 hours. All in all, it was a great experience in terms of learning, but my liver hurts. This piece of writeup may be &lt;em&gt;very&lt;/em&gt; computation intensive, just because I would like to make everything clear.&lt;/p&gt;
+
+&lt;h2 id=&#34;challenge-summary&#34;&gt;Challenge Summary&lt;/h2&gt;
+
+&lt;p&gt;There are two parts of the challenges. In the first part, we are required to recover an internal state for AEGIS-128L given the encryption oracle. For the second part, we are required to forge a ciphertext given an error oracle from decryption.&lt;/p&gt;
+
+&lt;h2 id=&#34;solution&#34;&gt;Solution&lt;/h2&gt;
+
+&lt;h3 id=&#34;part-i-a-brief-summary-for-the-state-in-aegis128l&#34;&gt;Part I: A brief summary for the state in AEGIS-128L&lt;/h3&gt;
+
+&lt;p&gt;AEGIS-128L has an internal state that is initially computed solely by the &lt;em&gt;key&lt;/em&gt; and the &lt;em&gt;IV&lt;/em&gt;. It is of 128 bytes, broken into eight 16-byte blocks. Let&#39;s $S_i$ is updated to $S_{i+1}$ given 32-byte payload $M$. Let&#39;s define $S_i = (s_{i, 0}, s_{i, 1}, ..., s_{i, 7})$ and $M = (m_0, m_1)$. We have:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;$s_{i+1, 0} \leftarrow \text{AESEnc}(s_{i, 7}, s_{i, 0}) \oplus m_0$,&lt;/li&gt;
+&lt;li&gt;$s_{i+1, 4} \leftarrow \text{AESEnc}(s_{i, 3}, s_{i, 4}) \oplus m_1$, and&lt;/li&gt;
+&lt;li&gt;$s_{i+1, j} \leftarrow \text{AESEnc}(s_{i, j-1}, s_{i, j})$ for $j = 1, 2, 3, 5, 6, 7$.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;But what is &lt;code&gt;AESEnc&lt;/code&gt;? Let&#39;s see the implementation.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;aes_enc&lt;/span&gt;(s: block, t: block) &lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt; block:
+  &lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#34;&amp;#34;&amp;#34;Performs the AESENC operation with tables.&amp;#34;&amp;#34;&amp;#34;&lt;/span&gt;
+  t0 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; (te0[s[&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;]] &lt;span style=&#34;color:#f92672&#34;&gt;^&lt;/span&gt; te1[s[&lt;span style=&#34;color:#ae81ff&#34;&gt;5&lt;/span&gt;]] &lt;span style=&#34;color:#f92672&#34;&gt;^&lt;/span&gt; te2[s[&lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;]] &lt;span style=&#34;color:#f92672&#34;&gt;^&lt;/span&gt; te3[s[&lt;span style=&#34;color:#ae81ff&#34;&gt;15&lt;/span&gt;]])
+  t1 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; (te0[s[&lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;]] &lt;span style=&#34;color:#f92672&#34;&gt;^&lt;/span&gt; te1[s[&lt;span style=&#34;color:#ae81ff&#34;&gt;9&lt;/span&gt;]] &lt;span style=&#34;color:#f92672&#34;&gt;^&lt;/span&gt; te2[s[&lt;span style=&#34;color:#ae81ff&#34;&gt;14&lt;/span&gt;]] &lt;span style=&#34;color:#f92672&#34;&gt;^&lt;/span&gt; te3[s[&lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;]])
+  t2 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; (te0[s[&lt;span style=&#34;color:#ae81ff&#34;&gt;8&lt;/span&gt;]] &lt;span style=&#34;color:#f92672&#34;&gt;^&lt;/span&gt; te1[s[&lt;span style=&#34;color:#ae81ff&#34;&gt;13&lt;/span&gt;]] &lt;span style=&#34;color:#f92672&#34;&gt;^&lt;/span&gt; te2[s[&lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;]] &lt;span style=&#34;color:#f92672&#34;&gt;^&lt;/span&gt; te3[s[&lt;span style=&#34;color:#ae81ff&#34;&gt;7&lt;/span&gt;]])
+  t3 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; (te0[s[&lt;span style=&#34;color:#ae81ff&#34;&gt;12&lt;/span&gt;]] &lt;span style=&#34;color:#f92672&#34;&gt;^&lt;/span&gt; te1[s[&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;]] &lt;span style=&#34;color:#f92672&#34;&gt;^&lt;/span&gt; te2[s[&lt;span style=&#34;color:#ae81ff&#34;&gt;6&lt;/span&gt;]] &lt;span style=&#34;color:#f92672&#34;&gt;^&lt;/span&gt; te3[s[&lt;span style=&#34;color:#ae81ff&#34;&gt;11&lt;/span&gt;]])
+  s &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; _block_from_ints([t0, t1, t2, t3])
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; _xor(s, t)&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;Well... we will go through this later. Let&#39;s introduce how keystreams are generated from the state. It is (relatively) simple. The keystream $(k_{i, 0}, k_{i, 1})$ for the $i$-th round is given by:&lt;/p&gt;
+
+&lt;p&gt;&lt;span  class=&#34;math&#34;&gt;\[
+k_{i, 0} = (s_{i, 2} \wedge s_{i, 3}) \oplus s_{i, 1} \oplus s_{i, 6}, \\
+k_{i, 1} = (s_{i, 6} \wedge s_{i, 7}) \oplus s_{i, 5} \oplus s_{i, 2}.
+\]&lt;/span&gt;&lt;/p&gt;
+
+&lt;h3 id=&#34;part-ii-recovering-part-of-the-state&#34;&gt;Part II: Recovering part of the state&lt;/h3&gt;
+
+&lt;p&gt;Now we are given that key and IV are unchanged. This implies that the initial state, i.e., $s_{00}, s_{01}, ..., s_{09}$ are constants too.&lt;/p&gt;
+
+&lt;p&gt;Suppose that we have two 96-byte messages $M^{(1)}$ and $M^{(2)}$ with only the first two blocks are different (Formally, if $M^{(k)} := (m^{(k)}_{00}, m^{(k)}_{01}, ..., m^{(k)}_{21}$), then $m^{(1)}_{ij} = m^{(2)}_{ij}$ if and only if $i \neq 0$).&lt;/p&gt;
+
+&lt;p&gt;The following table summarizes which of the $s_{ij}$&#39;s that would be different (marked by an &lt;code&gt;!&lt;/code&gt;), when encrypting $M^{(1)}$ and $M^{(2)}$ respectively.&lt;/p&gt;
+
+&lt;table&gt;
+&lt;thead&gt;
+&lt;tr&gt;
+&lt;th&gt;$i$ \ $j$&lt;/th&gt;
+&lt;th&gt;0&lt;/th&gt;
+&lt;th&gt;1&lt;/th&gt;
+&lt;th&gt;2&lt;/th&gt;
+&lt;th&gt;3&lt;/th&gt;
+&lt;th&gt;4&lt;/th&gt;
+&lt;th&gt;5&lt;/th&gt;
+&lt;th&gt;6&lt;/th&gt;
+&lt;th&gt;7&lt;/th&gt;
+&lt;/tr&gt;
+&lt;/thead&gt;
+
+&lt;tbody&gt;
+&lt;tr&gt;
+&lt;td&gt;0&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;1&lt;/td&gt;
+&lt;td&gt;!&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;!&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+
+&lt;tr&gt;
+&lt;td&gt;2&lt;/td&gt;
+&lt;td&gt;!&lt;/td&gt;
+&lt;td&gt;!&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;!&lt;/td&gt;
+&lt;td&gt;!&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;td&gt;&lt;/td&gt;
+&lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;What does this imply? Knowing that $s^{(1)}_{2,j} = s^{(2)}_{2,j}$ for $j = 2, 3, 6, 7$. Let&#39;s look closely on the last 32 bytes of the keystream:&lt;/p&gt;
+
+&lt;p&gt;&lt;span  class=&#34;math&#34;&gt;\[
+\begin{aligned}
+k^{(1)}_{20} \oplus k^{(2)}_{20}
+&amp;= m^{(1)}_{20} \oplus c^{(1)}_{20} \oplus m^{(2)}_{20} \oplus c^{(2)}_{20} \\
+&amp;= \left[ (s^{(1)}_{22} \wedge s^{(1)}_{23}) \oplus s^{(1)}_{21} \oplus s^{(1)}_{26} \right] \oplus \left[ (s^{(2)}_{22} \wedge s^{(2)}_{23}) \oplus s^{(2)}_{21} \oplus s^{(2)}_{26} \right] \\
+&amp;= s^{(1)}_{21} \oplus s^{(2)}_{21}.
+\end{aligned}
+\]&lt;/span&gt;&lt;/p&gt;
+
+&lt;p&gt;And similarly $k^{(1)}_{21} \oplus k^{(2)}_{21} = s^{(1)}_{25} \oplus s^{(2)}_{25}$.&lt;/p&gt;
+
+&lt;p&gt;Why is it useful? Let&#39;s define a new function, &lt;code&gt;p&lt;/code&gt;:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;p&lt;/span&gt;(s: block) &lt;span style=&#34;color:#f92672&#34;&gt;-&amp;gt;&lt;/span&gt; block:
+  t0 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; (te0[s[&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;]] &lt;span style=&#34;color:#f92672&#34;&gt;^&lt;/span&gt; te1[s[&lt;span style=&#34;color:#ae81ff&#34;&gt;5&lt;/span&gt;]] &lt;span style=&#34;color:#f92672&#34;&gt;^&lt;/span&gt; te2[s[&lt;span style=&#34;color:#ae81ff&#34;&gt;10&lt;/span&gt;]] &lt;span style=&#34;color:#f92672&#34;&gt;^&lt;/span&gt; te3[s[&lt;span style=&#34;color:#ae81ff&#34;&gt;15&lt;/span&gt;]])
+  t1 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; (te0[s[&lt;span style=&#34;color:#ae81ff&#34;&gt;4&lt;/span&gt;]] &lt;span style=&#34;color:#f92672&#34;&gt;^&lt;/span&gt; te1[s[&lt;span style=&#34;color:#ae81ff&#34;&gt;9&lt;/span&gt;]] &lt;span style=&#34;color:#f92672&#34;&gt;^&lt;/span&gt; te2[s[&lt;span style=&#34;color:#ae81ff&#34;&gt;14&lt;/span&gt;]] &lt;span style=&#34;color:#f92672&#34;&gt;^&lt;/span&gt; te3[s[&lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;]])
+  t2 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; (te0[s[&lt;span style=&#34;color:#ae81ff&#34;&gt;8&lt;/span&gt;]] &lt;span style=&#34;color:#f92672&#34;&gt;^&lt;/span&gt; te1[s[&lt;span style=&#34;color:#ae81ff&#34;&gt;13&lt;/span&gt;]] &lt;span style=&#34;color:#f92672&#34;&gt;^&lt;/span&gt; te2[s[&lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;]] &lt;span style=&#34;color:#f92672&#34;&gt;^&lt;/span&gt; te3[s[&lt;span style=&#34;color:#ae81ff&#34;&gt;7&lt;/span&gt;]])
+  t3 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; (te0[s[&lt;span style=&#34;color:#ae81ff&#34;&gt;12&lt;/span&gt;]] &lt;span style=&#34;color:#f92672&#34;&gt;^&lt;/span&gt; te1[s[&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;]] &lt;span style=&#34;color:#f92672&#34;&gt;^&lt;/span&gt; te2[s[&lt;span style=&#34;color:#ae81ff&#34;&gt;6&lt;/span&gt;]] &lt;span style=&#34;color:#f92672&#34;&gt;^&lt;/span&gt; te3[s[&lt;span style=&#34;color:#ae81ff&#34;&gt;11&lt;/span&gt;]])
+  &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; _block_from_ints([t0, t1, t2, t3])&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;Déjà vu? It is more or less the same with &lt;code&gt;AESEnc&lt;/code&gt;. We can state that &lt;code&gt;AESEnc(s, t) == p(s) ^ t&lt;/code&gt; too. Looking even more closely, one could observe that the first four bytes from &lt;code&gt;p&lt;/code&gt; solely depends on bytes 0, 5, 10 and 15 from &lt;code&gt;s&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Knowing this, we can further expand $k^{(1)}_{20} \oplus k^{(2)}_{20}$:&lt;/p&gt;
+
+&lt;p&gt;&lt;span  class=&#34;math&#34;&gt;\[\begin{aligned}
+k^{(1)}_{20} \oplus k^{(2)}_{20}
+&amp;= s^{(1)}_{21} \oplus s^{(2)}_{21} \\
+&amp;= \text{AESEnc}(s^{(1)}_{10}, s^{(1)}_{11}) \oplus \text{AESEnc}(s^{(2)}_{10}, s^{(2)}_{11}) \\
+&amp;= p(s^{(1)}_{10}) \oplus s^{(1)}_{11} \oplus p(s^{(2)}_{10}) \oplus s^{(2)}_{11} \\
+&amp;= p(s^{(1)}_{10}) \oplus p(s^{(2)}_{10}) \\
+&amp;= p\left(\text{AESEnc}(s^{(1)}_{07}, s^{(1)}_{00}) \oplus m^{(1)}_{00}\right) \oplus p\left(\text{AESEnc}(s^{(2)}_{07}, s^{(2)}_{00}) \oplus m^{(2)}_{00}\right) \\
+&amp;= p(x \oplus m^{(1)}_{00}) \oplus p(x \oplus m^{(2)}_{00}).
+\end{aligned}\]&lt;/span&gt;&lt;/p&gt;
+
+&lt;p&gt;(We define $x := \text{AESEnc}(s_{07}, s_{00}) = s_{10} \oplus m^{(1)}_{00}$ for ease of reading.)&lt;/p&gt;
+
+&lt;p&gt;And now the &lt;em&gt;only&lt;/em&gt; unknown is $x$. Can we solve it easily? Yes indeed: we can compute bytes 0, 5, 10, 15 of $x$ from the first four bytes of $k^{(1)}_{20} \oplus k^{(2)}_{20}$. Along with three more equalities from &lt;code&gt;p&lt;/code&gt;, we are able to recover $x$ completely. I used an meet-in-the-middle approach to solve for $x$ in five seconds.&lt;/p&gt;
+
+&lt;figure&gt;
+    &lt;img src=&#34;https://b6a.black/images/2020-08-25-googlectf/hm.png&#34;/&gt; 
+&lt;/figure&gt;
+
+
+&lt;p&gt;But wait. There is a problem: I am able to find 65536 candidates (or even more) instead of 1, but I am &lt;em&gt;unable&lt;/em&gt; to eliminate the rest. The possible number of states will be growing exponentally! What can I do? The solution is actually simple: Just send $M^{(3)}$ and compute another solution set of $x$. After all, it is very likely that $x$ is the only element in the intersection of the two sets. With $x$, we are able to compute $s_{10}$ (respectively $s_{14}$).&lt;/p&gt;
+
+&lt;h3 id=&#34;part-iii-finishing-the-first-part-of-the-challenge&#34;&gt;Part III: Finishing the first part of the challenge&lt;/h3&gt;
+
+&lt;p&gt;We can extend the above idea to leak more. By sending two 128-byte messages with blocks 3 and 4 being different, we are able to recover $s_{20}$ and $s_{24}$. We are able to leak $s_{30}$ and $s_{34}$ with the same idea.&lt;/p&gt;
+
+&lt;p&gt;Two more questions remain: How is it made possible in seven queries? And more importantly, how can we recover $s_{ij}$ for all $j$, for some $i$ (preferably $i = 0\ \text{or}\ 1$)?&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;Challenge 1.&lt;/strong&gt; Recover the above states in 7 queries.&lt;/p&gt;
+
+&lt;p&gt;In short, we are encrypting these seven plaintexts (each &lt;code&gt;0&lt;/code&gt; represents 16 &lt;code&gt;\x00&lt;/code&gt;&#39;s, etc):&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;0000000000&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;0000110000&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;0000220000&lt;/code&gt; - Derive $s_{10}$ and $s_{14}$ uniquely with (1) and (2)&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;0000001100&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;0000002200&lt;/code&gt; - Derive $s_{20}$ and $s_{24}$ uniquely with (1) and (4)&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;0000000011&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;0000000022&lt;/code&gt; - Derive $s_{30}$ and $s_{34}$ uniquely with (1) and (6)&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;&lt;strong&gt;Challenge 2.&lt;/strong&gt; Recover $s_{1, j}$ for all $j$.&lt;/p&gt;
+
+&lt;p&gt;From above, we are able to derive $s_{i, 0}$ and $s_{i, 4}$ for $i = 1, 2, 3$ with $m_{ij} = 0$. Hence, the state transition would be $s_{i+1, j} \leftarrow p(s_{i, j-1}) \oplus s_{ij}$ for all $i, j$. Equivalently $s_{i, j-1} = p^{-1}(s_{i+1, j} \oplus s_{ij})$.&lt;/p&gt;
+
+&lt;p&gt;We are able to compute inverses of $p^{-1}$ easily. Solving system of linear equations would be all good, but I&#39;m doing it with meet-in-the-middle. Code reuse for the win! For now, let&#39;s visualize how $s_{1, j}$&#39;s can be derived.&lt;/p&gt;
+&lt;pre&gt;&lt;code class=&#34;language-viz-dot&#34; data-lang=&#34;viz-dot&#34;&gt;digraph {
+  rankdir=BT
+  s₁₀[fillcolor=yellow,style=filled]
+  s₁₄[fillcolor=yellow,style=filled]
+  s₂₀[fillcolor=yellow,style=filled]
+  s₂₄[fillcolor=yellow,style=filled]
+  s₃₀[fillcolor=yellow,style=filled]
+  s₃₄[fillcolor=yellow,style=filled]
+  
+  s₂₀ -&amp;gt; s₂₇
+  s₃₀ -&amp;gt; s₂₇
+  
+  s₂₄ -&amp;gt; s₂₃
+  s₃₄ -&amp;gt; s₂₃
+  
+  s₁₄ -&amp;gt; s₁₃
+  s₂₄ -&amp;gt; s₁₃
+  
+  s₁₃ -&amp;gt; s₁₂
+  s₂₃ -&amp;gt; s₁₂
+  
+  s₁₀ -&amp;gt; s₁₇
+  s₂₀ -&amp;gt; s₁₇
+  
+  s₁₇ -&amp;gt; s₁₆
+  s₂₇ -&amp;gt; s₁₆
+  
+  s₁₂ -&amp;gt; s₁₁
+  s₁₃ -&amp;gt; s₁₁
+  s₁₆ -&amp;gt; s₁₁
+  
+  s₁₆ -&amp;gt; s₁₅
+  s₁₇ -&amp;gt; s₁₅
+  s₁₂ -&amp;gt; s₁₅  
+}&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;After all, the first part of the challenge is done.&lt;/p&gt;
+
+&lt;h3 id=&#34;part-iv-aegis128-vs-aegis128l&#34;&gt;Part IV: AEGIS-128 vs AEGIS-128L&lt;/h3&gt;
+
+&lt;p&gt;For the second part, AEGIS-128 is used. The state is now 80 bytes (five 16-byte blocks). The payload size has been reduced to one block (let&#39;s denote it by $m$). This is how the state transited:&lt;/p&gt;
+
+&lt;ul&gt;
+&lt;li&gt;$s_{i+1, 0} \leftarrow p(s_{i, 4}) \oplus s_{i, 0} \oplus m$, and&lt;/li&gt;
+&lt;li&gt;$s_{i+1, j} \leftarrow p(s_{i, j-1}) \oplus s_{i, j}$ for $1 \leq j \leq 4$.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Moreover, the keystream $k_i$ for the $i$-th round is also altered: $k_i = (s_{i, 2} \wedge s_{i, 3}) \oplus s_{i, 1} \oplus s_{i, 4}$.&lt;/p&gt;
+
+&lt;h3 id=&#34;part-v-exploring-the-challenge&#34;&gt;Part V: Exploring the challenge&lt;/h3&gt;
+
+&lt;p&gt;I have no idea what&#39;s going on, so I decided to recover the printable &lt;code&gt;secret_plaintext&lt;/code&gt; first.&lt;/p&gt;
+
+&lt;p&gt;It is pretty easy, and is made possible because we are able to receive the error from the oracle. In particular, from &lt;code&gt;pt.decode(&amp;quot;ascii&amp;quot;)&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;We are able to recover the plaintext with bit-flipping. To begin with, we can flip the whole ciphertext by &lt;code&gt;\x80&lt;/code&gt;. The first 32 bytes for the plaintext would be flipped by &lt;code&gt;\x80&lt;/code&gt; as well. If we send the flipped ciphertext (denote by $c_?$) to the oracle, we will obtain:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;UnicodeDecodeError: &amp;#39;ascii&amp;#39; codec can&amp;#39;t decode byte 0xe7 in position 0: ordinal not in range(128)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This means that the first byte of the &lt;em&gt;flipped&lt;/em&gt; plaintext would be &lt;code&gt;\xe7&lt;/code&gt;. Hence, the first byte of the plaintext is &lt;code&gt;\x67&lt;/code&gt; (&lt;code&gt;g&lt;/code&gt;). We then flip the first byte of $c_?$ by &lt;code&gt;\x80&lt;/code&gt; and send it to the oracle, we will be receiving another error:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;UnicodeDecodeError: &amp;#39;ascii&amp;#39; codec can&amp;#39;t decode byte 0xc6 in position 1: ordinal not in range(128)&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;This recovers the second byte - &lt;code&gt;x46&lt;/code&gt; (&lt;code&gt;F&lt;/code&gt;). Since the secret plaintext is 96-byte long, we can recover it with 96 oracle calls.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;REMAINING ORACLE CALLS: 231 - 96 = 135.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;With a plaintext recovered, it is time for us to try to recover the internal state. Can we devise a similar strategy that is similar to the first part of the challenge? Formally, what will happen if we have two 48-byte messages $M^{(1)} := (m^{(1)}_0, m^{(1)}_1, m^{(1)}_2)$ and $M^{(2)} := (m^{(2)}_0, m^{(2)}_1, m^{(2)}_2)$ with only the first block being different. Then the last 16 bytes in the keystream will be:&lt;/p&gt;
+
+&lt;p&gt;&lt;span  class=&#34;math&#34;&gt;\[
+\begin{aligned}
+k^{(1)}_2 \oplus k^{(2)}_2
+&amp;= \left[ (s^{(1)}_{22} \wedge s^{(1)}_{23}) \oplus s^{(1)}_{21} \oplus s^{(1)}_{24} \right] \oplus \left[ (s^{(2)}_{22} \wedge s^{(2)}_{23}) \oplus s^{(2)}_{21} \oplus s^{(2)}_{24} \right] \\
+&amp;= s^{(1)}_{21} \oplus s^{(2)}_{21} \\
+&amp;= p(s^{(1)}_{10}) \oplus s^{(1)}_{11} \oplus p(s^{(2)}_{10}) \oplus s^{(2)}_{11} \\
+&amp;= p(s^{(1)}_{10}) \oplus p(s^{(2)}_{10}) \\
+&amp;= p\left(\text{AESEnc}(s^{(1)}_{04}, s^{(1)}_{00}) \oplus m^{(1)}_1\right) \oplus p\left(\text{AESEnc}(s^{(2)}_{04}, s^{(2)}_{00}) \oplus m^{(2)}_1\right) \\
+&amp;= p(x \oplus m^{(1)}_0) \oplus p(x \oplus m^{(2)}_0).
+\end{aligned}
+\]&lt;/span&gt;&lt;/p&gt;
+
+&lt;p&gt;Hereby denote $x := \text{AESEnc}(s_{04}, s_{00}) = s_{10} \oplus m^{(1)}_0$. Simply put, if we have the ciphertexts for $M^{(1)}$ and $M^{(2)}$ (denote it as $C^{(k)} = (c^{(k)}_0, c^{(k)}_1, c^{(k)}_2)$), we are able to recover one-fifths of the state if this happens.&lt;/p&gt;
+
+&lt;p&gt;How are we able to do it? Well actually, we have recovered the secret plaintext above. We can flip the first block of the ciphertext arbitrarily (to $C_?$).&lt;/p&gt;
+
+&lt;p&gt;However, since $k^{(2)}_2$ is altered, the third block of the message would be updated. Luckily we are able to recover the message in 17 oracle calls. Here&#39;s how:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;Sends $C_?$. We will obtain something like this:
+&lt;code&gt;UnicodeDecodeError: &#39;ascii&#39; codec can&#39;t decode byte 0xe8 in position 34...&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Flips the 35th byte by &lt;code&gt;\xe8&lt;/code&gt; in $C_?$. Sends the patched $C_?$:
+&lt;code&gt;UnicodeDecodeError: &#39;ascii&#39; codec can&#39;t decode byte 0xcb in position 35...&lt;/code&gt;&lt;/li&gt;
+&lt;li&gt;Flips the 36th byte by &lt;code&gt;\xcb&lt;/code&gt; in $C_?$. Repeat the process until we receive &lt;strong&gt;OK&lt;/strong&gt;, meaning that the plaintext is now ASCII-encoded.&lt;/li&gt;
+&lt;li&gt;For now, we have recovered a subset of message bytes. We then flip the unknown bytes by &lt;code&gt;\x80&lt;/code&gt; (for example, bytes 33 and 34) to throw errors from the oracle.&lt;/li&gt;
+&lt;li&gt;Repeat step 1 until all unknown bytes are recovered.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;In short, we spent 16 oracle calls to recover the message, and one oracle call to indicate us to flip all the bytes those were originally printable. We are then able to recover a possible set of $s_{10}$ with 65536 entries (or more). We can spend another 17 queries to find the actual $s_{10}$, however.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;REMAINING ORACLE CALLS: 135 - 17&amp;times;2 = 101.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;With the same idea, we can recover $s_{20}, s_{30}, s_{40}$ with 17&amp;times;6 queries. This would allow us to recover $s_{10}, s_{11}, ..., s_{14}$ and hence forging arbitrary messages (along with a slightly longer AD).&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;REMAINING ORACLE CALLS: 101 - 17&amp;times;6 = -1.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;Shoot - we are one query short. Since we are able to recover one byte of the plaintext in each of the queries, so it doesn&#39;t hurt to sacrifice one oracle calls by guessing one byte. So... in theory, we are able to finish the challenge with once every 256 times.&lt;/p&gt;
+
+&lt;p&gt;Luckily, if we are given a incorrect plaintext (actually keystream), we are unable to recover a single $s_*$. That&#39;s pretty good, we are able to solve the challenge every time.&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;REMAINING ORACLE CALLS: -1 + 1 = :tada:.&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;With the exploit script written, I am able to reach the very end locally. Congratulations to me!&lt;/p&gt;
+
+&lt;h3 id=&#34;part-iv-wait-arent-we-done&#34;&gt;Part IV: Wait... Aren&#39;t we done?&lt;/h3&gt;
+
+&lt;p&gt;No... When I am interacting to the server, I am &lt;em&gt;always&lt;/em&gt; disconnected while sending one of the 231 oracle calls. Asking the organizers in IRC, knowing that there was an 1-minute timeout - it was later increased to 10 minutes. Unfortunately, my solution runs for around 5 minutes. I have two choices:&lt;/p&gt;
+
+&lt;ol&gt;
+&lt;li&gt;Wait until the challenge has a 10-minute timeout, or&lt;/li&gt;
+&lt;li&gt;Optimize the script and have it completed in one minute.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Seeing that there are already few teams solving the challenge, I think (2) would be fun.&lt;/p&gt;
+
+&lt;h4 id=&#34;61-reducing-online-complexity&#34;&gt;6.1. Reducing online complexity&lt;/h4&gt;
+
+&lt;p&gt;For inputs that does not require immediate feedbacks, we can send them at the same time. This is an example when I am recovering &lt;code&gt;secret_plaintext&lt;/code&gt; in the second part.&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# Before optimization&lt;/span&gt;
+test_ciphertext &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; bytes([c&lt;span style=&#34;color:#f92672&#34;&gt;^&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;0x80&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; c &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; ciphertext])
+m0 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;b&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;#39;&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; i &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; range(&lt;span style=&#34;color:#ae81ff&#34;&gt;96&lt;/span&gt;):
+    r&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;sendline(base64&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;b64encode(test_ciphertext))
+    test_ciphertext &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; cxor(test_ciphertext, i, &lt;span style=&#34;color:#ae81ff&#34;&gt;0x80&lt;/span&gt;)
+    p, mc &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; try_decrypt_read(r)
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;assert&lt;/span&gt; p &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; i
+    m0 &lt;span style=&#34;color:#f92672&#34;&gt;+=&lt;/span&gt; bytes([mc&lt;span style=&#34;color:#f92672&#34;&gt;^&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;0x80&lt;/span&gt;])
+
+&lt;span style=&#34;color:#75715e&#34;&gt;# After optimization&lt;/span&gt;
+test_ciphertext &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; bytes([c&lt;span style=&#34;color:#f92672&#34;&gt;^&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;0x80&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; c &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; ciphertext])
+m0 &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; &lt;span style=&#34;color:#e6db74&#34;&gt;b&lt;/span&gt;&lt;span style=&#34;color:#e6db74&#34;&gt;&amp;#39;&amp;#39;&lt;/span&gt;
+&lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; i &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; range(&lt;span style=&#34;color:#ae81ff&#34;&gt;96&lt;/span&gt;):
+    r&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;sendline(base64&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;b64encode(test_ciphertext))
+    test_ciphertext &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; cxor(test_ciphertext, i, &lt;span style=&#34;color:#ae81ff&#34;&gt;0x80&lt;/span&gt;)
+&lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; i &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; range(&lt;span style=&#34;color:#ae81ff&#34;&gt;96&lt;/span&gt;):
+    p, mc &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; try_decrypt_read(r)
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;assert&lt;/span&gt; p &lt;span style=&#34;color:#f92672&#34;&gt;==&lt;/span&gt; i
+    m0 &lt;span style=&#34;color:#f92672&#34;&gt;+=&lt;/span&gt; bytes([mc&lt;span style=&#34;color:#f92672&#34;&gt;^&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;0x80&lt;/span&gt;])&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;h4 id=&#34;62-reducing-offline-complexity&#34;&gt;6.2. Reducing offline complexity&lt;/h4&gt;
+
+&lt;p&gt;For example, this is the method I implemented to solve for $x$ from $p(x \oplus a) \oplus p(x \oplus b) = c$ - it takes one second each time:&lt;/p&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4&#34;&gt;&lt;code class=&#34;language-python&#34; data-lang=&#34;python&#34;&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;def&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;px_subsolve&lt;/span&gt;(a_sub, b_sub, c_sub):
+    &lt;span style=&#34;color:#75715e&#34;&gt;# Given a_sub, b_sub, c_sub (4 bytes), find x_sub such that&lt;/span&gt;
+    &lt;span style=&#34;color:#75715e&#34;&gt;# te0[(x_sub ^ a_sub)[0]] ^ te1[(x_sub ^ a_sub)[1]] ^ te2[(x_sub ^ a_sub)[2]] ^ te3[(x_sub ^ a_sub)[3]]&lt;/span&gt;
+    &lt;span style=&#34;color:#75715e&#34;&gt;# ^ te0[(x_sub ^ a_sub)[0]] ^ te1[(x_sub ^ a_sub)[1]] ^ te2[(x_sub ^ a_sub)[2]] ^ te3[(x_sub ^ a_sub)[3]]&lt;/span&gt;
+    &lt;span style=&#34;color:#75715e&#34;&gt;# = c_sub&lt;/span&gt;
+
+    &lt;span style=&#34;color:#75715e&#34;&gt;# Reformulating:&lt;/span&gt;
+    &lt;span style=&#34;color:#75715e&#34;&gt;# te0[(x_sub ^ a_sub)[0]] ^ te1[(x_sub ^ a_sub)[1]] ^ te0[(x_sub ^ a_sub)[0]] ^ te1[(x_sub ^ a_sub)[1]] ^ c_sub&lt;/span&gt;
+    &lt;span style=&#34;color:#75715e&#34;&gt;# = te2[(x_sub ^ a_sub)[2]] ^ te3[(x_sub ^ a_sub)[3]] ^ te2[(x_sub ^ a_sub)[2]] ^ te3[(x_sub ^ a_sub)[3]]&lt;/span&gt;
+    lhss &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; {}
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; x0, x1 &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; itertools&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;product(range(&lt;span style=&#34;color:#ae81ff&#34;&gt;256&lt;/span&gt;), repeat&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;):
+        &lt;span style=&#34;color:#75715e&#34;&gt;# LHS&lt;/span&gt;
+        xs &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [be0[x0&lt;span style=&#34;color:#f92672&#34;&gt;^&lt;/span&gt;a_sub[&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;]], be0[x0&lt;span style=&#34;color:#f92672&#34;&gt;^&lt;/span&gt;b_sub[&lt;span style=&#34;color:#ae81ff&#34;&gt;0&lt;/span&gt;]], be1[x1&lt;span style=&#34;color:#f92672&#34;&gt;^&lt;/span&gt;a_sub[&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;]], be1[x1&lt;span style=&#34;color:#f92672&#34;&gt;^&lt;/span&gt;b_sub[&lt;span style=&#34;color:#ae81ff&#34;&gt;1&lt;/span&gt;]], c_sub]
+        y &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; reduce(_xor, xs)
+        lhss[y] &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; lhss&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;get(y, []) &lt;span style=&#34;color:#f92672&#34;&gt;+&lt;/span&gt; [(x0, x1)]
+        
+    solns &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; []
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; x2, x3 &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; itertools&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;product(range(&lt;span style=&#34;color:#ae81ff&#34;&gt;256&lt;/span&gt;), repeat&lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt;&lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;):
+        &lt;span style=&#34;color:#75715e&#34;&gt;# RHS&lt;/span&gt;
+        xs &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; [be2[x2&lt;span style=&#34;color:#f92672&#34;&gt;^&lt;/span&gt;a_sub[&lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;]], be2[x2&lt;span style=&#34;color:#f92672&#34;&gt;^&lt;/span&gt;b_sub[&lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;]], be3[x3&lt;span style=&#34;color:#f92672&#34;&gt;^&lt;/span&gt;a_sub[&lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;]], be3[x3&lt;span style=&#34;color:#f92672&#34;&gt;^&lt;/span&gt;b_sub[&lt;span style=&#34;color:#ae81ff&#34;&gt;3&lt;/span&gt;]]]
+        y &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; reduce(_xor, xs)
+        &lt;span style=&#34;color:#66d9ef&#34;&gt;for&lt;/span&gt; x0, x1 &lt;span style=&#34;color:#f92672&#34;&gt;in&lt;/span&gt; lhss&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;get(y, []):
+            solns&lt;span style=&#34;color:#f92672&#34;&gt;.&lt;/span&gt;append(bytes([x0, x1, x2, x3]))
+    
+    &lt;span style=&#34;color:#66d9ef&#34;&gt;return&lt;/span&gt; solns&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;However, if we force &lt;code&gt;a_sub == b&#39;\0&#39;*4&lt;/code&gt; and &lt;code&gt;b_sub == b&#39;\1&#39;*4 or b_sub == b&#39;\2&#39;*4&lt;/code&gt;, the right hand side can be precomputed. We are able to solve for $x$ once every 0.2 second.&lt;/p&gt;
+
+&lt;p&gt;At last - we are able to get the flag in 30 seconds locally and around 55 seconds online! :tada:&lt;/p&gt;
+
+&lt;hr&gt;
+
+&lt;h2 id=&#34;credits&#34;&gt;Credits&lt;/h2&gt;
+
+&lt;ul&gt;
+&lt;li&gt;Thanks @harrier_lcc who noticed that my &lt;em&gt;lever&lt;/em&gt; did not hurt. Playing Minecraft too much, I misspelt liver.&lt;/li&gt;
+&lt;li&gt;Thanks @hellman1908 for pointing that we are able to bruteforce byte by byte instead of bruteforcing columns, since that we can apply &lt;code&gt;MixColumns&lt;/code&gt; inverse.&lt;/li&gt;
+&lt;/ul&gt;
+</description>
     </item>
     
   </channel>

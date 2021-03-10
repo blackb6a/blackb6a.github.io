@@ -1,42 +1,40 @@
 <!DOCTYPE html>
-<html lang="en" dir="auto">
 
-<head><meta charset="utf-8">
-<meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="robots" content="index, follow">
-<title>CONFidence 2020 CTF: Team Trees | Black Bauhinia</title>
 
-<meta name="keywords" content="ctf, confidence-ctf, reverse" />
-<meta name="description" content="This week, we have teamed up as @blackb6a to play CONFidence 2020 CTF. We end up ranked 15, but we are more proud of ourselves able to solve a reversing challenge called Team Trees (395 points, 5 solves).
-In particular, we are the first-to-solve to the challenge. It took us around two hours to win the flag. This writeup is written by @harrier_lcc and @mystiz613.
-Challenge Summary  We wanted to plant a lot of trees, but it&#39;s going kinda slow.">
-<meta name="author" content="Mystiz, harrier">
-<link rel="canonical" href="https://b6a.black/posts/2020-09-08-confidencectf-team-trees/" />
-<link href="/assets/css/stylesheet.min.9733bd0dca4a7fe1379bd36836878b5b67d7a574e270b0fd4860e518a432e117.css" integrity="sha256-lzO9DcpKf&#43;E3m9NoNoeLW2fXpXTicLD9SGDlGKQy4Rc=" rel="preload stylesheet"
-    as="style">
+    
 
-<link rel="icon" href="https://b6a.black/favicon.ico">
+<html lang="en-us" data-theme="dark">
+<head>
+    
+        
+<meta charset="utf-8">
+<meta name="HandheldFriendly" content="True">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="no-referrer-when-downgrade">
 
-<meta name="theme-color" content="#2e2e33">
-<meta name="msapplication-TileColor" content="#2e2e33">
-<meta name="generator" content="Hugo 0.68.3" />
+<title>CONFidence 2020 CTF: Team Trees - Black Bauhinia</title>
+<meta name="description" content="">
+
+<link rel="icon" type="image/x-icon" href="https://b6a.black/favicon.ico">
+<link rel="apple-touch-icon-precomposed" href="https://b6a.black/favicon.png">
 
 
 
-
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-M67YZZ2MP1"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-
-  gtag('config', 'G-M67YZZ2MP1');
-</script>
+    
 
 
 
-<script src="https://kit.fontawesome.com/fbbadced05.js" crossorigin="anonymous"></script>
+
+
+    
+    
+    
+
+    
+        <link rel="stylesheet" href="https://b6a.black/css/style.09c94e06b3ec0503263ea0297febd3b62f3d6b2dafd8e813aa92a479e82bc955.css" integrity="sha256-CclOBrPsBQMmPqApf&#43;vTti89ay2v2OgTqpKkeegryVU=">
+    
+
+
 
 
 
@@ -48,103 +46,60 @@ Challenge Summary  We wanted to plant a lot of trees, but it&#39;s going kinda s
 <meta property="og:url" content="https://b6a.black/posts/2020-09-08-confidencectf-team-trees/" />
 <meta property="article:published_time" content="2020-09-08T18:30:00+08:00" />
 <meta property="article:modified_time" content="2020-09-08T18:30:00+08:00" />
+
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="CONFidence 2020 CTF: Team Trees"/>
 <meta name="twitter:description" content="This week, we have teamed up as @blackb6a to play CONFidence 2020 CTF. We end up ranked 15, but we are more proud of ourselves able to solve a reversing challenge called Team Trees (395 points, 5 solves).
 In particular, we are the first-to-solve to the challenge. It took us around two hours to win the flag. This writeup is written by @harrier_lcc and @mystiz613.
 Challenge Summary  We wanted to plant a lot of trees, but it&#39;s going kinda slow."/>
 
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "BlogPosting",
-  "headline": "CONFidence 2020 CTF: Team Trees",
-  "name": "CONFidence 2020 CTF: Team Trees",
-  "description": "This week, we have teamed up as @blackb6a to play CONFidence 2020 CTF. We end up ranked 15, but we are more proud of ourselves able to solve a reversing challenge called Team Trees …",
-  "keywords": [
-    "ctf", "confidence-ctf", "reverse"
-  ],
-  "articleBody": "This week, we have teamed up as @blackb6a to play CONFidence 2020 CTF. We end up ranked 15, but we are more proud of ourselves able to solve a reversing challenge called Team Trees (395 points, 5 solves).\nIn particular, we are the first-to-solve to the challenge. It took us around two hours to win the flag. This writeup is written by @harrier_lcc and @mystiz613.\nChallenge Summary  We wanted to plant a lot of trees, but it's going kinda slow...\n We are given a binary that executes a slow algorithm that takes up a lot of memory. The objective is to wait the program until it is done - the flag would be shown as the output.\n  Never. Our PCs don't even have enough memory to play with that. Even so, we gotta wait forever for the flag. Our objective is to optimize and rewrite the algorithm used. By optimize we mean reduce both the time and space complexities.\nSolution Part I: Baby steps from baby cases From the binary, we knew that we are going to find $f(1337)$ for a given $f$. Although we do not know what $f$ is, we could still have an insight on it. For example, we can patch 1337 by smaller values: 0, 1, etc.:\nn = 0: p4{32b9b6bca55548ed88ec405c5c7cf3a1} n = 1: p4{ee5fadd5a727857f32b9b6bca55548ed} n = 2: p4{ee5fadd5a727857f982d2435efffdac7} n = 3: p4{c8b5922a9f156985b4f8094372145c13} ... n = 4: Out of memory ;_; In particular, 32b9b6bca55548ed in the output for $n = 0$ is the v1 in sub_400816:\nvoid __noreturn sub_400816() { unsigned __int64 v0; // rdx  signed __int64 v1; // rcx  signed __int64 v2; // rt0  v0 = 0x82F96AC97429A68BLL; v1 = 0x32B9B6BCA55548EDLL; __debugbreak(); while ( 1 ) { v2 = v1; v1 = 3 * v0 + 2 * v1 + 4; v0 = v2; } } But what is 88ec405c5c7cf3a1? It must be related to v0 and v1. We tried 3*v0 + 2*v1 + 4 and it is ee5fadd5a727857f. It does not check out.\nWe have spot out that the output shares the same prefix when $n=1$ and $n=2$. Maybe we shall see what is going on with sub_400816 - it is simply generating numbers for a sequence, namely $s_n$, indefinitely:\n $s_0 = \\text{82F96AC97429A68B}_{16}$, $s_1 = \\text{32B9B6BCA55548ED}_{16}$, and $s_k = 3 s_{k-2} + 2 s_{k-1} + 4\\mod2^{64}$ for $k \\geq 2$.  Let's generate a bunch of $a_k$'s to see if there is something interesting:\ns_2 = 0xee5fadd5a727857f s_3 = 0x74ec7fe13e4ee5c9 s_4 = 0xb4f8094372145c13 s_5 = 0xc8b5922a9f156985 ... If we rewrite the program output in terms of $s_k$, we have:\nn = 0: p4{s_1 88ec405c5c7cf3a1} n = 1: p4{s_2 32b9b6bca55548ed} n = 2: p4{s_2 982d2435efffdac7} n = 3: p4{s_5 s_4} The output when $n = 3$ is actually composed by two elements in the sequence. It makes us think: is it the case that 88ec... (also 32b9... and 982d...) is an intermediate state? To verify our thoughts, we are going to dig deeper into the assembly operations.\n  There are four operations. Here are the values of v0 and v1 (as defined in sub_400816) after each of the steps.\n/* rcx = c0, rdx = d0 */ lea rdx, [rdx+rdx*2] /* rcx = c0, rdx = 3*d0 */ lea rdx, [rdx+rcx*2+4] /* rcx = c0, rdx = 3*d0 + 2*c0 + 4 */ xchg rcx, rdx /* rcx = 3*d0 + 2*c0 + 4, rdx = c0 */ jmp short loc_40082F /* rcx = 3*d0 + 2*c0 + 4, rdx = c0 */ With that said, it takes four instructions for a complete cycle inside while. From the smaller values of $n$, we can see that the output format would be p4{[rdx][rcx]}. Let's see some starting values of rcx and rdx:\n step | rdx | rcx ------+------------------+------------------ 0 | 32b9b6bca55548ed | 82f96ac97429a68b 1 | 32b9b6bca55548ed | 88ec405c5c7cf3a1  :bulb: Imagination: You have opened a process with gdb that has a breakpoint at the beginning of the function. You are given a set of something (defined in sub_40090D) and checks if it has a given attribute (defined in sub_4009C4). If so, you call ni to move to the next step. Finally, you print the registers, extract edx and ecx, and print them as the flag.  So... what is the set of something? And what is the attribute it is checked against?\nPart II: Collecting the pieces for the puzzle There are four functions that worth investigating: sub_40090D (the enumerator), sub_4009C4 (the checker), sub_400A59 (the constructor) and sub_400840 (called from sub_40090D). We will first look into sub_400840:\n_DWORD *__fastcall sub_400840(_DWORD *a1) { int i; // [rsp+14h] [rbp-Ch]  _DWORD *v3; // [rsp+18h] [rbp-8h]  v3 = malloc(0x20uLL); if ( !v3 ) { puts(\"Out of memory ;_;\"); abort(); } *v3 = *a1; for ( i = 0; *a1  i; ++i ) *(_QWORD *)\u0026v3[2 * i + 2] = sub_400840(*(_QWORD *)\u0026a1[2 * i + 2]); return v3; } Since it is allocating 32 bytes, we can define a dummy struct:\nstruct Dummy { char x[32]; }; Loading the struct into IDA, by redefining the types of a1 and v3 as Dummy*, we have:\nDummy *__fastcall sub_400840(Dummy *src) { int i; // [rsp+14h] [rbp-Ch]  Dummy *dest; // [rsp+18h] [rbp-8h]  dest = (Dummy *)malloc(0x20uLL); if ( !dest ) { puts(\"Out of memory ;_;\"); abort(); } *(_DWORD *)dest-x = *(_DWORD *)src-x; for ( i = 0; *(_DWORD *)src-x  i; ++i ) *(_QWORD *)\u0026dest-x[8 * i + 8] = sub_400840(*(Dummy **)\u0026src-x[8 * i + 8]); return dest; } It is calling itself recursively. Would it be a deep clone? Moreover, we can further see that the first four bytes should be size and it would not be greater than 3. Otherwise 8*i+8 = 32, overflowing the struct. After all, we think it is a node of the tree - and this is the final struct we have:\nstruct Node { int size; char x[4]; // unknown  Node *child[3]; }; More importantly, we can finally claim that sub_400840 is fully reversed.\nNode *__fastcall clone(Node *src) { int i; // [rsp+14h] [rbp-Ch]  Node *dest; // [rsp+18h] [rbp-8h]  dest = (Node *)malloc(0x20uLL); if ( !dest ) { puts(\"Out of memory ;_;\"); abort(); } dest-size = src-size; for ( i = 0; src-size  i; ++i ) dest-child[i] = clone(src-child[i]); return dest; } Then we will be reversing sub_400A59. This function is simple, it is defining a path with length $n$. After the tree is constructed, it will be used by sub_400BED for enumeration. How? Let's see a baby example when $n = 2$:\ndigraph { t0_0[shape=point] t0_1[shape=point] t0_2[shape=point] t0_0 - t0_1 [arrowhead=false] t0_1 - t0_2 [arrowhead=false] x0[shape=point,style=invis] y0[shape=point,style=invis] x0-y0 t1_0[shape=point] t1_1[shape=point] t1_2[shape=point] t1_3[shape=point] t1_0 - t1_1 [arrowhead=false] t1_1 - t1_2 [arrowhead=false] t1_1 - t1_3 [arrowhead=false] x1[shape=point,style=invis] y1[shape=point,style=invis] x1-y1 t2_0[shape=point] t2_1[shape=point] t2_2[shape=point] t2_3[shape=point] t2_4[shape=point] t2_0 - t2_1 [arrowhead=false] t2_1 - t2_2 [arrowhead=false] t2_1 - t2_3 [arrowhead=false] t2_1 - t2_4 [arrowhead=false] x2[shape=point,style=invis] y2[shape=point,style=invis] x2-y2 t3_0[shape=point] t3_1[shape=point] t3_2[shape=point] t3_3[shape=point] t3_4[shape=point] t3_0 - t3_1 [arrowhead=false] t3_0 - t3_3 [arrowhead=false] t3_1 - t3_2 [arrowhead=false] t3_3 - t3_4 [arrowhead=false] x3[shape=point,style=invis] y3[shape=point,style=invis] x3-y3 t4_0[shape=point] t4_1[shape=point] t4_2[shape=point] t4_3[shape=point] t4_4[shape=point] t4_5[shape=point] t4_0 - t4_1 [arrowhead=false] t4_0 - t4_3 [arrowhead=false] t4_1 - t4_2 [arrowhead=false] t4_3 - t4_4 [arrowhead=false] t4_3 - t4_5 [arrowhead=false] x4[shape=point,style=invis] y4[shape=point,style=invis] x4-y4 u[label=\"...\", shape=plaintext] x5[shape=point,style=invis] y5[shape=point,style=invis] x5-y5 t5_0[shape=point] t5_1[shape=point] t5_2[shape=point] t5_3[shape=point] t5_4[shape=point] t5_5[shape=point] t5_6[shape=point] t5_7[shape=point] t5_8[shape=point] t5_9[shape=point] t5_10[shape=point] t5_11[shape=point] t5_12[shape=point] t5_0 - t5_1 [arrowhead=false] t5_0 - t5_2 [arrowhead=false] t5_0 - t5_3 [arrowhead=false] t5_1 - t5_4 [arrowhead=false] t5_1 - t5_5 [arrowhead=false] t5_1 - t5_6 [arrowhead=false] t5_2 - t5_7 [arrowhead=false] t5_2 - t5_8 [arrowhead=false] t5_2 - t5_9 [arrowhead=false] t5_3 - t5_10 [arrowhead=false] t5_3 - t5_11 [arrowhead=false] t5_3 - t5_12 [arrowhead=false] {rank=same; t0_1; u; x0; y0; x1; y1; x2; y2; x3; y3; x4; y4; x5; y5} } Well... it is just enumerating all the ternary trees with depth $n$, where each of the leaf node is on level $n$.\nAfter that, we check the number of good trees. By good it is defined by (former) sub_4009C4:\nsigned __int64 __fastcall is_good_tree(Node *node, int k) { int ka; // [rsp+4h] [rbp-1Ch]  int kb; // [rsp+4h] [rbp-1Ch]  int i; // [rsp+1Ch] [rbp-4h]  ka = k; if ( node-size  1 \u0026\u0026 k ) return 0LL; if ( node-size  k ) ka = node-size; kb = ka - 1; if ( kb  0 ) kb = 0; for ( i = 0; node-size  i; ++i ) { if ( (unsigned __int8)is_good_tree(node-child[i], kb) != 1 ) return 0LL; } return 1LL; } harrier has implemented a good tree checker (himself) in Discord for me to test with:\n  After all, a tree is said to be good if both of the condition are satisfied:\n for each node with two children, every children should have at most one children, and for each node with three children, every children and their grandchildren should have at most one children.  Cool. We have the pieces of the puzzle gathered. Define $g(n)$ to be the number of good trees of depth $n$. We are going to find $g(1337)$ and move the sequence forward by $g(1337)$ instructions.\nPart III: Verifying this for the baby cases We are double checking if our observation checks out for smaller $n$'s. From above, $g(0) = 1$, $g(1) = 3\\ \\text{or}\\ 4$, $g(2) = 5$ and $g(3) = 15\\ \\text{or}\\ 16$.\nFor $n = 0$, the only tree would be:\ndigraph { node[shape=point] edge[arrowhead=false] t0 } Yeah. It is a good tree. Thus $g(0) = 1$. Also, $g(1) = 3$ since the three trees are all good:\ndigraph { node[shape=point] edge[arrowhead=false] t0_0 - t0_1 t1_0 - t1_1 t1_0 - t1_2 t2_0 - t2_1 t2_0 - t2_2 t2_0 - t2_3 } For $n = 2$, we start rejecting trees. There are 39 trees, but there are only five being good. Hence $g(2) = 5$.\ndigraph { node[shape=point] edge[arrowhead=false] t0_0 - t0_1 t0_1 - t0_2 t3_0 - t3_1 t3_1 - t3_2 t3_1 - t3_3 t4_0 - t4_1 t4_1 - t4_2 t4_1 - t4_3 t4_1 - t4_4 t1_0 - t1_1 t1_0 - t1_2 t1_1 - t1_3 t1_2 - t1_4 t2_0 - t2_1 t2_0 - t2_2 t2_0 - t2_3 t2_1 - t2_4 t2_2 - t2_5 t2_3 - t2_6 } And $g(3) = 15$. They are:\ndigraph { node[shape=point] edge[arrowhead=false] t0_0 - t0_1 t0_1 - t0_2 t0_2 - t0_3 t5_0 - t5_1 t5_1 - t5_2 t5_2 - t5_3 t5_2 - t5_4 t6_0 - t6_1 t6_1 - t6_2 t6_2 - t6_3 t6_2 - t6_4 t6_2 - t6_5 t3_0 - t3_1 t3_1 - t3_2 t3_1 - t3_3 t3_2 - t3_4 t3_3 - t3_5 t4_0 - t4_1 t4_1 - t4_2 t4_1 - t4_3 t4_1 - t4_4 t4_2 - t4_5 t4_3 - t4_6 t4_4 - t4_7 t1_0 - t1_1 t1_0 - t1_2 t1_1 - t1_3 t1_2 - t1_4 t1_3 - t1_5 t1_4 - t1_6 t7_0 - t7_1 t7_0 - t7_2 t7_1 - t7_3 t7_2 - t7_4 t7_3 - t7_5 t7_4 - t7_6 t7_4 - t7_7 t8_0 - t8_1 t8_0 - t8_2 t8_1 - t8_3 t8_2 - t8_4 t8_3 - t8_5 t8_4 - t8_6 t8_4 - t8_7 t8_4 - t8_8 t9_0 - t9_1 t9_0 - t9_2 t9_1 - t9_3 t9_2 - t9_4 t9_3 - t9_5 t9_3 - t9_6 t9_4 - t9_7 }digraph { node[shape=point] edge[arrowhead=false] t10_0 - t10_1 t10_0 - t10_2 t10_1 - t10_3 t10_2 - t10_4 t10_3 - t10_5 t10_3 - t10_6 t10_4 - t10_7 t10_4 - t10_8 t11_0 - t11_1 t11_0 - t11_2 t11_1 - t11_3 t11_2 - t11_4 t11_3 - t11_5 t11_3 - t11_6 t11_4 - t11_7 t11_4 - t11_8 t11_4 - t11_9 t12_0 - t12_1 t12_0 - t12_2 t12_1 - t12_3 t12_2 - t12_4 t12_3 - t12_5 t12_3 - t12_6 t12_3 - t12_7 t12_4 - t12_8 t13_0 - t13_1 t13_0 - t13_2 t13_1 - t13_3 t13_2 - t13_4 t13_3 - t13_5 t13_3 - t13_6 t13_3 - t13_7 t13_4 - t13_8 t13_4 - t13_9 t14_0 - t14_1 t14_0 - t14_2 t14_1 - t14_3 t14_2 - t14_4 t14_3 - t14_5 t14_3 - t14_6 t14_3 - t14_7 t14_4 - t14_8 t14_4 - t14_9 t14_4 - t14_10 t2_0 - t2_1 t2_0 - t2_2 t2_0 - t2_3 t2_1 - t2_4 t2_2 - t2_5 t2_3 - t2_6 t2_4 - t2_7 t2_5 - t2_8 t2_6 - t2_9 } Cool! Everything checks out! Luckily the memory overflows when $n = 4$, otherwise our OCD would be forcing us to find $g(4)$ and the writeup will be flooded by a large forest.\nPart IV: Algorithms, algorithms everywhere In this part, harrier and I work on a different topic:\n harrier's task: Find $g(1337)$. Mystiz's task: Find the flag if harrier has $g(1337)$ computed.  4.1. What is $g(1337)$? To find the number of good trees of height $h$, we define an auxiliary variable $k$ (interpret it as cooldown). Here we redefine good trees again:\nFor a ternary tree, it is said to be good if for every node,\n [Recovery] if $k  0$: there should be at most one child, and [Fertility] if $k = 0$: if there are $c$ children, then each of them has cooldown $k = c-1$.  Simply put, you need to recover to be fertile. For instance, the following is a good tree since each of the node with non-zero cooldown has only a child.\ndigraph { node[shape=rectangle, style=rounded] t0 [label=0] t1 [label=1] t2 [label=1] t3 [label=0] t4 [label=0] t0-t1 t0-t2 t1-t3 t2-t4 } However, this is not a good tree since the red node is too fertile:\ndigraph { node[shape=rectangle, style=rounded] t0 [label=0] t1 [label=1, style=\"filled, rounded\", fillcolor=\"#ff000080\"] t2 [label=1] t3 [label=0] t4 [label=0] t5 [label=0] t0-t1 t0-t2 t1-t3 t1-t4 t2-t5 } Luckily, we don't need to count the good trees one by one. It can be solved by dynamic programming rather easily. Let's define the state dp[h][k] to be the number of good trees if the tree is of depth h and cooldown k. Then:\n [Base case] dp[0][k] == 1 for every k, [Transition] dp[h][k] == dp[h-1][k-1] for h, k  0, and [Transition] dp[h][0] == dp[h-1][0] + dp[h-1][1]**2 + dp[h-1][2]**3 for h  0.  The first condition is obvious - the only tree with depth 0 is the tree with the only root node. It is good no matter what the cooldown is.\nFor the second condition, it is not difficult to imagine it as an tree that must cooldown. Hence, if $\\text{GT}_{hk}$ is a good tree with height $h0$ and cooldown $k0$, then:\ndigraph { node[shape=point] edge[arrowhead=false] x-st subgraph cluster { style=filled color=lightgray label=\"GTₕ₋₁,ₖ₋₁\" labelloc=b st[shape=triangle, height=2, label=\"\"] } } It is a little bit tricky for the third condition. Since it is in the fertile mode again, we can decide if there are one, two or three children. Then each of the following trees work:\ndigraph { node[shape=point] edge[arrowhead=false] x0-st0 subgraph cluster0 { style=filled color=lightgray label=\"GTₕ₋₁,₀\" labelloc=b st0[shape=triangle, height=2, label=\"\"] } x1-st1:n x1-st2:n subgraph cluster1 { style=filled color=lightgray label=\"Each subtree is GTₕ₋₁,₁\" labelloc=b st1[shape=triangle, height=2, label=\"\"] st2[shape=triangle, height=2, label=\"\"] } x2-st3:n x2-st4:n x2-st5:n subgraph cluster2 { style=filled color=lightgray label=\"Each subtree is GTₕ₋₁,₂\" labelloc=b st3[shape=triangle, height=2, label=\"\"] st4[shape=triangle, height=2, label=\"\"] st5[shape=triangle, height=2, label=\"\"] } } Hence, if there are k children, then there are dp[h-1][k-1]**k choices. Since we are able to pick k = 1, 2, 3, we can simply sum them up for dp[h][k]. After all, this is the Python script to compute:\ndef g(k: int) - int: # Base case dp = [[1, 1, 1]] # Transition for _ in range(k): dp.append([ sum([dp[-1][i]**(i+1) for i in range(3)]), dp[-1][0], dp[-1][1] ]) return dp[-1][0] But the numbers is growing exponentially and finding $g(1337)$ takes eternally. What can we do? Nevermind, we will get back to this shortly.\n4.2. Fast sequence generation To compute the values of ecx and edx, we can find the number of executed instructions (denote it as $q$). Since the loop is completed every four steps, we can find $s_{\\mathbf{floor}(q/4)}$ and $s_{\\mathbf{floor}(q/4)+1}$ and perform the remainder of the instructions.\nLet's get back to the sequence $s_n$:\n $s_0 = \\text{82F96AC97429A68B}_{16}$, $s_1 = \\text{32B9B6BCA55548ED}_{16}$, and $s_k = 3 s_{k-2} + 2 s_{k-1} + 4\\mod2^{64}$ for $k \\geq 2$.  To compute it efficiently, we can rewrite it as a matrix notation:\n\\[ \\begin{bmatrix} s_{k+1} \\\\ s_k \\\\ 1 \\end{bmatrix} = \\begin{bmatrix} 2 \u0026 3 \u0026 4 \\\\ 1 \u0026 0 \u0026 0 \\\\ 0 \u0026 0 \u0026 1\\end{bmatrix} \\begin{bmatrix} s_k \\\\ s_{k-1} \\\\ 1 \\end{bmatrix} \\mod 2^{64}. \\]\nWhy? Try the multiplication by yourselves! Anyway, then we are able to compute $s_m$ and $s_{m+1}$ efficiently, since\n\\[ \\begin{bmatrix} s_{m+1} \\\\ s_m \\\\ 1 \\end{bmatrix} = \\begin{bmatrix} 2 \u0026 3 \u0026 4 \\\\ 1 \u0026 0 \u0026 0 \\\\ 0 \u0026 0 \u0026 1\\end{bmatrix}^m \\begin{bmatrix} s_1 \\\\ s_0 \\\\ 1 \\end{bmatrix} \\mod 2^{64}. \\]\nMoreover, since\n\\[\\begin{bmatrix} 2 \u0026 3 \u0026 4 \\\\ 1 \u0026 0 \u0026 0 \\\\ 0 \u0026 0 \u0026 1\\end{bmatrix}^{2^{64}} = \\begin{bmatrix} 1 \u0026 0 \u0026 0 \\\\ 0 \u0026 1 \u0026 0 \\\\ 0 \u0026 0 \u0026 1\\end{bmatrix}, \\]\nthe square matrix has order $2^{64}$. That said, we don't need to find the exact value for $g(1337)$. Instead, we can compute $g(1337)\\mod (2^{64}\\times4)$. Hereby we need to multiple the number by four, since there are 4 instructions per loop).\nPart V: The flagggggggggg! After all, we can modify the Python function we had to compute $g(k)\\mod 2^{66}$:\ndef g(k: int) - int: # Base case dp = [[1, 1, 1]] # Transition for _ in range(k): dp.append([ sum([dp[-1][i]**(i+1) for i in range(3)]) % 2**66, dp[-1][0], dp[-1][1] ]) return dp[-1][0] And g(1337) = 59988074356265869957 pops out at no time. Therefore, we can find $s_{14997018589066467489}$ and $s_{14997018589066467490}$ and proceed one instruction further. We have rdx being 0x62246322232ceabf and rcx being 0xbf1d9826c054007!\nThus p4{62246322232ceabfbf1d9826c054007} would be the flag, right? NO!\nIt was 4:40 am and we were very sleepy. It took us few minutes to figure out that rcx isn't composed of 16 hexchars. The correct flag should be p4{62246322232ceabf0bf1d9826c054007} (note that there is an zero). Yeah, :checkered_flag: - and we are the first to capture this!\n",
-  "wordCount" : "3065",
-  "inLanguage": "en",
-  "datePublished": "2020-09-08T18:30:00+08:00",
-  "dateModified": "2020-09-08T18:30:00+08:00",
-  "author":[{
-    "@type": "Person",
-    "name": "Mystiz"
-  }, {
-    "@type": "Person",
-    "name": "harrier"
-  }],
-  "mainEntityOfPage": {
-    "@type": "WebPage",
-    "@id": "https://b6a.black/posts/2020-09-08-confidencectf-team-trees/"
-  },
-  "publisher": {
-    "@type": "Organization",
-    "name": "Black Bauhinia",
-    "logo": {
-      "@type": "ImageObject",
-      "url": "https://b6a.black/favicon.ico"
-    }
-  }
-}
-</script>
 
 
 
+
+
+
+
+
+
+
+
+    
 </head>
+<body>
+    <a class="skip-main" href="#main">Skip to main content</a>
+    <div class="container">
+        <header class="common-header"> 
+            
+                <h1 class="site-title">
+    <a href="/">Black Bauhinia</a>
+</h1>
 
-<body class=" dark" id="top">
-<noscript>
-    <style type="text/css">
-        .theme-toggle,
-        .top-link {
-            display: none;
-        }
-
-    </style>
-</noscript>
-<header class="header">
-    <nav class="nav">
-        <div class="logo">
-            <a href="https://b6a.black/" accesskey="h" title="Black Bauhinia (Alt + H)">Black Bauhinia</a>
-            <span class="logo-switches">
-                
-                
-            </span>
-        </div>
-        <ul id="menu" onscroll="menu_on_scroll()">
-            <li>
-                <a href="https://b6a.black/about-us/" title="About Us">
-                    <span>About Us</span>
-                </a>
-            </li></ul>
+    <nav>
+        
+        
+        <a class="" href="https://b6a.black/about-us/" title="">About Us</a>
+        
     </nav>
-</header>
 
-    <main class="main">
 
-<article class="post-single">
-  <header class="post-header">
 
-    <h1 class="post-title">
-      CONFidence 2020 CTF: Team Trees
-    </h1>
-    <div class="post-meta">
-
-September 8, 2020&nbsp;·&nbsp;Mystiz, harrier
-
-</div>
-  </header>
-  
-  
-  <div class="post-content">
-<p>This week, we have teamed up as @blackb6a to play CONFidence 2020 CTF. We end up ranked 15, but we are more proud of ourselves able to solve a reversing challenge called Team Trees (395 points, 5 solves).</p>
+            
+        </header>
+        <main id="main" tabindex="-1"> 
+            
+    
+    
+    <article class="post h-entry">
+        <header class="post-header">
+            <h1 class="p-name post-title">CONFidence 2020 CTF: Team Trees</h1>
+        </header>
+        <div class="content e-content">
+            <p>This week, we have teamed up as @blackb6a to play CONFidence 2020 CTF. We end up ranked 15, but we are more proud of ourselves able to solve a reversing challenge called Team Trees (395 points, 5 solves).</p>
 
 <p>In particular, we are the first-to-solve to the challenge. It took us around two hours to win the flag. This writeup is written by @harrier_lcc and @mystiz613.</p>
 
-<h2 id="challenge-summary">Challenge Summary<a hidden class="anchor" aria-hidden="true" href="#challenge-summary">#</a></h2>
+<h2 id="challenge-summary">Challenge Summary</h2>
 
 <blockquote>
 <p>We wanted to plant a lot of trees, but it's going kinda slow...</p>
@@ -159,9 +114,9 @@ September 8, 2020&nbsp;·&nbsp;Mystiz, harrier
 
 <p><strong>Never.</strong> Our PCs don't even have enough memory to play with that. Even so, we gotta wait forever for the flag. Our objective is to optimize and rewrite the algorithm used. By optimize we mean reduce <em>both</em> the time and space complexities.</p>
 
-<h2 id="solution">Solution<a hidden class="anchor" aria-hidden="true" href="#solution">#</a></h2>
+<h2 id="solution">Solution</h2>
 
-<h3 id="part-i-baby-steps-from-baby-cases">Part I: Baby steps from baby cases<a hidden class="anchor" aria-hidden="true" href="#part-i-baby-steps-from-baby-cases">#</a></h3>
+<h3 id="part-i-baby-steps-from-baby-cases">Part I: Baby steps from baby cases</h3>
 
 <p>From the binary, we knew that we are going to find $f(1337)$ for a given $f$. Although we do not know what $f$ is, we could still have an insight on it. For example, we can patch <code>1337</code> by smaller values: <code>0</code>, <code>1</code>, etc.:</p>
 <pre><code>n = 0: p4{32b9b6bca55548ed88ec405c5c7cf3a1}
@@ -251,7 +206,7 @@ jmp  short loc_40082F   /* rcx = 3*d0 + 2*c0 + 4, rdx = c0              */</code
 
 <p>So... what is the set of something? And what is the attribute it is checked against?</p>
 
-<h3 id="part-ii-collecting-the-pieces-for-the-puzzle">Part II: Collecting the pieces for the puzzle<a hidden class="anchor" aria-hidden="true" href="#part-ii-collecting-the-pieces-for-the-puzzle">#</a></h3>
+<h3 id="part-ii-collecting-the-pieces-for-the-puzzle">Part II: Collecting the pieces for the puzzle</h3>
 
 <p>There are four functions that worth investigating: <code>sub_40090D</code> (the enumerator), <code>sub_4009C4</code> (the checker), <code>sub_400A59</code> (the constructor) and <code>sub_400840</code> (called from <code>sub_40090D</code>). We will first look into <code>sub_400840</code>:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c">_DWORD <span style="color:#f92672">*</span><span style="color:#66d9ef">__fastcall</span> <span style="color:#a6e22e">sub_400840</span>(_DWORD <span style="color:#f92672">*</span>a1)
@@ -457,7 +412,7 @@ jmp  short loc_40082F   /* rcx = 3*d0 + 2*c0 + 4, rdx = c0              */</code
 
 <p>Cool. We have the pieces of the puzzle gathered. Define $g(n)$ to be the number of good trees of depth $n$. We are going to find $g(1337)$ and move the sequence forward by $g(1337)$ instructions.</p>
 
-<h3 id="part-iii-verifying-this-for-the-baby-cases">Part III: Verifying this for the baby cases<a hidden class="anchor" aria-hidden="true" href="#part-iii-verifying-this-for-the-baby-cases">#</a></h3>
+<h3 id="part-iii-verifying-this-for-the-baby-cases">Part III: Verifying this for the baby cases</h3>
 
 <p>We are double checking if our observation checks out for smaller $n$'s. From above, $g(0) = 1$, $g(1) = 3\ \text{or}\ 4$, $g(2) = 5$ and $g(3) = 15\ \text{or}\ 16$.</p>
 
@@ -641,7 +596,7 @@ jmp  short loc_40082F   /* rcx = 3*d0 + 2*c0 + 4, rdx = c0              */</code
 }</code></pre>
 <p>Cool! Everything checks out! Luckily the memory overflows when $n = 4$, otherwise our OCD would be forcing us to find $g(4)$ and the writeup will be flooded by a large forest.</p>
 
-<h3 id="part-iv-algorithms-algorithms-everywhere">Part IV: Algorithms, algorithms everywhere<a hidden class="anchor" aria-hidden="true" href="#part-iv-algorithms-algorithms-everywhere">#</a></h3>
+<h3 id="part-iv-algorithms-algorithms-everywhere">Part IV: Algorithms, algorithms everywhere</h3>
 
 <p>In this part, harrier and I work on a different topic:</p>
 
@@ -650,7 +605,7 @@ jmp  short loc_40082F   /* rcx = 3*d0 + 2*c0 + 4, rdx = c0              */</code
 <li>Mystiz's task: Find the flag if harrier has $g(1337)$ computed.</li>
 </ul>
 
-<h4 id="41-what-is-g1337">4.1. What is $g(1337)$?<a hidden class="anchor" aria-hidden="true" href="#41-what-is-g1337">#</a></h4>
+<h4 id="41-what-is-g1337">4.1. What is $g(1337)$?</h4>
 
 <p>To find the number of <em>good</em> trees of height $h$, we define an auxiliary variable $k$ (interpret it as <em>cooldown</em>). Here we redefine <em>good</em> trees again:</p>
 
@@ -765,7 +720,7 @@ jmp  short loc_40082F   /* rcx = 3*d0 + 2*c0 + 4, rdx = c0              */</code
   <span style="color:#66d9ef">return</span> dp[<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>][<span style="color:#ae81ff">0</span>]</code></pre></div>
 <p>But the numbers is growing exponentially and finding $g(1337)$ takes eternally. What can we do? Nevermind, we will get back to this shortly.</p>
 
-<h4 id="42-fast-sequence-generation">4.2. Fast sequence generation<a hidden class="anchor" aria-hidden="true" href="#42-fast-sequence-generation">#</a></h4>
+<h4 id="42-fast-sequence-generation">4.2. Fast sequence generation</h4>
 
 <p>To compute the values of <code>ecx</code> and <code>edx</code>, we can find the number of executed instructions (denote it as $q$). Since the loop is completed every four steps, we can find $s_{\mathbf{floor}(q/4)}$ and $s_{\mathbf{floor}(q/4)+1}$ and perform the remainder of the instructions.</p>
 
@@ -801,7 +756,7 @@ jmp  short loc_40082F   /* rcx = 3*d0 + 2*c0 + 4, rdx = c0              */</code
 
 <p>the square matrix has order $2^{64}$. That said, we don't need to find the exact value for $g(1337)$. Instead, we can compute $g(1337)\mod (2^{64}\times4)$. Hereby we need to multiple the number by four, since there are 4 instructions per loop).</p>
 
-<h3 id="part-v-the-flagggggggggg">Part V: The flagggggggggg!<a hidden class="anchor" aria-hidden="true" href="#part-v-the-flagggggggggg">#</a></h3>
+<h3 id="part-v-the-flagggggggggg">Part V: The flagggggggggg!</h3>
 
 <p>After all, we can modify the Python function we had to compute $g(k)\mod 2^{66}$:</p>
 <div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">g</span>(k: int) <span style="color:#f92672">-&gt;</span> int:
@@ -819,43 +774,56 @@ jmp  short loc_40082F   /* rcx = 3*d0 + 2*c0 + 4, rdx = c0              */</code
 
 <p>It was 4:40 am and we were very sleepy. It took us few minutes to figure out that <code>rcx</code> isn't composed of 16 hexchars. The correct flag should be <code>p4{62246322232ceabf0bf1d9826c054007}</code> (note that there is an <em>zero</em>). Yeah, :checkered_flag: - and we are the first to capture this!</p>
 
-</div>
-  <footer class="post-footer">
-    <ul class="post-tags">
-      <li><a href="https://b6a.black/tags/ctf/">ctf</a></li>
-      <li><a href="https://b6a.black/tags/reverse/">reverse</a></li>
-      <li><a href="https://b6a.black/tags/confidence-ctf/">confidence-ctf</a></li>
-    </ul>
-    <nav class="paginav">
-      <a class="prev" href="https://b6a.black/posts/2020-09-23-twctf/">
-        <span class="title">« Prev Page</span>
-        <br>
-        <span>TokyoWesterns CTF 6th 2020 Writeup</span>
-      </a>
-      <a class="next" href="https://b6a.black/posts/2020-08-25-google-ctf-oracle/">
-        <span class="title">Next Page »</span>
-        <br>
-        <span>Google CTF 2020: Oracle</span>
-      </a>
-    </nav>
-  </footer>
-</article>
-    </main><footer class="footer">
-    <span>&copy; 2021 <a href="https://b6a.black/">Black Bauhinia</a></span>
-    <span>&middot;</span>
-    <span>Powered by <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a></span>
-    <span>&middot;</span>
-    <span>Theme <a href="https://git.io/hugopapermod" rel="noopener" target="_blank">PaperMod</a></span>
-</footer>
-<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)">
-    <button class="top-link" id="top-link" type="button" accesskey="g">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
-            <path d="M12 6H0l6-6z" />
-        </svg>
-    </button>
-</a>
+        </div>
+        
 
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css"
+
+<div class="post-info">
+    
+        <div class="post-date dt-published">2020-09-08</div>
+    
+    
+    <a class="post-hidden-url u-url" href="https://b6a.black/posts/2020-09-08-confidencectf-team-trees/">https://b6a.black/posts/2020-09-08-confidencectf-team-trees/</a>
+    <a href=https://b6a.black/ class="p-name p-author post-hidden-author h-card" rel="me">[Mystiz harrier]</a>
+
+
+    <div class="post-taxonomies">
+        
+            
+                <ul class="post-tags">
+                    
+                        <li><a href="https://b6a.black/tags/ctf">#ctf</a></li>
+                    
+                        <li><a href="https://b6a.black/tags/confidence-ctf">#confidence-ctf</a></li>
+                    
+                        <li><a href="https://b6a.black/tags/reverse">#reverse</a></li>
+                    
+                </ul>
+        
+    </div>
+</div>
+
+    </article>
+
+    
+
+    
+
+    
+
+
+        </main>
+        
+            <footer class="common-footer">
+    
+    
+
+    <div class="common-footer-bottom">
+        
+        <div class="copyright">
+            <p>© 2021<br>
+            Powered by <a target="_blank" rel="noopener noreferrer" href="https://gohugo.io/">Hugo</a>, theme <a target="_blank" rel="noopener noreferrer" href="https://github.com/mitrichius/hugo-theme-anubis">Anubis</a>.<br>
+            <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css"
   integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
 <script defer src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.js"
   integrity="sha384-g7c+Jr9ZivxKLnZTDUhnkOnsh30B4H0rpLUpJ4jAIKs4fnJI+sEnkvrMWph2EDg4" crossorigin="anonymous"></script>
@@ -863,51 +831,28 @@ jmp  short loc_40082F   /* rcx = 3*d0 + 2*c0 + 4, rdx = c0              */</code
   integrity="sha384-mll67QQFJfxn0IYznZYonOWZ644AWYC+Pt2cHqMaRhXVrursRwvLnLaebdGIlYNa" crossorigin="anonymous"
   onload="renderMathInElement(document.body, { delimiters: [{ left: '$$', right: '$$', display: true }, { left: '\\[', right: '\\]', display: true }, { left: '$', right: '$', display: false }, { left: '\\(', right: '\\)', display: false }]})"></script>
 
+            </p>  
+        </div> 
+
+        
+
+    
 
 
-<script defer src="/assets/js/highlight.min.27cd435cc9ed6abb4b496581b151804f79f366c412620272bb94e2f5f598ebcc.js" integrity="sha256-J81DXMntartLSWWBsVGAT3nzZsQSYgJyu5Ti9fWY68w="
-    onload="hljs.initHighlightingOnLoad();"></script>
-<script>
-    window.onload = function () {
-        if (localStorage.getItem("menu-scroll-position")) {
-            document.getElementById('menu').scrollLeft = localStorage.getItem("menu-scroll-position");
-        }
-    }
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener("click", function (e) {
-            e.preventDefault();
-            var id = this.getAttribute("href").substr(1);
-            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
-                    behavior: "smooth"
-                });
-            } else {
-                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
-            }
-            if (id === "top") {
-                history.replaceState(null, null, " ");
-            } else {
-                history.pushState(null, null, `#${id}`);
-            }
-        });
-    });
-    var mybutton = document.getElementById("top-link");
-    window.onscroll = function () {
-        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
-            mybutton.style.visibility = "visible";
-            mybutton.style.opacity = "1";
-        } else {
-            mybutton.style.visibility = "hidden";
-            mybutton.style.opacity = "0";
-        }
-    };
+   
+    </div>
 
-    function menu_on_scroll() {
-        localStorage.setItem("menu-scroll-position", document.getElementById('menu').scrollLeft);
-    }
+    <p class="h-card vcard">
 
-</script>
+    <a href=https://b6a.black/ class="p-name u-url url fn" rel="me"></a> 
 
+    
+
+    
+</p> 
+</footer>
+
+        
+    </div>
 </body>
-
 </html>
