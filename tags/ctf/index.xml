@@ -6,10 +6,19 @@
     <description>Recent content in ctf on Black Bauhinia</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 11 Feb 2021 02:01:00 +0800</lastBuildDate>
+    <lastBuildDate>Sun, 25 Apr 2021 23:59:59 +0800</lastBuildDate>
     
 	<atom:link href="https://b6a.black/tags/ctf/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Cyber Apocalypse 2021: Wii Phil &amp; Hyper Metroid</title>
+      <link>https://b6a.black/posts/2021-04-25-htbctf-crypto/</link>
+      <pubDate>Sun, 25 Apr 2021 23:59:59 +0800</pubDate>
+      
+      <guid>https://b6a.black/posts/2021-04-25-htbctf-crypto/</guid>
+      <description>We played Cyber Apocalypse 2021 and I have attempted several crypto challenges. I&#39;ll include the challenges Wii Phil and Hyper Metroid in this writeup.</description>
+    </item>
     
     <item>
       <title>DiceCTF 2021: Lost in your Eyes</title>

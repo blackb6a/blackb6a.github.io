@@ -46,7 +46,7 @@
 <meta property="og:description" content="" />
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://b6a.black/tags/ctf/" />
-<meta property="og:updated_time" content="2021-02-11T02:01:00+08:00" />
+<meta property="og:updated_time" content="2021-04-25T23:59:59+08:00" />
 <meta name="twitter:card" content="summary"/>
 <meta name="twitter:title" content="ctf"/>
 <meta name="twitter:description" content=""/>
@@ -91,6 +91,22 @@
 
 
 
+<article class="post-entry tag-entry"> 
+
+  <header class="entry-header">
+    <h2>
+      Cyber Apocalypse 2021: Wii Phil &amp; Hyper Metroid
+    </h2>
+  </header>
+  <section class="entry-content">
+    <p>We played Cyber Apocalypse 2021 and I have attempted several crypto challenges. I&#39;ll include the challenges Wii Phil and Hyper Metroid in this writeup....</p>
+  </section>
+  <footer class="entry-footer">
+
+April 25, 2021&nbsp;·&nbsp;hoifanrd
+</footer>
+  <a class="entry-link" aria-label="post link to Cyber Apocalypse 2021: Wii Phil &amp; Hyper Metroid" href="https://b6a.black/posts/2021-04-25-htbctf-crypto/"></a>
+</article>
 <article class="post-entry tag-entry"> 
 <figure class="entry-cover"><img src="https://b6a.black/images/2021-02-09-dicectf-liye/maze-final.png" alt="" style="object-fit: cover; max-height: 200px;">
 </figure>
@@ -258,25 +274,6 @@ July 28, 2020&nbsp;·&nbsp;apple, cire meat pop, eriri, Mystiz, ozetta
 July 22, 2020&nbsp;·&nbsp;wwkenwong
 </footer>
   <a class="entry-link" aria-label="post link to UIUCTF 2020: Bot Protection IV" href="https://b6a.black/posts/2020-07-22-uiuctf-bot-protection-iv/"></a>
-</article>
-<article class="post-entry tag-entry"> 
-
-  <header class="entry-header">
-    <h2>
-      UIUCTF 2020: deserializeme
-    </h2>
-  </header>
-  <section class="entry-content">
-    <p>Update: It was assigned as CVE-2020-14343 after the contest.
- This was a fun challenge exploiting a deserialize service in Python.
-The server is using pyYAML and Flask, with the source code below:
-from flask import Flask, session, request, make_response import yaml import re import os app = Flask(__name__) app.secret_key = os.urandom(16) @app.route(&#39;/&#39;, methods=[&#34;POST&#34;]) def pwnme(): if not re.fullmatch(b&#34;^[\n --/-\]a-}]*$&#34;, request.data, flags=re.MULTILINE): return &#34;Nice try!&#34;, 400 return yaml.load(request.data) if __name__ == &#39;__main__&#39;: app....</p>
-  </section>
-  <footer class="entry-footer">
-
-July 22, 2020&nbsp;·&nbsp;harrier, ozetta
-</footer>
-  <a class="entry-link" aria-label="post link to UIUCTF 2020: deserializeme" href="https://b6a.black/posts/2020-07-22-uiuctf-deserializeme/"></a>
 </article>
 <footer class="page-footer">
   <nav class="pagination">
