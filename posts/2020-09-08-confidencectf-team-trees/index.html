@@ -13,7 +13,7 @@ In particular, we are the first-to-solve to the challenge. It took us around two
 Challenge Summary  We wanted to plant a lot of trees, but it&#39;s going kinda slow.">
 <meta name="author" content="Mystiz, harrier">
 <link rel="canonical" href="https://b6a.black/posts/2020-09-08-confidencectf-team-trees/" />
-<link href="/assets/css/stylesheet.min.cbea6e4569d868c2099732a453af991f3a66132125fdf174125d43fc613d6e0d.css" integrity="sha256-y&#43;puRWnYaMIJlzKkU6&#43;ZHzpmEyEl/fF0El1D/GE9bg0=" rel="preload stylesheet"
+<link href="/assets/css/stylesheet.min.933fbeab943585aa913b5175ee7291733f28815597926f1e56aacc964d807245.css" integrity="sha256-kz&#43;&#43;q5Q1haqRO1F17nKRcz8ogVWXkm8eVqrMlk2AckU=" rel="preload stylesheet"
     as="style">
 
 <link rel="icon" href="https://b6a.black/favicon.ico">
@@ -142,7 +142,7 @@ September 8, 2020&nbsp;·&nbsp;Mystiz, harrier
   </header>
   
   
-  <div class="post-content">
+  <div class="post-content js-toc-content">
 <p>This week, we have teamed up as @blackb6a to play CONFidence 2020 CTF. We end up ranked 15, but we are more proud of ourselves able to solve a reversing challenge called Team Trees (395 points, 5 solves).</p>
 
 <p>In particular, we are the first-to-solve to the challenge. It took us around two hours to win the flag. This writeup is written by @harrier_lcc and @mystiz613.</p>
@@ -852,6 +852,42 @@ jmp  short loc_40082F   /* rcx = 3*d0 + 2*c0 + 4, rdx = c0              */</code
     </nav>
   </footer>
 </article>
+<aside class="toc-container">
+  <a href="#" style="text-decoration: none; font-weight: 700;">
+    CONFidence 2020 CTF: Team Trees
+  </a>
+  <div class="js-toc"></div>
+</aside>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.12.0/tocbot.min.css" integrity="sha512-SFw7k74K3983tyOlJIHa8atr9Ppef3Kix5cmifwzU7ZdtU2E0FRuOVRtd3ENpMJ8sNCie5hlb/0j23efcdQJXA==" crossorigin="anonymous" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.12.0/tocbot.min.js" integrity="sha512-oD3xGN8YTxenx6tdS4D/RKqO4OtORBQtAb2/FseM17GGMIi6jMwKUBc8duX4A5RwMOGGXoFBZrsqbOk8GpXFgQ==" crossorigin="anonymous"></script>
+
+<script type="text/javascript">
+  tocbot.init({
+    headingSelector: 'h1, h2, h3, h4',
+    orderedList: false,
+    headingLabelCallback: s => s.substr(0, s.length-1),
+    collapseDepth: 2
+  });
+</script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/viz.js/1.7.1/viz.js"> </script>
+<script type="text/javascript">
+  (function () {
+    const vizPrefix = "language-viz-";
+    Array.prototype.forEach.call(document.querySelectorAll("[class^=" + vizPrefix + "]"), function (x) {
+      let engine;
+      x.getAttribute("class").split(" ").forEach(function (cls) {
+        if (cls.startsWith(vizPrefix)) {
+          engine = cls.substr(vizPrefix.length);
+        }
+      });
+      const image = new DOMParser().parseFromString(Viz(x.innerText, { format: "svg", engine: engine }), "image/svg+xml");
+      x.parentNode.insertBefore(image.documentElement, x);
+      x.style.display = 'none'
+      x.parentNode.style.backgroundColor = "white"
+    });
+  })();
+</script>
     </main><footer class="footer">
     <span>&copy; 2021 <a href="https://b6a.black/">Black Bauhinia</a></span>
     <span>&middot;</span>

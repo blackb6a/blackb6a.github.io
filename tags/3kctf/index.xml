@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>3kctf on Black Bauhinia</title>
+    <link>https://b6a.black/tags/3kctf/</link>
+    <description>Recent content in 3kctf on Black Bauhinia</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Sat, 22 May 2021 00:00:00 +0800</lastBuildDate>
+    
+	<atom:link href="https://b6a.black/tags/3kctf/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>3kCTF-2021 Writeup</title>
+      <link>https://b6a.black/posts/2021-05-22-3kctf/</link>
+      <pubDate>Sat, 22 May 2021 00:00:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/posts/2021-05-22-3kctf/</guid>
+      <description>We are united to play 3kCTF-2021 and result in the second place. In this blog post, we will walk through our solutions on the challenges solved.</description>
+    </item>
+    
+    <item>
+      <title>3kCTF-2020 Writeup</title>
+      <link>https://b6a.black/posts/2020-07-28-3kctf/</link>
+      <pubDate>Tue, 28 Jul 2020 11:36:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/posts/2020-07-28-3kctf/</guid>
+      <description>reporter (Web; 498 points) Solved by apple.
+Author: rekter0
+ Reporter is an online markdown reporting tool. it&#39;s free to use for everyone. there&#39;s a secret report we need located here
+source
+ Walkthrough The application provide markdown hosting service and it will automatically download and embed external images (or any files) to the &#39;report&#39;.
+There are 4 buttons on the interface: Edit, Preview, Save, and Deliver.
+The first target of the challenge is to access the secret_report.</description>
+    </item>
+    
+  </channel>
+</rss>

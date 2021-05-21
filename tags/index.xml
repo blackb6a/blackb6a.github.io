@@ -6,10 +6,28 @@
     <description>Recent content in Tags on Black Bauhinia</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 25 Apr 2021 23:53:00 +0800</lastBuildDate>
+    <lastBuildDate>Sat, 22 May 2021 00:00:00 +0800</lastBuildDate>
     
 	<atom:link href="https://b6a.black/tags/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>3kctf</title>
+      <link>https://b6a.black/tags/3kctf/</link>
+      <pubDate>Sat, 22 May 2021 00:00:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/tags/3kctf/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>ctf</title>
+      <link>https://b6a.black/tags/ctf/</link>
+      <pubDate>Sat, 22 May 2021 00:00:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/tags/ctf/</guid>
+      <description></description>
+    </item>
     
     <item>
       <title>crypto</title>
@@ -17,15 +35,6 @@
       <pubDate>Sun, 25 Apr 2021 23:53:00 +0800</pubDate>
       
       <guid>https://b6a.black/tags/crypto/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>ctf</title>
-      <link>https://b6a.black/tags/ctf/</link>
-      <pubDate>Sun, 25 Apr 2021 23:53:00 +0800</pubDate>
-      
-      <guid>https://b6a.black/tags/ctf/</guid>
       <description></description>
     </item>
     
@@ -147,15 +156,6 @@
     </item>
     
     <item>
-      <title>pwnthybytes-ctf</title>
-      <link>https://b6a.black/tags/pwnthybytes-ctf/</link>
-      <pubDate>Tue, 28 Jul 2020 11:36:00 +0800</pubDate>
-      
-      <guid>https://b6a.black/tags/pwnthybytes-ctf/</guid>
-      <description></description>
-    </item>
-    
-    <item>
       <title>machine-learning</title>
       <link>https://b6a.black/tags/machine-learning/</link>
       <pubDate>Wed, 22 Jul 2020 18:55:00 +0800</pubDate>
@@ -188,6 +188,15 @@
       <pubDate>Wed, 01 Jul 2020 15:30:00 +0800</pubDate>
       
       <guid>https://b6a.black/tags/chrome/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>pwnthybytes-ctf</title>
+      <link>https://b6a.black/tags/pwnthybytes-ctf/</link>
+      <pubDate>Wed, 02 Oct 2019 23:20:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/tags/pwnthybytes-ctf/</guid>
       <description></description>
     </item>
     

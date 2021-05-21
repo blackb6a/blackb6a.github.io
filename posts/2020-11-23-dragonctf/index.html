@@ -13,7 +13,7 @@ There are three challenges writeup in this post:
  Bit Flip (parts 2 and 3) Frying in motion babykok  Bit Flip (Crypto, 155&#43;324&#43;343 points) Solved by Mystiz.">
 <meta name="author" content="Mystiz, GeoffreyY">
 <link rel="canonical" href="https://b6a.black/posts/2020-11-23-dragonctf/" />
-<link href="/assets/css/stylesheet.min.cbea6e4569d868c2099732a453af991f3a66132125fdf174125d43fc613d6e0d.css" integrity="sha256-y&#43;puRWnYaMIJlzKkU6&#43;ZHzpmEyEl/fF0El1D/GE9bg0=" rel="preload stylesheet"
+<link href="/assets/css/stylesheet.min.933fbeab943585aa913b5175ee7291733f28815597926f1e56aacc964d807245.css" integrity="sha256-kz&#43;&#43;q5Q1haqRO1F17nKRcz8ogVWXkm8eVqrMlk2AckU=" rel="preload stylesheet"
     as="style">
 
 <link rel="icon" href="https://b6a.black/favicon.ico">
@@ -143,7 +143,7 @@ November 23, 2020&nbsp;·&nbsp;Mystiz, GeoffreyY
   </header>
   
   
-  <div class="post-content">
+  <div class="post-content js-toc-content">
 <p><em>Dragon CTF 2020</em> is definitely had my best CTF moments. There are big brain moments and I have been mind-blown for multiple times during the game. This time we have teamed up with @blackb6a. I have solved all the crypto challenges and two challenges with my teammates.</p>
 
 <p>There are three challenges writeup in this post:</p>
@@ -723,8 +723,8 @@ subgoal 2 <span style="color:#f92672">(</span>ID 53<span style="color:#f92672">)
 </div>
   <footer class="post-footer">
     <ul class="post-tags">
-      <li><a href="https://b6a.black/tags/crypto/">crypto</a></li>
       <li><a href="https://b6a.black/tags/ctf/">ctf</a></li>
+      <li><a href="https://b6a.black/tags/crypto/">crypto</a></li>
       <li><a href="https://b6a.black/tags/dragonctf/">dragonctf</a></li>
     </ul>
     <nav class="paginav">
@@ -741,6 +741,42 @@ subgoal 2 <span style="color:#f92672">(</span>ID 53<span style="color:#f92672">)
     </nav>
   </footer>
 </article>
+<aside class="toc-container">
+  <a href="#" style="text-decoration: none; font-weight: 700;">
+    Dragon CTF 2020 Writeup
+  </a>
+  <div class="js-toc"></div>
+</aside>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.12.0/tocbot.min.css" integrity="sha512-SFw7k74K3983tyOlJIHa8atr9Ppef3Kix5cmifwzU7ZdtU2E0FRuOVRtd3ENpMJ8sNCie5hlb/0j23efcdQJXA==" crossorigin="anonymous" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.12.0/tocbot.min.js" integrity="sha512-oD3xGN8YTxenx6tdS4D/RKqO4OtORBQtAb2/FseM17GGMIi6jMwKUBc8duX4A5RwMOGGXoFBZrsqbOk8GpXFgQ==" crossorigin="anonymous"></script>
+
+<script type="text/javascript">
+  tocbot.init({
+    headingSelector: 'h1, h2, h3, h4',
+    orderedList: false,
+    headingLabelCallback: s => s.substr(0, s.length-1),
+    collapseDepth: 2
+  });
+</script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/viz.js/1.7.1/viz.js"> </script>
+<script type="text/javascript">
+  (function () {
+    const vizPrefix = "language-viz-";
+    Array.prototype.forEach.call(document.querySelectorAll("[class^=" + vizPrefix + "]"), function (x) {
+      let engine;
+      x.getAttribute("class").split(" ").forEach(function (cls) {
+        if (cls.startsWith(vizPrefix)) {
+          engine = cls.substr(vizPrefix.length);
+        }
+      });
+      const image = new DOMParser().parseFromString(Viz(x.innerText, { format: "svg", engine: engine }), "image/svg+xml");
+      x.parentNode.insertBefore(image.documentElement, x);
+      x.style.display = 'none'
+      x.parentNode.style.backgroundColor = "white"
+    });
+  })();
+</script>
     </main><footer class="footer">
     <span>&copy; 2021 <a href="https://b6a.black/">Black Bauhinia</a></span>
     <span>&middot;</span>

@@ -6,10 +6,19 @@
     <description>Recent content in Posts on Black Bauhinia</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 25 Apr 2021 23:53:00 +0800</lastBuildDate>
+    <lastBuildDate>Sat, 22 May 2021 00:00:00 +0800</lastBuildDate>
     
 	<atom:link href="https://b6a.black/posts/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>3kCTF-2021 Writeup</title>
+      <link>https://b6a.black/posts/2021-05-22-3kctf/</link>
+      <pubDate>Sat, 22 May 2021 00:00:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/posts/2021-05-22-3kctf/</guid>
+      <description>We are united to play 3kCTF-2021 and result in the second place. In this blog post, we will walk through our solutions on the challenges solved.</description>
+    </item>
     
     <item>
       <title>Cyber Apocalypse 2021: Wii Phit &amp; Hyper Metroid</title>
