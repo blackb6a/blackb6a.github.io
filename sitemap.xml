@@ -3,17 +3,37 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
-    <loc>https://b6a.black/</loc>
-    <lastmod>2021-04-25T23:53:00+08:00</lastmod>
+    <loc>https://b6a.black/tags/3kctf/</loc>
+    <lastmod>2021-05-22T00:00:00+08:00</lastmod>
   </url>
   
   <url>
-    <loc>https://b6a.black/tags/crypto/</loc>
-    <lastmod>2021-04-25T23:53:00+08:00</lastmod>
+    <loc>https://b6a.black/posts/2021-05-22-3kctf/</loc>
+    <lastmod>2021-05-22T00:00:00+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://b6a.black/</loc>
+    <lastmod>2021-05-22T00:00:00+08:00</lastmod>
   </url>
   
   <url>
     <loc>https://b6a.black/tags/ctf/</loc>
+    <lastmod>2021-05-22T00:00:00+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://b6a.black/posts/</loc>
+    <lastmod>2021-05-22T00:00:00+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://b6a.black/tags/</loc>
+    <lastmod>2021-05-22T00:00:00+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://b6a.black/tags/crypto/</loc>
     <lastmod>2021-04-25T23:53:00+08:00</lastmod>
   </url>
   
@@ -24,16 +44,6 @@
   
   <url>
     <loc>https://b6a.black/tags/cyber-apocalypse-ctf/</loc>
-    <lastmod>2021-04-25T23:53:00+08:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://b6a.black/posts/</loc>
-    <lastmod>2021-04-25T23:53:00+08:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>https://b6a.black/tags/</loc>
     <lastmod>2021-04-25T23:53:00+08:00</lastmod>
   </url>
   
@@ -138,11 +148,6 @@
   </url>
   
   <url>
-    <loc>https://b6a.black/tags/pwnthybytes-ctf/</loc>
-    <lastmod>2020-07-28T11:36:00+08:00</lastmod>
-  </url>
-  
-  <url>
     <loc>https://b6a.black/tags/machine-learning/</loc>
     <lastmod>2020-07-22T18:55:00+08:00</lastmod>
   </url>
@@ -184,6 +189,11 @@
   
   <url>
     <loc>https://b6a.black/posts/2019-10-02-pwnthybytes/</loc>
+    <lastmod>2019-10-02T23:20:00+08:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>https://b6a.black/tags/pwnthybytes-ctf/</loc>
     <lastmod>2019-10-02T23:20:00+08:00</lastmod>
   </url>
   
