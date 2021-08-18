@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>DEFCON Gold Bug Puzzle 2021 | Black Bauhinia</title>
+
+<meta name="keywords" content="puzzle, gold bug puzzle" />
+<meta name="description" content="We played the annual Gold Bug puzzle hosted by the DEFCON Crypto and Privacy Village - and we won! Although we were unable to ace the challenge before the game ends, we managed to solve the remaining challenge afterwards. We will be covering all of them in this walkthrough.">
+<meta name="author" content="hoifanrd, Mystiz, TWY">
+<link rel="canonical" href="https://b6a.black/posts/2021-08-19-defcon-gold-bug/" />
+<link href="/assets/css/stylesheet.min.933fbeab943585aa913b5175ee7291733f28815597926f1e56aacc964d807245.css" integrity="sha256-kz&#43;&#43;q5Q1haqRO1F17nKRcz8ogVWXkm8eVqrMlk2AckU=" rel="preload stylesheet"
+    as="style">
+
+<link rel="icon" href="https://b6a.black/favicon.ico">
+
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<meta name="generator" content="Hugo 0.68.3" />
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-M67YZZ2MP1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-M67YZZ2MP1');
+</script>
+
+
+
+<script src="https://kit.fontawesome.com/fbbadced05.js" crossorigin="anonymous"></script>
+
+
+<link rel="preconnect" href="https://fonts.gstatic.com">
+<link href="https://fonts.googleapis.com/css2?family=Recursive&display=swap" rel="stylesheet"> 
+
+
+<meta property="og:title" content="DEFCON Gold Bug Puzzle 2021" />
+<meta property="og:description" content="We played the annual Gold Bug puzzle hosted by the DEFCON Crypto and Privacy Village - and we won! Although we were unable to ace the challenge before the game ends, we managed to solve the remaining challenge afterwards. We will be covering all of them in this walkthrough." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://b6a.black/posts/2021-08-19-defcon-gold-bug/" />
+<meta property="og:image" content="https://b6a.black/images/2021-08-19-defcon-gold-bug/gold-bug.jpeg" /><meta property="article:published_time" content="2021-08-19T00:25:00+08:00" />
+<meta property="article:modified_time" content="2021-08-19T00:25:00+08:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image" content="https://b6a.black/images/2021-08-19-defcon-gold-bug/gold-bug.jpeg" />
+<meta name="twitter:title" content="DEFCON Gold Bug Puzzle 2021"/>
+<meta name="twitter:description" content="We played the annual Gold Bug puzzle hosted by the DEFCON Crypto and Privacy Village - and we won! Although we were unable to ace the challenge before the game ends, we managed to solve the remaining challenge afterwards. We will be covering all of them in this walkthrough."/>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "DEFCON Gold Bug Puzzle 2021",
+  "name": "DEFCON Gold Bug Puzzle 2021",
+  "description": "We played the annual Gold Bug puzzle hosted by the DEFCON Crypto and Privacy Village - and we won! Although we were unable to ace the challenge before the game ends, we managed to …",
+  "keywords": [
+    "puzzle", "gold bug puzzle"
+  ],
+  "articleBody": "Banner credit: @CryptoVillage.\nWe played the annual Gold Bug puzzle hosted by the DEFCON Crypto and Privacy Village - and we won! Although we were unable to ace the challenge before the game ends, we managed to solve the remaining challenge afterwards. We will be covering all of them in this walkthrough.\nWe would like to express our gratitude to the puzzle setters: @MayaKaczorowski for filling in the steps those we missed in the write-up, and @0xCryptoK for bearing Mystiz's stupid questions during the game, too.\nBy the way, if we are talking about time, they are in UTC+8. We are 15 hours ahead of the Vegas time.\nPool of Tears Challenge Link\n Dear, dear! How queer everything is today! And yesterday things went on just as usual!\nI’ve made a real mess of things here. The lock and key were right in front of me, neatly packaged between near-centurions! But this world is so strange - dividing when we should have multiplied; combining when we should have counted! Oh what a mess this is.\n/ A71C3\n Solution ⌛ Progress: 1/11 ⌛\n🎉 Solved on August 7, 03:55 (2h 55m after the game starts) 🎉 There are multiple lines of floating point number. We threw their decimal parts to WolframAlpha. These are multiple examples:\n\n\nWe are awared that the denominators are factors of 684483. We then tried to multiply each number by 684483:\n99242120222107240109211806120025211019050912221525219900000000000000000 99251913102109211510092505012022041421171509990000000 991720010821080801092103241211050922071014020615252199000000000000000000000000 99052002141105151416021002062516171906990000000000000000000 992421202114182125071118091714180912060325170713052521990000000 9924212006111410190009221523071724162019182415259900000000000000 991720011511251922142118061200252113100914021115019900000000000000000 991315170013180401131525100118220414111703169900000000 99152118141119050215200005232214021217112213179900 TWY counted the trailing zeros from each line and obtained 17, 7, 24, 19, 7, 14, 17, 8, 2, which is rhythoric. However, this is not the flag. On the other hand, Mystiz grouped the numbers between the two 99s into pairs. For example, for the first line it is\n24 21 20 22 21 07 24 01 09 21 18 06 12 00 25 21 10 19 05 09 12 22 15 25 21 This is decoded YVUWVHYBJVSGMAZVKTFJMWPZV. What does that mean?\nEventually, we figured out we can use Vigenere cipher to decrypt YVUW... with the key rhythoric and obtained those lines:\nhowdoththelittlecrocodile improvehisshiningtail andpourthewatersofthenile oneverygoldenscale howcheerfullyheseemstogrin howneatlyspreadhisclaws andwelcomelittlefishesin withgentlysmilingjaws youvefoundthepalepuppy Flag: palepuppy\nPostmortem. A71C3 is 684483 in base 16. We did not notice it at all…  Wonder Watch Challenge Link\nSolution ⌛ Progress: 2/11 ⌛\n🎉 Solved on August 7, 04:15 (3h 15m after the game starts) 🎉 TWY read the clock's hands, which is 18days 1hour 33minutes 25seconds 286/1000 250/1000 791/1000. Since it mentions 1GHz, the time should be correct to one nanosecond, which is what we have now. When converted to a number, it is 1560805286250791.\nMystiz tried to convert the number in base 26 and 256 but did not have a proper result. However, noticing the SemiSeptemvigesimal in the clock, he converted the number into base 27 (7 15 18 9 14 7 0 7 15 1 20). By mapping 0 to the space and the rest to the English alphabet, we got the flag.\n❓ Question. What does Semi mean in SemiSeptemvigesimal?  Flag: goringgoat\nPig and Pepper Challenge Link\n \"By-the-bye, what became of the baby?\" said the Cat. \"I'd nearly forgotten to ask.\"\n\"It turned into a pig,\" Alice quietly said, just as if it had come back in a natural way.\n\"Did you say pig, or fig?\" said the Cat.\n\"I said pig,\" replied Alice.\n Solution ⌛ Progress: 3/11 ⌛\n🎉 Solved on August 7, 23:55 (22h 55m after the game starts) 🎉 It is pretty obvious that pigpen cipher is the first stage.\nhadr range corn eek ream live heat 💬 Puzzle Setter’s Comment. We published an errata a few hours into the hunt that the first word should swap the third and fourth letters to get a valid word.  However, the words eek, ream did not make any sense. Maybe it is eel or team? Turns out we can build a food name by adding one character in front:\nC hadr O range A corn L eek C ream O live W heat Flag: coalcow\nCaucus-race Challenge Link\n \"What is a Caucus-race?\" said Alice. \"Why,\" said the Dodo, \"the best way to explain it is to do it.\"\nFirst it marked out a race-course, in a sort of circle, (\"the exact shape doesn’t matter,\" it said,) and then all the party were placed along the course, here and there. There was no \"One, two, three, and away,\" but they began running when they liked, and left off when they liked, so that it was not easy to know when the race was over.\n Solution ⌛ Progress: 4/11 ⌛\n🎉 Solved on August 8, 00:10 (23 10m after the game starts) 🎉 🤔 Unintended? TWY saw hidden text inside the PDF which had most of the below steps.  Approach:\n Exhaust possible plaintexts encrypted with Caesar cipher. For example, JHQVHQVSLNHFRKHQMRMRU - GENSENSPIKECOHENJOJOR. Shift the string into the correct order. For example, GENSENSPIKECOHENJOJOR - JOJORGENSENSPIKECOHEN (JO JORGENSEN / SPIKE COHEN). Find their party (Libertarian Party) and capture the first letter (L) Repeat for each of the cases  Libertarian Party -- JO JORGENSEN, SPIKE COHEN Caesar shift +3 JHQVHQVSLNHFRKHQMRMRU Independent Party of Oregon -- CLIFF THOMASON, PATRICK BARNEY Caesar shift +8 JIZVMGKTQNNBPWUIAWVXIBZQKS Oregon Progressive Party -- DARIO HUNTER, CHRIS HENRY +15 XHWTCGNSPGXDWJCITGRWG New Progressive Party -- RICARDO ROSSELLO, JENNIFFER GONZALEZ +13 SRETBAMNYRMEVPNEQBEBFFRYYBWRAAVS Alliance Party -- ROCKY DE LA FUENTE, DARCY RICHARDSON Caesar shift +5 ZJSYJIFWHDWNHMFWIXTSWTHPDIJQFK Legal Marijuana Now Party -- DAN VACEK, MARK ELWORTH +17 TVBDRIBVCNFIKYUREMR Opposition Party -- WILLIAM NH SMITH, FRANCIS BRISTOW +7 TUOZTPAOMYHUJPZIYPZAVDDPSSPH Freedom Socialist Party -- STEPHEN DURHAM, CHRISTINA LOPEZ +22 DWIYDNEOPEJWHKLAVOPALDAJZQN Transhumanist Party -- CHARLIE KAM, LIZ PARRISH +20 UGFCTJULLCMBWBULFCYE We have the flag when taking the first character from the parties.\n💬 Puzzle Setter’s Comment. This is one of the few puzzles that had some extra content that wasn’t used. The Caesar shift and the shift in start of the text were not used for anything. In retrospect, I probably should have used these to spell out “RED HERRING” or something like that.  Flag: lionaloft\nSide Story. There is a little detour when we parse the flag. Mystiz thought it was liona loft while Ozetta corrected that it should be lion aloft.  Split Meanings Challenge Link\n I stumbled upon the most peculiar coincidence. Or was it a coin cidence? Or a Coinci dence??\nOnce you've separated heads from tails, don't forget to use the passages for spot all-stars... or was it a result of points...\n Solution ⌛ Progress: 5/11 ⌛\n🎉 Solved on August 8, 00:55 (23h 55m after the game starts) 🎉 We had no idea what was going on. Mystiz guessed that the first hint starts with dig because of the word excavating. TWY thought that should be digest, and eventually got the first solution: dig estate / digest ate.\nOn the second trial, TWY suggested that the last one ends with terrain.\n Mystiz: win terrain / winter rain? TWY: bet terrain / better rain!\n We eventually solved most of them. While we are solving, assuming that the middle part consists of three letters also helped us to solve the harder ones:\nRatio of law enforcement OR a penny (10) cop percent / copper cent In addition to nature OR having no exit (12) with outdoors / without doors [*] Island of a large island OR location for work (10) off iceland / office land [*] Jewelry for phone icons OR suddenly visible circles (11) app earrings / appear rings Alice’s vote OR a bundle of rosemary (9) her ballot / herbal lot Planter for particles OR spud speaking device (9) pot atomic / potato mic Expert demonstration OR correct posture (10) pro perform / proper form Excavating an inheritance OR consuming an processing (9) dig estate / digest ate Tasting tin OR master of the shiny elements (12) metal licking / metallic king Laws pertaining to a flying mammal OR a night out with the caped crusader (10) bat mandate / batman date Gambling field OR more welcome precipitation (10) bet terrain / better rain [*]: Answers provided by the puzzle setter. There are a bunch of unused triples. For that, we extract the three letters in the middle part and compute a product-sum for each of the triples.\nFor the first line, the middletext is per (that is $(16, 5, 18)$) and the triple is $(-2, 1, 2)$. We can compute i (which is a $9$) with the below formula:\n\\[(-2)\\cdot 16 + 1\\cdot 5 + 2\\cdot 18 = 9\\]\nRepeating the progress, we had the flag.\nFlag: ivoryequine (so the adjective and the noun doesn't start with the same letter)\nInconvenient Habit of Kittens Challenge Link\nSolution ⌛ Progress: 6/11 ⌛\n🎉 Solved on August 8, 04:15 (1d 3h 15m after the game starts) 🎉 We are given a sound file of meow's and purr's, some follows immediately after the previous sound, some with a short pause and some with a longer pause.\nWe first labelled and converted the sound file into the following text:\nr h atfd k@el !w b xig oc sj pu vhaf mdk el qbi zgn$ #yr oct @ jp! vwh xa s umq fdke lbz n$ i#yg r to@! wcj pvx su hmqa z nf$# dkyrel bt @i goc j!w p vxh sumafd kelb qzn i$g #o c yjp vhaf rt@ d!k elb i The maximum length is 6 and there are more than 26 different source of sounds.\n\nOkay, this is some sort of morse code. When we convert each purr into a dash and each meow into a dot, we are able to get:\n- . .-.. .-.. -- . -.. .. -. .- .... -.. .. -.. -.-- --- ..- - ..- .-. -. - --- .... ..- -- .--. - -.-- -.. ..- -- .--. - -.-- ..--.. .- -. ... .-- . .-. ---... .... --- .-. -. . -.. .... --- .-. ... . Actually we have only converted the last line before solving it, since that word looks like the answer.  TELL ME DINAH DID YOU TURN TO HUMPTY DUMPTY? ANSWER: HORNEDHORSE\nFlag: hornedhorse\nDown the Rabbithole Challenge Link\nSolution ⌛ Progress: 7/11 ⌛\n🎉 Solved on August 8, 13:55 (1d 12h 55m after the game starts) 🎉 Stage 1  Have you come seeking the Jabberwock? Beware - there is danger ahead!\nWe must first go DANCING down the rabbit hole...\n This stage is pretty straight-forward. Decoding with dancing-man cipher, we can see that there are two group of words: blue and caterpillar. Thus the answer is BlueCaterpillar.\n\nStage 2  Twas brillig, and the slithy toves Did gyre and gimble in the wabe; All mimsy were the borogoves, And the mome raths outgrabe.\n There are a bunch of lines sampled below. After a bit of researching, it seems that each line represents an area code in the United States or Canada.\n(Boulder, CO [historically]), (Fresno, CA), 110, 148, (Asheville, NC), ... Also, 303 Duovigintillion in the title hinted that we are going to build a big number eventually. Also, the line \"After all, you wouldn't want to waste your PRIME FORM.\" suggested us to factorize the numbers.\nWith the help of Google and the area code checker, we can build a huge number.\n\\[303559110...132800000 = 2^{20}\\cdot3^8\\cdot5^5\\cdot7^{18}\\cdot11^{15}\\cdot13^{19}\\cdot17^5.\\]\nConsidering the indices in the prime factorization, we got the answer for the next stage: TheRose.\nStage 3  Beware the Jabberwock, my son! The jaws that bite, the claws that catch! Beware the Jubjub bird, and shun The frumious Bandersnatch!\n \nThis stage is also easy. Searching the keywords dark, jot and cipher on Google, we are suggested that the above text is encoded in nyctography, created by Lewis Carroll.\n\nDecoding the text, we have the answer CheshireCat.\n😏 An Insight. Mystiz realised that these are all characters in the Alice in the Wonderland now…  Stage 4  He took his vorpal sword in hand: Long time the manxome foe he sought - So rested he by the Tumtum tree, And stood awhile in thought.\n \nWe can see that there are a bunch of M\u0026Ms in this stage. Similar to Knave of Hearts (which is not correct), Mystiz thought that it is ASCII related because there are eight columns and first column consists of zeroes only. This decodes into CountColors, and therefore the number of M\u0026Ms are counted for each of the colors.\nwhite: 16 (p) red: 20 (t) pale-red: 3 (c) orange: 8 (h) yellow: 5 (e) green: 4 (d) blue: 21 (u) brown: 11 (k) ---------------- sum: 88 Mystiz tried to anagram with ptcheduk. Got peck thud but it was not helpful.\n\nTWY found that white is a stub and p should not be included. Rearranging the characters, it should be TheDuck.\nStage 5  And as in uffish thought he stood, The Jabberwock, with eyes of flame, Came whiffling through the tulgey wood, And burbled as it came!\n \nWe are given a lint of runes. It is easily searchable that the characters are Elder Futhark. When decoded, we have the below message:\nᛊᛖᚲ ᛃᛖ ᚦᛖ ᛞᚱᛁᛒᚢᚱ ᛟᚠ ᚾᚨᛃᛚ ᚨᚾᛞ ᛊᛈᛚᛁᛏᛏᚢᚱ ᛟᚠ ᚹᚢᛞ sek je þe dribur of najl and splittur of wud TWY parsed the line a bit and got driver of nail and splitter of wood. With that, Mystiz went through the characters and found Carpenter is the perfect match (he also found hammer bird but it was incorrect).\nUncertain bits. Mystiz thought sek je þe to be seek me the.  Stage 6  One, two! One, two! And through and through The vorpal blade went snicker-snack! He left it dead, and with its head He went galumphing back.\n This is the final stage but Mystiz had no idea how to craft the key. Ozetta suggested that the solution is a ten-letter word and asked if Mystiz is going to brute force the solution.\n Ozetta: Are you going to brute force the solution with a dictionary yet? Mystiz: How even do I brute force a ten-letter word?\n*tries wonderland with instinct*\n\"And, has thou slain the Jabberwock?\"\n The Jabberwock is slained, and RubyReptile is sitting inside the source code.\nFlag: rubyreptile\nLobster Quadrille Challenge Link\n \"You may not have lived much under the sea so you can have no idea what a delightful thing a Lobster Quadrille is!\" \"No, indeed,\" said Alice. \"What sort of a dance is it?\" \"Why,\" said the Gryphon, \"you ﬁrst form into a line along the sea-shore—\" \"Two lines!\" cried the Mock Turtle.\n Solution ⌛ Progress: 8/11 ⌛\n🎉 Solved on August 8, 15:35 (1d 14h 35m after the game starts) 🎉 We are given pictures of five ocean animals. Assuming that the lengths given on the left are correct, then they are respectively haddock, squid, quahog, shrimp and king crab.\n💬 Puzzle Setter’s Comment. This is the sea animal people had the hardest time identifying. We tweeted a hint, “My third is hard shelled”, to help with that.  There is a line UEHKYHRIOSTEETEMDR on the very bottom. Using railfence cipher with two rows. It decrypts into USE THE KEY THERMIDOR. The rationale comes from the challenge statement - \"Two lines!\" cried the Mock Turtle.\nIn a later time, there is a hint regarding to the remaining part of the puzzle:\n\nMystiz identified that might be playfair cipher. However he was unsure what to decrypt (or encrypt). He decided to DM the puzzle writer and received:\n CryptoK — 2021/08/08\ntrust your intuition a bit more there\n Mystiz decided to look into playfair cipher. He initially thought the seven-letter word that ends with a T would be decrypted to haddock. This led him nowhere.\n\nAfter reassured by the puzzle writer, he tried to decrypt the pairs. For instance, we are using the seventh letter of haddock, i.e. K, along with the hint T. When it is decrypted with the key THERMIDOR, we have CR. The seventh letter of haddock is picked because T in the hint is the seventh letter.\nRepeating the process with the ciphertext pairs KT, DX, QT, IF, IR. We have CR OW NE DC AT.\nFlag: crownedcat\nKnave of Hearts Challenge Link\n Then followed the Knave of Hearts, carrying the King's crown on a crimson velvet cushion; and, last of all this grand procession, came The King and Queen of Hearts.\nAlice was rather doubtful whether she ought not to lie down on her face like the three gardeners, \"and besides, what would be the use of a procession,\" thought she, \"if people had all to lie down upon their faces, so that they couldn’t see it?\"\n Solution ⌛ Progress: 9/11 ⌛\n🎉 Solved on August 9, 00:20 (1d 23h 20m after the game starts) 🎉 It is pretty evident that there are two puzzles on the board: Nonogram and sudoku. This is what we have after filling in the board:\n\nNote that there are multiple solutions for the nonogram. We marked them in pale orange and light blue - and either one serves as part of the correct answer along with the green squares.\nAfter that, we are long stuck. There are three hints released:\n If the Knave told you that he could feel the next step by closing his eyes, would you believe him? The knave's friend can move from his starting position to the opposite corner clockwise. Consider the unseen and the derived separately. From there, your journey continues where edges meet.  There are some thoughts while we are stuck. For instance, we think the the solution for nonogram is encoding ASCII characters column-by-column (which reads 5 53R1C#). We also guessed that each column is encoding a pair of coordinates (which decodes to $(3, 5)$, $(2, 0)$, $(3, 5)$, $(3, 3)$, ...). Unfortunately this led us to nowhere.\nBecause of the desperation, Mystiz DMed for hints once again and knew it was braille immediately:\n CryptoK — Aug 8 How might one read if they are wearing a blindfold?\n Decoding the nonogram solution with Braille, we obtained knightne (the another one does not decode into something meaningful).\n💬 Puzzle Setter’s Comment. This was also clued in the passage from Alice in Wonderland, “so that they couldn’t see it”.  It is stated from the second hint that the knight can move from one corner to the opposite clockwise. Which corners? What are the walkable squares?\nEventually, when we assume that the obstacles are defined by the given hints in sudoku, we are able to move from top-right to bottom-left clockwise. The squares form the flag.\n\nFlag: avianally\nHoofman's Headache Challenge Link\n When given a series of digits,\nI can’t help but begin to fidget.\nMy mind can’t stay still,\nWhile counting the quill\nOf characters expected within it.\nAnd what of the text? Wonder through and reflect?\nAnd the form you have sought? Left be less yielding naught?\nHoofman's thoughts can’t see why one would want to multiply!?\nLeft and right form anew, but their sums over-grew??\nThat’s optimally not right when compressing.\n Solution ⌛ Progress: 10/11 ⌛\n🎉 Solved on August 9, 01:50 (2d 50m after the game starts) 🎉 We are given 266 bits as below:\n00100101110111101110011110101111101111 10110110110001001010101001111000001101 01000111101001111010110000001010100010 11010110011000101101100100000110000010 01101111111001101101011001011000101101 01111100100111110111100101000010011011 10110110011010100011011011001000000110 From the title we notice that Hoofman is spelt so similar to Huffman, especially when the letter o is considered a wildcard character. \"Compress\" appears in the last line, that further validates this assumption. Furthermore, we made some assumptions according to the poem regarding the \"special\" construction of the tree:\n \"While counting the quill of characters expected within it\" may be related to the letter frequencies \"Left be less yielding naught\" seems to imply that the left branch of the tree has smaller weight than the right branch, and the assigned bit is 0. \"Hoofman's thoughts can’t see why one would want to multiply!?\" seems to imply that multiply is used instead of addition. \"Left and right form anew, but their sums over-grew??\" is the basic concept of Huffman tree, and \"over-grew\" emphasizes the growth rate of the weight after merging. \"That's optimally not right when compressing.\" implies that the implementation is different from the optimal Huffman tree construction.  There are some more questions regarding to the third point. If we are using multiplication instead of addition, we need to consider whether \"the quill\" means the count or the percentage. If it is the latter case, then multiplying two numbers should result in a smaller fraction, so we should instead take the two nodes with highest weights (We thought of whether \"Wonder through and reflect?\" is related). Otherwise, if it is the frequency, then the actual length of the source is important since when the length is doubled, the product of two weights will become 4 times the original, that affects the relative weight of nodes between different levels.\nSince guessing the correct source is difficult, we drafted the script for building Huffman tree and wait for hints. The script consists of replacable components:\n changeable source extracting the heaviest or the lightest node using fraction to store the frequency (denominator is 1 for integers) whether to use multiplication or addition  We used the Relative frequency in the English text at the moment, but we were uncertain about whether spaces and symbols should be included, and whether to treat capital and small letters separately.\nEventually the challenge author released the first hint:\n\nFrom this we know that the source should not be that relative frequency, but some pieces related to Alice in Wonderland. Following that, they released the next hint:\n\nThis proves our assumption, and we are certain that frequencies (instead of percentages) of letters is used. Also, this confirms that minimum weights is used, and multiplication is used for the new node.\nHere we start to think what the source the frequencies are taken from. We tried to use the letter frequencies from Alice in the Wonderland, and obtained the below \"plaintext\":\nOJCCAUNQYLIOMAGAZAUQJHOFJJAIEWHEHPQDLJOGYCWARDFOERYEFELOHE Although all bits are consumed (We can immediately falsify a tree if there are leftover bits), the text looked nonsense. Eventually another hint comes in to the scene:\n\nThe paste is entitled HoofmansSourceText, and the contents comes from \"Through the Looking-Glass, and What Alice Found There\", which is considered the sequel to Alice's Adventures in Wonderland. We replaced the current text with the given text, and obtained the below plaintext:\nITLLPUZZLEITTOGOTHROUGHTHECEILINGIEXPECTKEYWORDFIERCEFELINE (It'll puzzle it to go through the ceiling I expect keyword fierce feline)\nFlag: fiercefeline\nPostmortem. It seems that “Wonder through and reflect” indicates the text used. That is, Through the Looking-Glass.  Mom's Monsters (Meta) Challenge Link\n White, Red, or Hearts they be, Connect the dots and you will see. Monsters ten have come to pray - Name them well and we shall play.\n Solution ⌛ Progress: 11/11 ⌛\n🎉 Solved on August 9, 20:00 (15h 30m after the game ends) 🎉 There are two hints released. And the first being:\n\n❓ Question. What exactly is this?  The second one is relatively direct.\n\nThe capital letters form the word UKMINT, which may refer to the royal mint (the government-owned mint in the United Kingdom). They recently produced the coin for Alice in Wonderland. More importantly, they also produced the coin featuring the Queen's Beasts:\n\nWhy is the riddle related to the Queen's Beasts? Here is the list of the beasts:\n The Lion of England The White Greyhound of Richmond The Yale of Beaufort The Red Dragon of Wales The White Horse of Hanover The White Lion of Mortimer The Unicorn of Scotland The Griffin of Edward III The Black Bull of Clarence The Falcon of the Plantagenets  We can see that each of the ten flags corresponds to a beast. This is the mapping between the two:\n Fierce Feline - The White Lion of Mortimer Pale Puppy - The White Greyhound of Richmond Goring Goat - The Yale of Beaufort Crowned Cat - The Lion of England Avian Ally - The Falcon of the Plantagenets Lion Aloft - The Griffin of Edward III Ruby Reptile - The Red Dragon of Wales Coal Cow - The Black Bull of Clarence Horned Horse - The Unicorn of Scotland Ivory Equine - The White Horse of Hanover  \n❓ Another Question. How to obtain the flag?  Well, the only clue left is the graph in the challenge pdf. At first glance, we should be able to conclude that the shape represents its corresponding beast's name by the puzzle index.\nHow about the x-axis? We can notice that there is only one shape per x-value, so it is having high chance that it is the character index of the meta-puzzle's flag.\nFinally, the y-axis then must be the character index of the corresponding beast's name. As the least y-index starts from 4, we can guess that all the beasts' name included the word \"The\". Besides, there should be no spaces for the beasts' name as from the experence in previous challenges.\nFollowing the idea, we have the string below:\niFYouLlBEaieveinmeIllBelieveinyou There is one incorrect point (10, 18) which should be instead (10, 17). Fixing it, we have the final answer:\nifyoullbelieveinmeillbelieveinyou Which is, \"If you'll believe in me, I'll believe in you\".\n",
+  "wordCount" : "4161",
+  "inLanguage": "en",
+  "image":"https://b6a.black/images/2021-08-19-defcon-gold-bug/gold-bug.jpeg","datePublished": "2021-08-19T00:25:00+08:00",
+  "dateModified": "2021-08-19T00:25:00+08:00",
+  "author":[{
+    "@type": "Person",
+    "name": "hoifanrd"
+  }, {
+    "@type": "Person",
+    "name": "Mystiz"
+  }, {
+    "@type": "Person",
+    "name": "TWY"
+  }],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://b6a.black/posts/2021-08-19-defcon-gold-bug/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Black Bauhinia",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://b6a.black/favicon.ico"
+    }
+  }
+}
+</script>
+
+
+
+</head>
+
+<body class=" dark" id="top">
+<noscript>
+    <style type="text/css">
+        .theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+</noscript>
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://b6a.black/" accesskey="h" title="Black Bauhinia (Alt + H)">Black Bauhinia</a>
+            <span class="logo-switches">
+                
+                
+            </span>
+        </div>
+        <ul id="menu" onscroll="menu_on_scroll()">
+            <li>
+                <a href="https://b6a.black/about-us/" title="About Us">
+                    <span>About Us</span>
+                </a>
+            </li></ul>
+    </nav>
+</header>
+
+    <main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+
+    <h1 class="post-title">
+      DEFCON Gold Bug Puzzle 2021
+    </h1>
+    <div class="post-meta">
+
+August 19, 2021&nbsp;·&nbsp;hoifanrd, Mystiz, TWY
+
+</div>
+  </header>
+  
+  
+  <div class="post-content js-toc-content">
+<p><em>Banner credit: <a href="https://twitter.com/CryptoVillage/status/1420216842241548290/photo/1">@CryptoVillage</a>.</em></p>
+
+<p>We played the annual <a href="https://goldbug.cryptovillage.org/">Gold Bug puzzle</a> hosted by the DEFCON Crypto and Privacy Village - and we won! Although we were unable to ace the challenge before the game ends, we managed to solve the remaining challenge afterwards. We will be covering all of them in this walkthrough.</p>
+
+<p>We would like to express our gratitude to the puzzle setters: <em>@MayaKaczorowski</em> for filling in the steps those we missed in the write-up, and <em>@0xCryptoK</em> for bearing <em>Mystiz</em>'s stupid questions during the game, too.</p>
+
+<p>By the way, if we are talking about time, they are in UTC+8. We are 15 hours ahead of the Vegas time.</p>
+
+<h2 id="pool-of-tears">Pool of Tears<a hidden class="anchor" aria-hidden="true" href="#pool-of-tears">#</a></h2>
+
+<p><a href="https://bbs.goldbug.cryptovillage.org/puzzles/PoolofTears.pdf">Challenge Link</a></p>
+
+<blockquote>
+<p>Dear, dear! How queer everything is today! And yesterday things went on just as usual!</p>
+
+<p>I’ve made a real mess of things here. The lock and key were right in front of me, neatly packaged between near-centurions! But this world is so strange - dividing when we should have multiplied; combining when we should have counted! Oh what a mess this is.</p>
+
+<p>/ A71C3</p>
+</blockquote>
+
+<h3 id="solution">Solution<a hidden class="anchor" aria-hidden="true" href="#solution">#</a></h3>
+
+<p style="text-align: center;">
+⌛ Progress: 1/11 ⌛<br>
+🎉 Solved on August 7, 03:55 (2h 55m after the game starts) 🎉
+</p>
+
+<p>There are multiple lines of floating point number. We threw their decimal parts to WolframAlpha. These are multiple examples:</p>
+
+<p><figure><img src="/images/2021-08-19-defcon-gold-bug/wolframalpha-1.png" alt=""></figure></p>
+
+<p><figure><img src="/images/2021-08-19-defcon-gold-bug/wolframalpha-2.png" alt=""></figure></p>
+
+<p>We are awared that the denominators are factors of 684483. We then tried to multiply each number by 684483:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">99242120222107240109211806120025211019050912221525219900000000000000000
+99251913102109211510092505012022041421171509990000000
+991720010821080801092103241211050922071014020615252199000000000000000000000000
+99052002141105151416021002062516171906990000000000000000000
+992421202114182125071118091714180912060325170713052521990000000
+9924212006111410190009221523071724162019182415259900000000000000
+991720011511251922142118061200252113100914021115019900000000000000000
+991315170013180401131525100118220414111703169900000000
+99152118141119050215200005232214021217112213179900</code></pre></div>
+<p><em>TWY</em> counted the trailing zeros from each line and obtained <code>17, 7, 24, 19, 7, 14, 17, 8, 2</code>, which is <code>rhythoric</code>. However, this is not the flag. On the other hand, <em>Mystiz</em> grouped the numbers between the two <code>99</code>s into pairs. For example, for the first line it is</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">24 21 20 22 21 07 24 01 09 21 18 06 12 00 25 21 10 19 05 09 12 22 15 25 21</code></pre></div>
+<p>This is decoded <code>YVUWVHYBJVSGMAZVKTFJMWPZV</code>. What does that mean?</p>
+
+<p>Eventually, we figured out we can use Vigenere cipher to decrypt <code>YVUW...</code> with the key <code>rhythoric</code> and obtained those lines:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">howdoththelittlecrocodile
+improvehisshiningtail
+andpourthewatersofthenile
+oneverygoldenscale
+howcheerfullyheseemstogrin
+howneatlyspreadhisclaws
+andwelcomelittlefishesin
+withgentlysmilingjaws
+youvefoundthepalepuppy</code></pre></div>
+<p><em>Flag: <code>palepuppy</code></em></p>
+
+<div class="alert info">
+  <strong>Postmortem.</strong> <code>A71C3</code> is <code>684483</code> in base 16. We did not notice it at all&hellip;
+</div>
+  
+
+<h2 id="wonder-watch">Wonder Watch<a hidden class="anchor" aria-hidden="true" href="#wonder-watch">#</a></h2>
+
+<p><a href="https://bbs.goldbug.cryptovillage.org/puzzles/WonderWatch.pdf">Challenge Link</a></p>
+
+<h3 id="solution-1">Solution<a hidden class="anchor" aria-hidden="true" href="#solution-1">#</a></h3>
+
+<p style="text-align: center;">
+⌛ Progress: 2/11 ⌛<br>
+🎉 Solved on August 7, 04:15 (3h 15m after the game starts) 🎉
+</p>
+
+<p><em>TWY</em> read the clock's hands, which is 18days 1hour 33minutes 25seconds 286/1000 250/1000 791/1000. Since it mentions <em>1GHz</em>, the time should be correct to one nanosecond, which is what we have now. When converted to a number, it is 1560805286250791.</p>
+
+<p><em>Mystiz</em> tried to convert the number in base 26 and 256 but did not have a proper result. However, noticing the <em>SemiSeptemvigesimal</em> in the clock, he converted the number into base 27 (<code>7 15 18 9 14 7 0 7 15 1 20</code>). By mapping 0 to the space and the rest to the English alphabet, we got the flag.</p>
+
+<div class="alert warning">
+  ❓ <strong>Question.</strong> What does <em>Semi</em> mean in <em>SemiSeptemvigesimal</em>?
+</div>
+  
+
+<p><em>Flag: <code>goringgoat</code></em></p>
+
+<h2 id="pig-and-pepper">Pig and Pepper<a hidden class="anchor" aria-hidden="true" href="#pig-and-pepper">#</a></h2>
+
+<p><a href="https://bbs.goldbug.cryptovillage.org/puzzles/PigandPepper.pdf">Challenge Link</a></p>
+
+<blockquote>
+<p>&quot;By-the-bye, what became of the baby?&quot; said the Cat. &quot;I'd nearly forgotten to ask.&quot;</p>
+
+<p>&quot;It turned into a pig,&quot; Alice quietly said, just as if it had come back in a natural way.</p>
+
+<p>&quot;Did you say pig, or fig?&quot; said the Cat.</p>
+
+<p>&quot;I said pig,&quot; replied Alice.</p>
+</blockquote>
+
+<h3 id="solution-2">Solution<a hidden class="anchor" aria-hidden="true" href="#solution-2">#</a></h3>
+
+<p style="text-align: center;">
+⌛ Progress: 3/11 ⌛<br>
+🎉 Solved on August 7, 23:55 (22h 55m after the game starts) 🎉
+</p>
+
+<p>It is pretty obvious that pigpen cipher is the first stage.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">hadr
+range
+corn
+eek
+ream
+live
+heat</code></pre></div>
+<div class="alert info">
+  💬 <strong>Puzzle Setter&rsquo;s Comment.</strong> We published an errata a few hours into the hunt that the first word should swap the third and fourth letters to get a valid word.
+</div>
+  
+
+<p>However, the words <code>eek</code>, <code>ream</code> did not make any sense. Maybe it is <code>eel</code> or <code>team</code>? Turns out we can build a food name by adding one character in front:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">C hadr
+O range
+A corn
+L eek
+
+C ream
+O live
+W heat</code></pre></div>
+<p><em>Flag: <code>coalcow</code></em></p>
+
+<h2 id="caucusrace">Caucus-race<a hidden class="anchor" aria-hidden="true" href="#caucusrace">#</a></h2>
+
+<p><a href="https://bbs.goldbug.cryptovillage.org/puzzles/Caucus-race.pdf">Challenge Link</a></p>
+
+<blockquote>
+<p>&quot;What is a Caucus-race?&quot; said Alice. &quot;Why,&quot; said the Dodo, &quot;the best way to explain it is to do it.&quot;</p>
+
+<p>First it marked out a race-course, in a sort of circle, (&quot;the exact shape doesn’t matter,&quot; it said,) and then all the party were placed along the course, here and there. There was no &quot;One, two, three, and away,&quot; but they began running when they liked, and left off when they liked, so that it was not easy to know when the race was over.</p>
+</blockquote>
+
+<h3 id="solution-3">Solution<a hidden class="anchor" aria-hidden="true" href="#solution-3">#</a></h3>
+
+<p style="text-align: center;">
+⌛ Progress: 4/11 ⌛<br>
+🎉 Solved on August 8, 00:10 (23 10m after the game starts) 🎉
+</p>
+
+<div class="alert warning">
+  🤔 <strong>Unintended?</strong> <em>TWY</em> saw hidden text inside the PDF which had most of the below steps.
+</div>
+  
+
+<p>Approach:</p>
+
+<ol>
+<li>Exhaust possible plaintexts encrypted with Caesar cipher. For example, <code>JHQVHQVSLNHFRKHQMRMRU</code> -&gt; <code>GENSENSPIKECOHENJOJOR</code>.</li>
+<li>Shift the string into the correct order. For example, <code>GENSENSPIKECOHENJOJOR</code> -&gt; <code>JOJORGENSENSPIKECOHEN</code> (<code>JO JORGENSEN / SPIKE COHEN</code>).</li>
+<li>Find their party (<code>Libertarian Party</code>) and capture the first letter (<code>L</code>)</li>
+<li>Repeat for each of the cases</li>
+</ol>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">Libertarian Party           -- JO JORGENSEN, SPIKE COHEN            Caesar shift +3  JHQVHQVSLNHFRKHQMRMRU
+Independent Party of Oregon -- CLIFF THOMASON, PATRICK BARNEY       Caesar shift +8  JIZVMGKTQNNBPWUIAWVXIBZQKS
+Oregon Progressive Party    -- DARIO HUNTER, CHRIS HENRY                         +15 XHWTCGNSPGXDWJCITGRWG
+New Progressive Party       -- RICARDO ROSSELLO, JENNIFFER GONZALEZ              +13 SRETBAMNYRMEVPNEQBEBFFRYYBWRAAVS
+Alliance Party              -- ROCKY DE LA FUENTE, DARCY RICHARDSON Caesar shift +5  ZJSYJIFWHDWNHMFWIXTSWTHPDIJQFK
+Legal Marijuana Now Party   -- DAN VACEK, MARK ELWORTH                           +17 TVBDRIBVCNFIKYUREMR
+Opposition Party            -- WILLIAM NH SMITH, FRANCIS BRISTOW                 +7  TUOZTPAOMYHUJPZIYPZAVDDPSSPH
+Freedom Socialist Party     -- STEPHEN DURHAM, CHRISTINA LOPEZ                   +22 DWIYDNEOPEJWHKLAVOPALDAJZQN 
+Transhumanist Party         -- CHARLIE KAM, LIZ PARRISH                          +20 UGFCTJULLCMBWBULFCYE</code></pre></div>
+<p>We have the flag when taking the first character from the parties.</p>
+
+<div class="alert info">
+  💬 <strong>Puzzle Setter&rsquo;s Comment.</strong> This is one of the few puzzles that had some extra content that wasn&rsquo;t used. The Caesar shift and the shift in start of the text were not used for anything. In retrospect, I probably should have used these to spell out &ldquo;RED HERRING&rdquo; or something like that.
+</div>
+  
+
+<p><em>Flag: <code>lionaloft</code></em></p>
+
+<div class="alert info">
+  <strong>Side Story.</strong> There is a little detour when we parse the flag. <em>Mystiz</em> thought it was <code>liona loft</code> while <em>Ozetta</em> corrected that it should be <code>lion aloft</code>.
+</div>
+  
+
+<h2 id="split-meanings">Split Meanings<a hidden class="anchor" aria-hidden="true" href="#split-meanings">#</a></h2>
+
+<p><a href="https://bbs.goldbug.cryptovillage.org/puzzles/SplitMeanings.pdf">Challenge Link</a></p>
+
+<blockquote>
+<p>I stumbled upon the most peculiar coincidence. Or was it a coin cidence? Or a Coinci dence??</p>
+
+<p>Once you've separated heads from tails, don't forget to use the passages for spot all-stars... or was it a result of points...</p>
+</blockquote>
+
+<h3 id="solution-4">Solution<a hidden class="anchor" aria-hidden="true" href="#solution-4">#</a></h3>
+
+<p style="text-align: center;">
+⌛ Progress: 5/11 ⌛<br>
+🎉 Solved on August 8, 00:55 (23h 55m after the game starts) 🎉
+</p>
+
+<p>We had no idea what was going on. <em>Mystiz</em> guessed that the first hint starts with <code>dig</code> because of the word <em>excavating</em>. <em>TWY</em> thought that should be <em>digest</em>, and eventually got the first solution: <code>dig estate</code> / <code>digest ate</code>.</p>
+
+<p>On the second trial, <em>TWY</em> suggested that the last one ends with <em>terrain</em>.</p>
+
+<blockquote>
+<p><em>Mystiz</em>: <em>win terrain</em> / <em>winter rain</em>?
+<em>TWY</em>: <em>bet terrain</em> / <em>better rain</em>!</p>
+</blockquote>
+
+<p>We eventually solved most of them. While we are solving, assuming that the middle part consists of three letters also helped us to solve the harder ones:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">Ratio of law enforcement OR a penny (10)
+cop percent / copper cent
+
+In addition to nature OR having no exit (12)
+with outdoors / without doors [*]
+
+Island of a large island OR location for work (10)
+off  iceland / office land [*]
+
+Jewelry for phone icons OR suddenly visible circles (11)
+app earrings / appear rings
+
+Alice’s vote OR a bundle of rosemary (9)
+her ballot / herbal lot
+
+Planter for particles OR spud speaking device (9)
+pot atomic / potato mic
+
+Expert demonstration OR correct posture (10)
+pro perform / proper form
+
+Excavating an inheritance OR consuming an processing (9)
+dig estate / digest ate
+
+Tasting tin OR master of the shiny elements (12)
+metal licking / metallic king
+
+Laws pertaining to a flying mammal OR a night out with the caped crusader (10)
+bat mandate / batman date
+
+Gambling field OR more welcome precipitation (10)
+bet terrain / better rain
+
+
+[*]: Answers provided by the puzzle setter.</code></pre></div>
+<p>There are a bunch of unused triples. For that, we extract the three letters in the middle part and compute a product-sum for each of the triples.</p>
+
+<p>For the first line, the middletext is <code>per</code> (that is $(16, 5, 18)$) and the triple is $(-2, 1, 2)$. We can compute <code>i</code> (which is a $9$) with the below formula:</p>
+
+<p><span  class="math">\[(-2)\cdot 16 + 1\cdot 5 + 2\cdot 18 = 9\]</span></p>
+
+<p>Repeating the progress, we had the flag.</p>
+
+<p><em>Flag: <code>ivoryequine</code></em> (so the adjective and the noun doesn't start with the same letter)</p>
+
+<h2 id="inconvenient-habit-of-kittens">Inconvenient Habit of Kittens<a hidden class="anchor" aria-hidden="true" href="#inconvenient-habit-of-kittens">#</a></h2>
+
+<p><a href="https://bbs.goldbug.cryptovillage.org/puzzles/InconvenientHabitOfKittens.mp3">Challenge Link</a></p>
+
+<h3 id="solution-5">Solution<a hidden class="anchor" aria-hidden="true" href="#solution-5">#</a></h3>
+
+<p style="text-align: center;">
+⌛ Progress: 6/11 ⌛<br>
+🎉 Solved on August 8, 04:15 (1d 3h 15m after the game starts) 🎉
+</p>
+
+<p>We are given a sound file of meow's and purr's, some follows immediately after the previous sound, some with a short pause and some with a longer pause.</p>
+
+<p>We first labelled and converted the sound file into the following text:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">r h atfd k@el
+!w b
+xig oc sj pu vhaf
+mdk el qbi
+zgn$ #yr oct
+@ jp! vwh xa
+s umq
+fdke lbz n$ i#yg r to@!
+wcj pvx su hmqa z nf$# dkyrel
+bt @i goc j!w p vxh sumafd
+kelb qzn i$g #o c yjp vhaf rt@ d!k elb i</code></pre></div>
+<p>The maximum length is 6 and there are more than 26 different source of sounds.</p>
+
+<p><figure><img src="/images/2021-08-19-defcon-gold-bug/kitten-hint.png" alt=""></figure></p>
+
+<p>Okay, this is some sort of morse code. When we convert each <em>purr</em> into a dash and each <em>meow</em> into a dot, we are able to get:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">- . .-.. .-..
+-- .
+-.. .. -. .- ....
+-.. .. -..
+-.-- --- ..-
+- ..- .-. -.
+- ---
+.... ..- -- .--. - -.--
+-.. ..- -- .--. - -.-- ..--..
+.- -. ... .-- . .-. ---...
+.... --- .-. -. . -.. .... --- .-. ... .</code></pre></div>
+<div class="alert info">
+  Actually we have only converted the last line before solving it, since that word looks like the answer.
+</div>
+  
+
+<p><code>TELL ME DINAH DID YOU TURN TO HUMPTY DUMPTY? ANSWER: HORNEDHORSE</code></p>
+
+<p><em>Flag: <code>hornedhorse</code></em></p>
+
+<h2 id="down-the-rabbithole">Down the Rabbithole<a hidden class="anchor" aria-hidden="true" href="#down-the-rabbithole">#</a></h2>
+
+<p><a href="https://bbs.goldbug.cryptovillage.org/puzzles/SeekTheJabberwock/">Challenge Link</a></p>
+
+<h3 id="solution-6">Solution<a hidden class="anchor" aria-hidden="true" href="#solution-6">#</a></h3>
+
+<p style="text-align: center;">
+⌛ Progress: 7/11 ⌛<br>
+🎉 Solved on August 8, 13:55 (1d 12h 55m after the game starts) 🎉
+</p>
+
+<h4 id="stage-1">Stage 1<a hidden class="anchor" aria-hidden="true" href="#stage-1">#</a></h4>
+
+<blockquote>
+<p>Have you come seeking the Jabberwock? Beware - there is danger ahead!</p>
+
+<p>We must first go DANCING down the rabbit hole...</p>
+</blockquote>
+
+<p>This stage is pretty straight-forward. Decoding with <em>dancing-man cipher</em>, we can see that there are two group of words: <em>blue</em> and <em>caterpillar</em>. Thus the answer is <code>BlueCaterpillar</code>.</p>
+
+<p><figure><img src="/images/2021-08-19-defcon-gold-bug/rabbit-hole-1.png" alt=""></figure></p>
+
+<h4 id="stage-2">Stage 2<a hidden class="anchor" aria-hidden="true" href="#stage-2">#</a></h4>
+
+<blockquote>
+<p>Twas brillig, and the slithy toves
+Did gyre and gimble in the wabe;
+All mimsy were the borogoves,
+And the mome raths outgrabe.</p>
+</blockquote>
+
+<p>There are a bunch of lines sampled below. After a bit of researching, it seems that each line represents an area code in the United States or Canada.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">(Boulder, CO [historically]),
+(Fresno, CA),
+110,
+148,
+(Asheville, NC),
+...</code></pre></div>
+<p>Also, <em>303 Duovigintillion</em> in the title hinted that we are going to build a big number eventually. Also, the line &quot;<em>After all, you wouldn't want to waste your PRIME FORM.</em>&quot; suggested us to factorize the numbers.</p>
+
+<p>With the help of Google and <a href="https://bbs.goldbug.cryptovillage.org/CheckMyCodes/303/559/110/148/828/256/317/334/680/803/857/319/507/904/683/838/101/136/772/132/605/132/800/000/">the area code checker</a>, we can build a huge number.</p>
+
+<p><span  class="math">\[303559110...132800000 = 2^{20}\cdot3^8\cdot5^5\cdot7^{18}\cdot11^{15}\cdot13^{19}\cdot17^5.\]</span></p>
+
+<p>Considering the indices in the prime factorization, we got the answer for the next stage: <code>TheRose</code>.</p>
+
+<h4 id="stage-3">Stage 3<a hidden class="anchor" aria-hidden="true" href="#stage-3">#</a></h4>
+
+<blockquote>
+<p>Beware the Jabberwock, my son!
+The jaws that bite, the claws that catch!
+Beware the Jubjub bird, and shun
+The frumious Bandersnatch!</p>
+</blockquote>
+
+<p><figure><img src="/images/2021-08-19-defcon-gold-bug/rabbit-hole-2.png" alt=""></figure></p>
+
+<p>This stage is also easy. Searching the keywords <em>dark</em>, <em>jot</em> and <em>cipher</em> on Google, we are suggested that the above text is encoded in nyctography, created by Lewis Carroll.</p>
+
+<p><figure><img src="/images/2021-08-19-defcon-gold-bug/rabbit-hole-3.png" alt=""></figure></p>
+
+<p>Decoding the text, we have the answer <code>CheshireCat</code>.</p>
+
+<div class="alert info">
+  😏 <strong>An Insight.</strong> <em>Mystiz</em> realised that these are all characters in the Alice in the Wonderland now&hellip;
+</div>
+  
+
+<h4 id="stage-4">Stage 4<a hidden class="anchor" aria-hidden="true" href="#stage-4">#</a></h4>
+
+<blockquote>
+<p>He took his vorpal sword in hand:
+Long time the manxome foe he sought -
+So rested he by the Tumtum tree,
+And stood awhile in thought.</p>
+</blockquote>
+
+<p><figure><img src="/images/2021-08-19-defcon-gold-bug/rabbit-hole-4.png" alt=""></figure></p>
+
+<p>We can see that there are a bunch of M&amp;Ms in this stage. Similar to <em>Knave of Hearts</em> (which is not correct), Mystiz thought that it is ASCII related because there are eight columns and first column consists of zeroes only. This decodes into <code>CountColors</code>, and therefore the number of M&amp;Ms are counted for each of the colors.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">   white: 16 (p)
+     red: 20 (t)
+pale-red:  3 (c)
+  orange:  8 (h)
+  yellow:  5 (e)
+   green:  4 (d)
+    blue: 21 (u)
+   brown: 11 (k)
+----------------
+     sum: 88</code></pre></div>
+<p><em>Mystiz</em> tried to anagram with <code>ptcheduk</code>. Got <code>peck thud</code> but it was not helpful.</p>
+
+<p><figure><img src="/images/2021-08-19-defcon-gold-bug/rabbit-hole-5.png" alt=""></figure></p>
+
+<p><em>TWY</em> found that white is a stub and <code>p</code> should not be included. Rearranging the characters, it should be <code>TheDuck</code>.</p>
+
+<h4 id="stage-5">Stage 5<a hidden class="anchor" aria-hidden="true" href="#stage-5">#</a></h4>
+
+<blockquote>
+<p>And as in uffish thought he stood,
+The Jabberwock, with eyes of flame,
+Came whiffling through the tulgey wood,
+And burbled as it came!</p>
+</blockquote>
+
+<p><figure><img src="/images/2021-08-19-defcon-gold-bug/rabbit-hole-6.png" alt=""></figure></p>
+
+<p>We are given a lint of runes. It is easily searchable that the characters are <em>Elder Futhark</em>. When decoded, we have the below message:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">ᛊᛖᚲ ᛃᛖ ᚦᛖ ᛞᚱᛁᛒᚢᚱ ᛟᚠ ᚾᚨᛃᛚ ᚨᚾᛞ ᛊᛈᛚᛁᛏᛏᚢᚱ ᛟᚠ ᚹᚢᛞ
+sek je þe dribur of najl and splittur of wud</code></pre></div>
+<p><em>TWY</em> parsed the line a bit and got <code>driver of nail and splitter of wood</code>. With that, <em>Mystiz</em> went through the characters and found <code>Carpenter</code> is the perfect match (he also found <em>hammer bird</em> but it was incorrect).</p>
+
+<div class="alert info">
+  <strong>Uncertain bits.</strong> <em>Mystiz</em> thought <em>sek je þe</em> to be <em>seek me the</em>.
+</div>
+  
+
+<h4 id="stage-6">Stage 6<a hidden class="anchor" aria-hidden="true" href="#stage-6">#</a></h4>
+
+<blockquote>
+<p>One, two! One, two! And through and through
+The vorpal blade went snicker-snack!
+He left it dead, and with its head
+He went galumphing back.</p>
+</blockquote>
+
+<p>This is the final stage but <em>Mystiz</em> had no idea how to craft the key. <em>Ozetta</em> suggested that the solution is a ten-letter word and asked if <em>Mystiz</em> is going to brute force the solution.</p>
+
+<blockquote>
+<p><em>Ozetta</em>: Are you going to brute force the solution with a dictionary yet?
+<em>Mystiz</em>: How even do I brute force a ten-letter word?</p>
+
+<p>*tries <em>wonderland</em> with instinct*</p>
+
+<p><em>&quot;And, has thou slain the Jabberwock?&quot;</em></p>
+</blockquote>
+
+<p>The Jabberwock is slained, and <code>RubyReptile</code> is sitting inside the source code.</p>
+
+<p><em>Flag: <code>rubyreptile</code></em></p>
+
+<h2 id="lobster-quadrille">Lobster Quadrille<a hidden class="anchor" aria-hidden="true" href="#lobster-quadrille">#</a></h2>
+
+<p><a href="https://bbs.goldbug.cryptovillage.org/puzzles/LobsterQuadrille.pdf">Challenge Link</a></p>
+
+<blockquote>
+<p>&quot;You may not have lived much under the sea so you can have no idea what a delightful thing a Lobster Quadrille is!&quot;
+&quot;No, indeed,&quot; said Alice. &quot;What sort of a dance is it?&quot;
+&quot;Why,&quot; said the Gryphon, &quot;you ﬁrst form into a line along the sea-shore—&quot;
+&quot;Two lines!&quot; cried the Mock Turtle.</p>
+</blockquote>
+
+<h3 id="solution-7">Solution<a hidden class="anchor" aria-hidden="true" href="#solution-7">#</a></h3>
+
+<p style="text-align: center;">
+⌛ Progress: 8/11 ⌛<br>
+🎉 Solved on August 8, 15:35 (1d 14h 35m after the game starts) 🎉
+</p>
+
+<p>We are given pictures of five ocean animals. Assuming that the lengths given on the left are correct, then they are respectively <code>haddock</code>, <code>squid</code>, <code>quahog</code>, <code>shrimp</code> and <code>king crab</code>.</p>
+
+<div class="alert info">
+  💬 <strong>Puzzle Setter&rsquo;s Comment.</strong> This is the sea animal people had the hardest time identifying. We tweeted a hint, &ldquo;My third is hard shelled&rdquo;, to help with that.
+</div>
+  
+
+<p>There is a line <code>UEHKYHRIOSTEETEMDR</code> on the very bottom. Using railfence cipher with two rows. It decrypts into <code>USE THE KEY THERMIDOR</code>. The rationale comes from the challenge statement - <em>&quot;Two lines!&quot; cried the Mock Turtle.</em></p>
+
+<p>In a later time, there is a hint regarding to the remaining part of the puzzle:</p>
+
+<p><figure><img src="/images/2021-08-19-defcon-gold-bug/lobster-hint.png" alt=""></figure></p>
+
+<p><em>Mystiz</em> identified that might be playfair cipher. However he was unsure what to decrypt (or encrypt). He decided to DM the puzzle writer and received:</p>
+
+<blockquote>
+<p>CryptoK — 2021/08/08<br>
+trust your intuition a bit more there</p>
+</blockquote>
+
+<p><em>Mystiz</em> decided to look into playfair cipher. He initially thought the seven-letter word that ends with a <code>T</code> would be decrypted to <code>haddock</code>. This led him nowhere.</p>
+
+<p><figure><img src="/images/2021-08-19-defcon-gold-bug/lobster-example.png" alt=""></figure></p>
+
+<p>After reassured by the puzzle writer, he tried to decrypt the pairs. For instance, we are using the seventh letter of <code>haddock</code>, i.e. <code>K</code>, along with the hint <code>T</code>. When it is decrypted with the key <code>THERMIDOR</code>, we have <code>CR</code>. The seventh letter of <code>haddock</code> is picked because <code>T</code> in the hint is the seventh letter.</p>
+
+<p>Repeating the process with the ciphertext pairs <code>KT</code>, <code>DX</code>, <code>QT</code>, <code>IF</code>, <code>IR</code>. We have <code>CR OW NE DC AT</code>.</p>
+
+<p><em>Flag: <code>crownedcat</code></em></p>
+
+<h2 id="knave-of-hearts">Knave of Hearts<a hidden class="anchor" aria-hidden="true" href="#knave-of-hearts">#</a></h2>
+
+<p><a href="https://bbs.goldbug.cryptovillage.org/puzzles/KnaveofHearts.pdf">Challenge Link</a></p>
+
+<blockquote>
+<p>Then followed the Knave of Hearts, carrying the King's crown on a crimson velvet cushion; and, last of all this grand procession, came The King and Queen of Hearts.</p>
+
+<p>Alice was rather doubtful whether she ought not to lie down on her face like the three gardeners, &quot;and besides, what would be the use of a procession,&quot; thought she, &quot;if people had all to lie down upon their faces, so that they couldn’t see it?&quot;</p>
+</blockquote>
+
+<h3 id="solution-8">Solution<a hidden class="anchor" aria-hidden="true" href="#solution-8">#</a></h3>
+
+<p style="text-align: center;">
+⌛ Progress: 9/11 ⌛<br>
+🎉 Solved on August 9, 00:20 (1d 23h 20m after the game starts) 🎉
+</p>
+
+<p>It is pretty evident that there are two puzzles on the board: Nonogram and sudoku. This is what we have after filling in the board:</p>
+
+<p><figure><img src="/images/2021-08-19-defcon-gold-bug/knave-1.png" alt=""></figure></p>
+
+<p>Note that there are multiple solutions for the nonogram. We marked them in pale orange and light blue - and either one serves as part of the correct answer along with the green squares.</p>
+
+<p>After that, we are long stuck. There are three hints released:</p>
+
+<ul>
+<li>If the Knave told you that he could feel the next step by closing his eyes, would you believe him?</li>
+<li>The knave's friend can move from his starting position to the opposite corner clockwise.</li>
+<li>Consider the unseen and the derived separately. From there, your journey continues where edges meet.</li>
+</ul>
+
+<p>There are some thoughts while we are stuck. For instance, we think the the solution for nonogram is encoding ASCII characters column-by-column (which reads <code>5 53R1C#</code>). We also guessed that each column is encoding a pair of coordinates (which decodes to $(3, 5)$, $(2, 0)$, $(3, 5)$, $(3, 3)$, ...). Unfortunately this led us to nowhere.</p>
+
+<p>Because of the desperation, <em>Mystiz</em> DMed for hints once again and knew it was braille immediately:</p>
+
+<blockquote>
+<p>CryptoK — Aug 8
+How might one read if they are wearing a blindfold?</p>
+</blockquote>
+
+<p>Decoding the nonogram solution with Braille, we obtained <code>knightne</code> (the another one does not decode into something meaningful).</p>
+
+<div class="alert info">
+  💬 <strong>Puzzle Setter&rsquo;s Comment.</strong> This was also clued in the passage from Alice in Wonderland, &ldquo;so that they couldn&rsquo;t see it&rdquo;.
+</div>
+  
+
+<p>It is stated from the second hint that the knight can move from one corner to the opposite clockwise. Which corners? What are the walkable squares?</p>
+
+<p>Eventually, when we assume that the obstacles are defined by the given hints in sudoku, we are able to move from top-right to bottom-left clockwise. The squares form the flag.</p>
+
+<p><figure><img src="/images/2021-08-19-defcon-gold-bug/knave-2.png" alt=""></figure></p>
+
+<p><em>Flag: <code>avianally</code></em></p>
+
+<h2 id="hoofmans-headache">Hoofman's Headache<a hidden class="anchor" aria-hidden="true" href="#hoofmans-headache">#</a></h2>
+
+<p><a href="https://bbs.goldbug.cryptovillage.org/puzzles/HoofmansHeadache.pdf">Challenge Link</a></p>
+
+<blockquote>
+<p>When given a series of digits,<br>
+I can’t help but begin to fidget.<br>
+My mind can’t stay still,<br>
+While counting the quill<br>
+Of characters expected within it.</p>
+
+<p>And what of the text? Wonder through and reflect?<br>
+And the form you have sought? Left be less yielding naught?</p>
+
+<p>Hoofman's thoughts can’t see why one would want to multiply!?</p>
+
+<p>Left and right form anew, but their sums over-grew??<br>
+That’s optimally not right when compressing.</p>
+</blockquote>
+
+<h3 id="solution-9">Solution<a hidden class="anchor" aria-hidden="true" href="#solution-9">#</a></h3>
+
+<p style="text-align: center;">
+⌛ Progress: 10/11 ⌛<br>
+🎉 Solved on August 9, 01:50 (2d 50m after the game starts) 🎉
+</p>
+
+<p>We are given 266 bits as below:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">00100101110111101110011110101111101111
+10110110110001001010101001111000001101
+01000111101001111010110000001010100010
+11010110011000101101100100000110000010
+01101111111001101101011001011000101101
+01111100100111110111100101000010011011
+10110110011010100011011011001000000110</code></pre></div>
+<p>From the title we notice that Hoofman is spelt so similar to Huffman, especially when the letter <em>o</em> is considered a wildcard character. &quot;Compress&quot; appears in the last line, that further validates this assumption. Furthermore, we made some assumptions according to the poem regarding the &quot;special&quot; construction of the tree:</p>
+
+<ol>
+<li><em>&quot;While counting the quill of characters expected within it&quot;</em> may be related to the letter frequencies</li>
+<li><em>&quot;Left be less yielding naught&quot;</em> seems to imply that the left branch of the tree has smaller weight than the right branch, and the assigned bit is 0.</li>
+<li><em>&quot;Hoofman's thoughts can’t see why one would want to multiply!?&quot;</em> seems to imply that multiply is used instead of addition.</li>
+<li><em>&quot;Left and right form anew, but their sums over-grew??&quot;</em> is the basic concept of Huffman tree, and &quot;over-grew&quot; emphasizes the growth rate of the weight after merging.</li>
+<li><em>&quot;That's optimally not right when compressing.&quot;</em> implies that the implementation is different from the optimal Huffman tree construction.</li>
+</ol>
+
+<p>There are some more questions regarding to the third point. If we are using multiplication instead of addition, we need to consider whether <em>&quot;the quill&quot;</em> means the count or the percentage. If it is the latter case, then multiplying two numbers should result in a smaller fraction, so we should instead take the two nodes with highest weights (We thought of whether <em>&quot;Wonder through and reflect?&quot;</em> is related). Otherwise, if it is the frequency, then the actual length of the source is important since when the length is doubled, the product of two weights will become 4 times the original, that affects the relative weight of nodes between different levels.</p>
+
+<p>Since guessing the correct source is difficult, we drafted the script for building Huffman tree and wait for hints. The script consists of replacable components:</p>
+
+<ul>
+<li>changeable source</li>
+<li>extracting the heaviest or the lightest node</li>
+<li>using fraction to store the frequency (denominator is 1 for integers)</li>
+<li>whether to use multiplication or addition</li>
+</ul>
+
+<p>We used the Relative frequency in the English text at the moment, but we were uncertain about whether spaces and symbols should be included, and whether to treat capital and small letters separately.</p>
+
+<p>Eventually the challenge author released the first hint:</p>
+
+<p><figure><img src="/images/2021-08-19-defcon-gold-bug/hoofman-hint-1.png" alt=""></figure></p>
+
+<p>From this we know that the source should not be that relative frequency, but some pieces related to <em>Alice in Wonderland</em>. Following that, they released the next hint:</p>
+
+<p><figure><img src="/images/2021-08-19-defcon-gold-bug/hoofman-hint-2.png" alt=""></figure></p>
+
+<p>This proves our assumption, and we are certain that frequencies (instead of percentages) of letters is used. Also, this confirms that minimum weights is used, and multiplication is used for the new node.</p>
+
+<p>Here we start to think what the source the frequencies are taken from. We tried to use the letter frequencies from Alice in the Wonderland, and obtained the below &quot;plaintext&quot;:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">OJCCAUNQYLIOMAGAZAUQJHOFJJAIEWHEHPQDLJOGYCWARDFOERYEFELOHE</code></pre></div>
+<p>Although all bits are consumed (We can immediately falsify a tree if there are leftover bits), the text looked nonsense. Eventually another hint comes in to the scene:</p>
+
+<p><figure><img src="/images/2021-08-19-defcon-gold-bug/hoofman-hint-3.png" alt=""></figure></p>
+
+<p>The paste is entitled <em>HoofmansSourceText</em>, and the contents comes from <em>&quot;Through the Looking-Glass, and What Alice Found There&quot;</em>, which is considered the sequel to Alice's Adventures in Wonderland. We replaced the current text with the given text, and obtained the below plaintext:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">ITLLPUZZLEITTOGOTHROUGHTHECEILINGIEXPECTKEYWORDFIERCEFELINE</code></pre></div>
+<p><em>(It'll puzzle it to go through the ceiling I expect keyword fierce feline)</em></p>
+
+<p><em>Flag: <code>fiercefeline</code></em></p>
+
+<div class="alert info">
+  <strong>Postmortem.</strong> It seems that <em>&ldquo;Wonder through and reflect&rdquo;</em> indicates the text used. That is, <em>Through the Looking-Glass</em>.
+</div>
+  
+
+<h2 id="moms-monsters-meta">Mom's Monsters (Meta)<a hidden class="anchor" aria-hidden="true" href="#moms-monsters-meta">#</a></h2>
+
+<p><a href="https://bbs.goldbug.cryptovillage.org/puzzles/MomsMonsters.pdf">Challenge Link</a></p>
+
+<blockquote>
+<p>White, Red, or Hearts they be,
+Connect the dots and you will see.
+Monsters ten have come to pray -
+Name them well and we shall play.</p>
+</blockquote>
+
+<h3 id="solution-10">Solution<a hidden class="anchor" aria-hidden="true" href="#solution-10">#</a></h3>
+
+<p style="text-align: center;">
+⌛ Progress: 11/11 ⌛<br>
+🎉 Solved on August 9, 20:00 (15h 30m after the game ends) 🎉
+</p>
+
+<p>There are two hints released. And the first being:</p>
+
+<p><figure><img src="/images/2021-08-19-defcon-gold-bug/monster-hint-1.png" alt=""></figure></p>
+
+<div class="alert info">
+  ❓ <strong>Question.</strong> What exactly is this?
+</div>
+  
+
+<p>The second one is relatively direct.</p>
+
+<p><figure><img src="/images/2021-08-19-defcon-gold-bug/monster-hint-2.png" alt=""></figure></p>
+
+<p>The capital letters form the word <em>UKMINT</em>, which may refer to the royal mint (the government-owned mint in the United Kingdom). They recently produced the coin for Alice in Wonderland. More importantly, they also produced the coin featuring the Queen's Beasts:</p>
+
+<p><figure><img src="/images/2021-08-19-defcon-gold-bug/monster-mint.webp" alt=""></figure></p>
+
+<p>Why is the riddle related to the Queen's Beasts? Here is the list of the beasts:</p>
+
+<ul>
+<li>The Lion of England</li>
+<li>The White Greyhound of Richmond</li>
+<li>The Yale of Beaufort</li>
+<li>The Red Dragon of Wales</li>
+<li>The White Horse of Hanover</li>
+<li>The White Lion of Mortimer</li>
+<li>The Unicorn of Scotland</li>
+<li>The Griffin of Edward III</li>
+<li>The Black Bull of Clarence</li>
+<li>The Falcon of the Plantagenets</li>
+</ul>
+
+<p>We can see that each of the ten flags corresponds to a beast. This is the mapping between the two:</p>
+
+<ol>
+<li>Fierce Feline - The White Lion of Mortimer</li>
+<li>Pale Puppy - The White Greyhound of Richmond</li>
+<li>Goring Goat - The Yale of Beaufort</li>
+<li>Crowned Cat - The Lion of England</li>
+<li>Avian Ally - The Falcon of the Plantagenets</li>
+<li>Lion Aloft - The Griffin of Edward III</li>
+<li>Ruby Reptile - The Red Dragon of Wales</li>
+<li>Coal Cow - The Black Bull of Clarence</li>
+<li>Horned Horse - The Unicorn of Scotland</li>
+<li>Ivory Equine - The White Horse of Hanover</li>
+</ol>
+
+<p><figure><img src="/images/2021-08-19-defcon-gold-bug/monster-beasts.png" alt=""></figure></p>
+
+<div class="alert info">
+  ❓ <strong>Another Question.</strong> How to obtain the flag?
+</div>
+  
+
+<p>Well, the only clue left is the graph in the challenge pdf. At first glance, we should be able to conclude that the shape represents its corresponding beast's name by the puzzle index.</p>
+
+<p>How about the x-axis? We can notice that there is only one shape per x-value, so it is having high chance that it is the character index of the meta-puzzle's flag.</p>
+
+<p>Finally, the y-axis then must be the character index of the corresponding beast's name. As the least y-index starts from 4, we can guess that all the beasts' name included the word &quot;The&quot;. Besides, there should be no spaces for the beasts' name as from the experence in previous challenges.</p>
+
+<p>Following the idea, we have the string below:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">iFYouLlBEaieveinmeIllBelieveinyou</code></pre></div>
+<p>There is one incorrect point (10, 18) which should be instead (10, 17). Fixing it, we have the final answer:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">ifyoullbelieveinmeillbelieveinyou</code></pre></div>
+<p>Which is, <em>&quot;If you'll believe in me, I'll believe in you&quot;</em>.</p>
+
+</div>
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://b6a.black/tags/gold-bug-puzzle/">gold bug puzzle</a></li>
+      <li><a href="https://b6a.black/tags/puzzle/">puzzle</a></li>
+    </ul>
+    <nav class="paginav">
+      <a class="next" href="https://b6a.black/posts/2021-05-22-3kctf/">
+        <span class="title">Next Page »</span>
+        <br>
+        <span>3kCTF-2021 Writeup</span>
+      </a>
+    </nav>
+  </footer>
+</article>
+<aside class="toc-container">
+  <a href="#" style="text-decoration: none; font-weight: 700;">
+    DEFCON Gold Bug Puzzle 2021
+  </a>
+  <div class="js-toc"></div>
+</aside>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.12.0/tocbot.min.css" integrity="sha512-SFw7k74K3983tyOlJIHa8atr9Ppef3Kix5cmifwzU7ZdtU2E0FRuOVRtd3ENpMJ8sNCie5hlb/0j23efcdQJXA==" crossorigin="anonymous" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.12.0/tocbot.min.js" integrity="sha512-oD3xGN8YTxenx6tdS4D/RKqO4OtORBQtAb2/FseM17GGMIi6jMwKUBc8duX4A5RwMOGGXoFBZrsqbOk8GpXFgQ==" crossorigin="anonymous"></script>
+
+<script type="text/javascript">
+  tocbot.init({
+    headingSelector: 'h1, h2, h3, h4',
+    orderedList: false,
+    headingLabelCallback: s => s.substr(0, s.length-1),
+    collapseDepth: 2
+  });
+</script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/viz.js/1.7.1/viz.js"> </script>
+<script type="text/javascript">
+  (function () {
+    const vizPrefix = "language-viz-";
+    Array.prototype.forEach.call(document.querySelectorAll("[class^=" + vizPrefix + "]"), function (x) {
+      let engine;
+      x.getAttribute("class").split(" ").forEach(function (cls) {
+        if (cls.startsWith(vizPrefix)) {
+          engine = cls.substr(vizPrefix.length);
+        }
+      });
+      const image = new DOMParser().parseFromString(Viz(x.innerText, { format: "svg", engine: engine }), "image/svg+xml");
+      x.parentNode.insertBefore(image.documentElement, x);
+      x.style.display = 'none'
+      x.parentNode.style.backgroundColor = "white"
+    });
+  })();
+</script>
+    </main><footer class="footer">
+    <span>&copy; 2021 <a href="https://b6a.black/">Black Bauhinia</a></span>
+    <span>&middot;</span>
+    <span>Powered by <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a></span>
+    <span>&middot;</span>
+    <span>Theme <a href="https://git.io/hugopapermod" rel="noopener" target="_blank">PaperMod</a></span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)">
+    <button class="top-link" id="top-link" type="button" accesskey="g">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+            <path d="M12 6H0l6-6z" />
+        </svg>
+    </button>
+</a>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css"
+  integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.js"
+  integrity="sha384-g7c+Jr9ZivxKLnZTDUhnkOnsh30B4H0rpLUpJ4jAIKs4fnJI+sEnkvrMWph2EDg4" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/contrib/auto-render.min.js"
+  integrity="sha384-mll67QQFJfxn0IYznZYonOWZ644AWYC+Pt2cHqMaRhXVrursRwvLnLaebdGIlYNa" crossorigin="anonymous"
+  onload="renderMathInElement(document.body, { delimiters: [{ left: '$$', right: '$$', display: true }, { left: '\\[', right: '\\]', display: true }, { left: '$', right: '$', display: false }, { left: '\\(', right: '\\)', display: false }]})"></script>
+
+
+
+<script defer src="/assets/js/highlight.min.27cd435cc9ed6abb4b496581b151804f79f366c412620272bb94e2f5f598ebcc.js" integrity="sha256-J81DXMntartLSWWBsVGAT3nzZsQSYgJyu5Ti9fWY68w="
+    onload="hljs.initHighlightingOnLoad();"></script>
+<script>
+    window.onload = function () {
+        if (localStorage.getItem("menu-scroll-position")) {
+            document.getElementById('menu').scrollLeft = localStorage.getItem("menu-scroll-position");
+        }
+    }
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+    function menu_on_scroll() {
+        localStorage.setItem("menu-scroll-position", document.getElementById('menu').scrollLeft);
+    }
+
+</script>
+
+</body>
+
+</html>
