@@ -6,10 +6,46 @@
     <description>Recent content in Tags on Black Bauhinia</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 19 Aug 2021 00:25:00 +0800</lastBuildDate>
+    <lastBuildDate>Thu, 04 Nov 2021 20:50:00 +0800</lastBuildDate>
     
 	<atom:link href="https://b6a.black/tags/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>ctf</title>
+      <link>https://b6a.black/tags/ctf/</link>
+      <pubDate>Thu, 04 Nov 2021 20:50:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/tags/ctf/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>hacklu-ctf</title>
+      <link>https://b6a.black/tags/hacklu-ctf/</link>
+      <pubDate>Thu, 04 Nov 2021 20:50:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/tags/hacklu-ctf/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>web</title>
+      <link>https://b6a.black/tags/web/</link>
+      <pubDate>Thu, 04 Nov 2021 20:50:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/tags/web/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>crypto</title>
+      <link>https://b6a.black/tags/crypto/</link>
+      <pubDate>Thu, 04 Nov 2021 20:45:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/tags/crypto/</guid>
+      <description></description>
+    </item>
     
     <item>
       <title>gold bug puzzle</title>
@@ -35,24 +71,6 @@
       <pubDate>Sat, 22 May 2021 00:00:00 +0800</pubDate>
       
       <guid>https://b6a.black/tags/3kctf/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>ctf</title>
-      <link>https://b6a.black/tags/ctf/</link>
-      <pubDate>Sat, 22 May 2021 00:00:00 +0800</pubDate>
-      
-      <guid>https://b6a.black/tags/ctf/</guid>
-      <description></description>
-    </item>
-    
-    <item>
-      <title>crypto</title>
-      <link>https://b6a.black/tags/crypto/</link>
-      <pubDate>Sun, 25 Apr 2021 23:53:00 +0800</pubDate>
-      
-      <guid>https://b6a.black/tags/crypto/</guid>
       <description></description>
     </item>
     
