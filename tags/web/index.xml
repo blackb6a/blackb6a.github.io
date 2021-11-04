@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>web on Black Bauhinia</title>
+    <link>https://b6a.black/tags/web/</link>
+    <description>Recent content in web on Black Bauhinia</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Thu, 04 Nov 2021 20:50:00 +0800</lastBuildDate>
+    
+	<atom:link href="https://b6a.black/tags/web/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Hack.lu CTF 2021 Web Writeup</title>
+      <link>https://b6a.black/posts/2021-11-04-hacklu-web/</link>
+      <pubDate>Thu, 04 Nov 2021 20:50:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/posts/2021-11-04-hacklu-web/</guid>
+      <description>Because there are not many Crypto listed in the &amp;quot;Stock Market&amp;quot;, our &lt;del&gt;Cryptotrader&lt;/del&gt; Cryptanalyst &lt;em&gt;Mystiz&lt;/em&gt; joined us for bounty hunting in Web as well, and we got all Web challenges done this time.</description>
+    </item>
+    
+  </channel>
+</rss>

