@@ -13,14 +13,14 @@ Challenge Summary We are given a peculiar hash algorithm that generates 64-byte 
 Hash construction We are given a peculiar hash algorithm that generates 64-byte long hashes, which wraps of sha0, sha1, sha256 and ripemd160.">
 <meta name="author" content="Mystiz, harrier">
 <link rel="canonical" href="https://b6a.black/posts/2019-10-02-pwnthybytes/" />
-<link href="/assets/css/stylesheet.min.933fbeab943585aa913b5175ee7291733f28815597926f1e56aacc964d807245.css" integrity="sha256-kz&#43;&#43;q5Q1haqRO1F17nKRcz8ogVWXkm8eVqrMlk2AckU=" rel="preload stylesheet"
+<link href="/assets/css/stylesheet.min.79c4dfee3993cd3110886e38d36a5106e0d6922344cefa3ff5c0076f246815f0.css" integrity="sha256-ecTf7jmTzTEQiG4402pRBuDWkiNEzvo/9cAHbyRoFfA=" rel="preload stylesheet"
     as="style">
 
 <link rel="icon" href="https://b6a.black/favicon.ico">
 
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
-<meta name="generator" content="Hugo 0.68.3" />
+<meta name="generator" content="Hugo 0.91.0" />
 
 
 
@@ -204,13 +204,14 @@ October 2, 2019&nbsp;·&nbsp;Mystiz, harrier
 </ol>
 
 <div class="alert info">
-  If we define $L_0, R_0$ by $a_0, a_1, &hellip;, a_9$ and $L_{16}, R_{16}$ by $b_0, b_1, &hellip;, b_9$ (their lengths are respectively equal to $s_0, s_1, &hellip;, s_9$), we still have the below properties:</p>
+  <p>If we define $L_0, R_0$ by $a_0, a_1, &hellip;, a_9$ and $L_{16}, R_{16}$ by $b_0, b_1, &hellip;, b_9$ (their lengths are respectively equal to $s_0, s_1, &hellip;, s_9$), we still have the below properties:</p>
 <ol>
 <li>$b_0 \oplus b_3 = a_0 \oplus a_3$,</li>
 <li>$b_1 \oplus b_4 = a_1 \oplus a_4$,</li>
 <li>$b_5 \oplus b_8 = a_5 \oplus a_8$, and</li>
 <li>$b_6 \oplus b_9 = a_6 \oplus a_9$.</li>
 </ol>
+
 </div>
   
 
@@ -257,7 +258,7 @@ The key and nonce is not provided though, so we have to somehow reverse the <cod
 <p>I first thought this is a GCM nonce collision problem, but the 12 bytes nonce and nonce generation rejects this thought.</p>
 
 <p>The <code>polish_key</code> function is the following:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">polish_key</span>(key):
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">polish_key</span>(key):
 	key <span style="color:#f92672">=</span> bytes_to_long(key[::<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>])
 	key <span style="color:#f92672">=</span> GF(<span style="color:#ae81ff">2</span><span style="color:#f92672">**</span><span style="color:#ae81ff">64</span>)<span style="color:#f92672">.</span>fetch_int(key)
 	key <span style="color:#f92672">=</span> key <span style="color:#f92672">**</span> <span style="color:#ae81ff">0xbcafffff435</span>
@@ -457,7 +458,7 @@ $$b_{ki} = \sum_{j=0}^i a_{k,{i-j}}s_j - 1486 \sum_{j=i+1}^{255} a_{k,i-j+256}s_
   })();
 </script>
     </main><footer class="footer">
-    <span>&copy; 2021 <a href="https://b6a.black/">Black Bauhinia</a></span>
+    <span>&copy; 2022 <a href="https://b6a.black/">Black Bauhinia</a></span>
     <span>&middot;</span>
     <span>Powered by <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a></span>
     <span>&middot;</span>
@@ -481,7 +482,7 @@ $$b_{ki} = \sum_{j=0}^i a_{k,{i-j}}s_j - 1486 \sum_{j=i+1}^{255} a_{k,i-j+256}s_
 
 
 
-<script defer src="/assets/js/highlight.min.27cd435cc9ed6abb4b496581b151804f79f366c412620272bb94e2f5f598ebcc.js" integrity="sha256-J81DXMntartLSWWBsVGAT3nzZsQSYgJyu5Ti9fWY68w="
+<script defer src="/assets/js/highlight.min.7680afc38aa6b15ddf158a4f3780b7b1f7dde7e91d26f073e6229bb7a0793c92.js" integrity="sha256-doCvw4qmsV3fFYpPN4C3sffd5&#43;kdJvBz5iKbt6B5PJI="
     onload="hljs.initHighlightingOnLoad();"></script>
 <script>
     window.onload = function () {

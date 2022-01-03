@@ -13,14 +13,14 @@
  Gets an encrypted copy of the flag (and the message hello world). Encrypts an arbitrary message.  For example, this is what I had when trying out the options:">
 <meta name="author" content="Mystiz">
 <link rel="canonical" href="https://b6a.black/posts/2020-07-22-uiuctf-nookcrypt/" />
-<link href="/assets/css/stylesheet.min.933fbeab943585aa913b5175ee7291733f28815597926f1e56aacc964d807245.css" integrity="sha256-kz&#43;&#43;q5Q1haqRO1F17nKRcz8ogVWXkm8eVqrMlk2AckU=" rel="preload stylesheet"
+<link href="/assets/css/stylesheet.min.79c4dfee3993cd3110886e38d36a5106e0d6922344cefa3ff5c0076f246815f0.css" integrity="sha256-ecTf7jmTzTEQiG4402pRBuDWkiNEzvo/9cAHbyRoFfA=" rel="preload stylesheet"
     as="style">
 
 <link rel="icon" href="https://b6a.black/favicon.ico">
 
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
-<meta name="generator" content="Hugo 0.68.3" />
+<meta name="generator" content="Hugo 0.91.0" />
 
 
 
@@ -154,7 +154,7 @@ July 22, 2020&nbsp;·&nbsp;Mystiz
 </ol>
 
 <p>For example, this is what I had when trying out the options:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">Option: 1
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">Option: 1
 enc(FLAG) = (0xf31ce7cb1f2c6e7107318d76bdda50c5, 0x02d979fc3122bbaffcc1111953bc184f)
 enc(&#39;hello world&#39;) = (0x4cf5afcc9bc1db0118172129b713d86a, 0xe41d8761370768aa9694b164c843dde9)
 
@@ -170,7 +170,7 @@ enc(0x68656c6c6f20776f726c64) = (0x4cf5afcc9bc1db0118172129b713d86a, 0xe41d87613
 <p>Since it is mentioning elliptic curves in its services, the first thing I was doing is to recover the parameters, namely, $a$, $b$ and $p$ for the elliptic curve $y^2 \equiv x^3 + ax + b\ (\text{mod}\ p)$.</p>
 
 <p>My attempt is to encrypt a bunch of messages:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">msg: a
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">msg: a
 enc(0x61) = (0xb2d6c27a99b52aec6e243d4e4f67cb71, 0x9dfa2bd87ea1e09388493137132cc534)
 
 msg: b
@@ -211,7 +211,7 @@ enc(0x64) = (0x985dbb38a65f4e69bfc602d7e114cad9, 0xcad1cb62a3d30b05093575f3a22f7
   
 
 <p>Knowing that the ciphertext $C$ is a multiple of the message $m$, i.e., $C = mG$, we can simply encrypt $m = 1$:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">[+] Opening connection to chal.uiuc.tf on port 2006: Done
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">[+] Opening connection to chal.uiuc.tf on port 2006: Done
 [DEBUG] Received 0x123 bytes:
     b&#39;\n&#39;
     b&#39;========================================\n&#39;
@@ -273,7 +273,7 @@ enc(0x64) = (0x985dbb38a65f4e69bfc602d7e114cad9, 0xcad1cb62a3d30b05093575f3a22f7
 
 
 <p>When I was <del>being played</del> writing an interactor with the service, I observed that there was a strange behaviour regarding to the flag encryption method:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">========================================
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">========================================
 Welcome to NookCrypt! Here we use fancy
 elliptic curve encryption to keep your 
 messages safe! Try it out!
@@ -382,7 +382,7 @@ p' = \text{gcd}( &(y_F^2 - x_F^3 - ax_F - b') - (y_G^2 - x_G^3 - ax_G - b'), \\
   })();
 </script>
     </main><footer class="footer">
-    <span>&copy; 2021 <a href="https://b6a.black/">Black Bauhinia</a></span>
+    <span>&copy; 2022 <a href="https://b6a.black/">Black Bauhinia</a></span>
     <span>&middot;</span>
     <span>Powered by <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a></span>
     <span>&middot;</span>
@@ -406,7 +406,7 @@ p' = \text{gcd}( &(y_F^2 - x_F^3 - ax_F - b') - (y_G^2 - x_G^3 - ax_G - b'), \\
 
 
 
-<script defer src="/assets/js/highlight.min.27cd435cc9ed6abb4b496581b151804f79f366c412620272bb94e2f5f598ebcc.js" integrity="sha256-J81DXMntartLSWWBsVGAT3nzZsQSYgJyu5Ti9fWY68w="
+<script defer src="/assets/js/highlight.min.7680afc38aa6b15ddf158a4f3780b7b1f7dde7e91d26f073e6229bb7a0793c92.js" integrity="sha256-doCvw4qmsV3fFYpPN4C3sffd5&#43;kdJvBz5iKbt6B5PJI="
     onload="hljs.initHighlightingOnLoad();"></script>
 <script>
     window.onload = function () {

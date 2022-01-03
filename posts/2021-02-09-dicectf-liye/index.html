@@ -11,14 +11,14 @@
 <meta name="description" content="Lost in Your Eyes is a reverse engineering challenge in DiceCTF 2021 with ten solves (334 points). We are given a binary which takes an input and outputs either :) or :(. If you win a smiley face on the remote server, you are additionally given the flag.">
 <meta name="author" content="harrier, Mystiz">
 <link rel="canonical" href="https://b6a.black/posts/2021-02-09-dicectf-liye/" />
-<link href="/assets/css/stylesheet.min.933fbeab943585aa913b5175ee7291733f28815597926f1e56aacc964d807245.css" integrity="sha256-kz&#43;&#43;q5Q1haqRO1F17nKRcz8ogVWXkm8eVqrMlk2AckU=" rel="preload stylesheet"
+<link href="/assets/css/stylesheet.min.79c4dfee3993cd3110886e38d36a5106e0d6922344cefa3ff5c0076f246815f0.css" integrity="sha256-ecTf7jmTzTEQiG4402pRBuDWkiNEzvo/9cAHbyRoFfA=" rel="preload stylesheet"
     as="style">
 
 <link rel="icon" href="https://b6a.black/favicon.ico">
 
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
-<meta name="generator" content="Hugo 0.68.3" />
+<meta name="generator" content="Hugo 0.91.0" />
 
 
 
@@ -273,7 +273,7 @@ February 11, 2021&nbsp;·&nbsp;harrier, Mystiz
 <p>As the VM code is so simple, I decided to write an emulator in Python for ease of testing. It is not hard to write an emulation given that I have fully reversed the VM.</p>
 <p>Since the instruction code is embedded in the binary, I used <em>gef</em> to extract the code part, and while in emulation I translate the code to human (me) readable instruction for further reverse. I thought I could get the flag by just reading and parsing the translated code, and figuring out the whole logic. I was wrong and it was far more complicated than that.</p>
 <p>With the emulator I was able to produce some code trace with various input, here&rsquo;s some debug log I generated, with state of the VM and instruction it ran:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">Current state: [0, 46, 1, 22, 41, 35, 23, 0] 6 50 / 16 0
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">Current state: [0, 46, 1, 22, 41, 35, 23, 0] 6 50 / 16 0
 50/16 REGSEL = 6
 Current state: [0, 46, 1, 22, 41, 35, 24, 0] 6 49 / 16 0
 49/16 LOAD REG[6] 0/46
@@ -318,7 +318,7 @@ Current state: [0, 46, 1, 22, 41, 35, 24, 0] 7 46 / 15 2
 <p>We then come up an idea to try to use the conditional <em>keycheck</em> operation on the side of the square to escape out of the box. However <em>keycheck</em> does not allow an arrow pointing to itself. This does not work as well.</p>
 <p>It seems that the only possible way is to navigate in the maze properly to get to the win gadget. But how is it possible if the maze do not have arrows?</p>
 <p>Well, there is an untouched part of the program - the arrow-putting gadget. With $R_4 &lt; 4$, it can be used to put arrows on to the maze with the <em>set register</em> instruction (byte 0x21). We reversed it and and expected that it behaves as the following Python code snippet:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">for</span> x <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">21</span>):
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">for</span> x <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">21</span>):
     <span style="color:#66d9ef">for</span> y <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">21</span>):
         <span style="color:#75715e"># We are not allowed to overwrite the &#34;load address&#34; instructions</span>
         <span style="color:#75715e"># i.e., the walls.</span>
@@ -402,7 +402,7 @@ Current state: [0, 46, 1, 22, 41, 35, 24, 0] 7 46 / 15 2
   })();
 </script>
     </main><footer class="footer">
-    <span>&copy; 2021 <a href="https://b6a.black/">Black Bauhinia</a></span>
+    <span>&copy; 2022 <a href="https://b6a.black/">Black Bauhinia</a></span>
     <span>&middot;</span>
     <span>Powered by <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a></span>
     <span>&middot;</span>
@@ -426,7 +426,7 @@ Current state: [0, 46, 1, 22, 41, 35, 24, 0] 7 46 / 15 2
 
 
 
-<script defer src="/assets/js/highlight.min.27cd435cc9ed6abb4b496581b151804f79f366c412620272bb94e2f5f598ebcc.js" integrity="sha256-J81DXMntartLSWWBsVGAT3nzZsQSYgJyu5Ti9fWY68w="
+<script defer src="/assets/js/highlight.min.7680afc38aa6b15ddf158a4f3780b7b1f7dde7e91d26f073e6229bb7a0793c92.js" integrity="sha256-doCvw4qmsV3fFYpPN4C3sffd5&#43;kdJvBz5iKbt6B5PJI="
     onload="hljs.initHighlightingOnLoad();"></script>
 <script>
     window.onload = function () {

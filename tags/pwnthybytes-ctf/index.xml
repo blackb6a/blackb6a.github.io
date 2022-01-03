@@ -6,11 +6,7 @@
     <description>Recent content in pwnthybytes-ctf on Black Bauhinia</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 02 Oct 2019 23:20:00 +0800</lastBuildDate>
-    
-	<atom:link href="https://b6a.black/tags/pwnthybytes-ctf/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Wed, 02 Oct 2019 23:20:00 +0800</lastBuildDate><atom:link href="https://b6a.black/tags/pwnthybytes-ctf/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>PwnThyBytes CTF 2019 Writeup</title>
       <link>https://b6a.black/posts/2019-10-02-pwnthybytes/</link>

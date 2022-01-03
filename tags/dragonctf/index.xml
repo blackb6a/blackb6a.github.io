@@ -6,11 +6,7 @@
     <description>Recent content in dragonctf on Black Bauhinia</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 23 Nov 2020 04:33:50 +0800</lastBuildDate>
-    
-	<atom:link href="https://b6a.black/tags/dragonctf/index.xml" rel="self" type="application/rss+xml" />
-    
-    
+    <lastBuildDate>Mon, 23 Nov 2020 04:33:50 +0800</lastBuildDate><atom:link href="https://b6a.black/tags/dragonctf/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Dragon CTF 2020 Writeup</title>
       <link>https://b6a.black/posts/2020-11-23-dragonctf/</link>

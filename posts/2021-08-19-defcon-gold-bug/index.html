@@ -11,14 +11,14 @@
 <meta name="description" content="We played the annual Gold Bug puzzle hosted by the DEFCON Crypto and Privacy Village - and we won! Although we were unable to ace the challenge before the game ends, we managed to solve the remaining challenge afterwards. We will be covering all of them in this walkthrough.">
 <meta name="author" content="hoifanrd, Mystiz, TWY">
 <link rel="canonical" href="https://b6a.black/posts/2021-08-19-defcon-gold-bug/" />
-<link href="/assets/css/stylesheet.min.933fbeab943585aa913b5175ee7291733f28815597926f1e56aacc964d807245.css" integrity="sha256-kz&#43;&#43;q5Q1haqRO1F17nKRcz8ogVWXkm8eVqrMlk2AckU=" rel="preload stylesheet"
+<link href="/assets/css/stylesheet.min.79c4dfee3993cd3110886e38d36a5106e0d6922344cefa3ff5c0076f246815f0.css" integrity="sha256-ecTf7jmTzTEQiG4402pRBuDWkiNEzvo/9cAHbyRoFfA=" rel="preload stylesheet"
     as="style">
 
 <link rel="icon" href="https://b6a.black/favicon.ico">
 
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
-<meta name="generator" content="Hugo 0.68.3" />
+<meta name="generator" content="Hugo 0.91.0" />
 
 
 
@@ -175,7 +175,7 @@ August 19, 2021&nbsp;·&nbsp;hoifanrd, Mystiz, TWY
 <p><figure><img src="/images/2021-08-19-defcon-gold-bug/wolframalpha-2.png" alt=""></figure></p>
 
 <p>We are awared that the denominators are factors of 684483. We then tried to multiply each number by 684483:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">99242120222107240109211806120025211019050912221525219900000000000000000
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">99242120222107240109211806120025211019050912221525219900000000000000000
 99251913102109211510092505012022041421171509990000000
 991720010821080801092103241211050922071014020615252199000000000000000000000000
 99052002141105151416021002062516171906990000000000000000000
@@ -185,11 +185,11 @@ August 19, 2021&nbsp;·&nbsp;hoifanrd, Mystiz, TWY
 991315170013180401131525100118220414111703169900000000
 99152118141119050215200005232214021217112213179900</code></pre></div>
 <p><em>TWY</em> counted the trailing zeros from each line and obtained <code>17, 7, 24, 19, 7, 14, 17, 8, 2</code>, which is <code>rhythoric</code>. However, this is not the flag. On the other hand, <em>Mystiz</em> grouped the numbers between the two <code>99</code>s into pairs. For example, for the first line it is</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">24 21 20 22 21 07 24 01 09 21 18 06 12 00 25 21 10 19 05 09 12 22 15 25 21</code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">24 21 20 22 21 07 24 01 09 21 18 06 12 00 25 21 10 19 05 09 12 22 15 25 21</code></pre></div>
 <p>This is decoded <code>YVUWVHYBJVSGMAZVKTFJMWPZV</code>. What does that mean?</p>
 
 <p>Eventually, we figured out we can use Vigenere cipher to decrypt <code>YVUW...</code> with the key <code>rhythoric</code> and obtained those lines:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">howdoththelittlecrocodile
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">howdoththelittlecrocodile
 improvehisshiningtail
 andpourthewatersofthenile
 oneverygoldenscale
@@ -249,7 +249,7 @@ youvefoundthepalepuppy</code></pre></div>
 </p>
 
 <p>It is pretty obvious that pigpen cipher is the first stage.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">hadr
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">hadr
 range
 corn
 eek
@@ -262,7 +262,7 @@ heat</code></pre></div>
   
 
 <p>However, the words <code>eek</code>, <code>ream</code> did not make any sense. Maybe it is <code>eel</code> or <code>team</code>? Turns out we can build a food name by adding one character in front:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">C hadr
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">C hadr
 O range
 A corn
 L eek
@@ -302,7 +302,7 @@ W heat</code></pre></div>
 <li>Find their party (<code>Libertarian Party</code>) and capture the first letter (<code>L</code>)</li>
 <li>Repeat for each of the cases</li>
 </ol>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">Libertarian Party           -- JO JORGENSEN, SPIKE COHEN            Caesar shift +3  JHQVHQVSLNHFRKHQMRMRU
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">Libertarian Party           -- JO JORGENSEN, SPIKE COHEN            Caesar shift +3  JHQVHQVSLNHFRKHQMRMRU
 Independent Party of Oregon -- CLIFF THOMASON, PATRICK BARNEY       Caesar shift +8  JIZVMGKTQNNBPWUIAWVXIBZQKS
 Oregon Progressive Party    -- DARIO HUNTER, CHRIS HENRY                         +15 XHWTCGNSPGXDWJCITGRWG
 New Progressive Party       -- RICARDO ROSSELLO, JENNIFFER GONZALEZ              +13 SRETBAMNYRMEVPNEQBEBFFRYYBWRAAVS
@@ -352,7 +352,7 @@ Transhumanist Party         -- CHARLIE KAM, LIZ PARRISH                         
 </blockquote>
 
 <p>We eventually solved most of them. While we are solving, assuming that the middle part consists of three letters also helped us to solve the harder ones:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">Ratio of law enforcement OR a penny (10)
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">Ratio of law enforcement OR a penny (10)
 cop percent / copper cent
 
 In addition to nature OR having no exit (12)
@@ -411,7 +411,7 @@ bet terrain / better rain
 <p>We are given a sound file of meow's and purr's, some follows immediately after the previous sound, some with a short pause and some with a longer pause.</p>
 
 <p>We first labelled and converted the sound file into the following text:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">r h atfd k@el
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">r h atfd k@el
 !w b
 xig oc sj pu vhaf
 mdk el qbi
@@ -427,7 +427,7 @@ kelb qzn i$g #o c yjp vhaf rt@ d!k elb i</code></pre></div>
 <p><figure><img src="/images/2021-08-19-defcon-gold-bug/kitten-hint.png" alt=""></figure></p>
 
 <p>Okay, this is some sort of morse code. When we convert each <em>purr</em> into a dash and each <em>meow</em> into a dot, we are able to get:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">- . .-.. .-..
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">- . .-.. .-..
 -- .
 -.. .. -. .- ....
 -.. .. -..
@@ -480,7 +480,7 @@ And the mome raths outgrabe.</p>
 </blockquote>
 
 <p>There are a bunch of lines sampled below. After a bit of researching, it seems that each line represents an area code in the United States or Canada.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">(Boulder, CO [historically]),
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">(Boulder, CO [historically]),
 (Fresno, CA),
 110,
 148,
@@ -528,7 +528,7 @@ And stood awhile in thought.</p>
 <p><figure><img src="/images/2021-08-19-defcon-gold-bug/rabbit-hole-4.png" alt=""></figure></p>
 
 <p>We can see that there are a bunch of M&amp;Ms in this stage. Similar to <em>Knave of Hearts</em> (which is not correct), Mystiz thought that it is ASCII related because there are eight columns and first column consists of zeroes only. This decodes into <code>CountColors</code>, and therefore the number of M&amp;Ms are counted for each of the colors.</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">   white: 16 (p)
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">   white: 16 (p)
      red: 20 (t)
 pale-red:  3 (c)
   orange:  8 (h)
@@ -556,7 +556,7 @@ And burbled as it came!</p>
 <p><figure><img src="/images/2021-08-19-defcon-gold-bug/rabbit-hole-6.png" alt=""></figure></p>
 
 <p>We are given a lint of runes. It is easily searchable that the characters are <em>Elder Futhark</em>. When decoded, we have the below message:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">ᛊᛖᚲ ᛃᛖ ᚦᛖ ᛞᚱᛁᛒᚢᚱ ᛟᚠ ᚾᚨᛃᛚ ᚨᚾᛞ ᛊᛈᛚᛁᛏᛏᚢᚱ ᛟᚠ ᚹᚢᛞ
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">ᛊᛖᚲ ᛃᛖ ᚦᛖ ᛞᚱᛁᛒᚢᚱ ᛟᚠ ᚾᚨᛃᛚ ᚨᚾᛞ ᛊᛈᛚᛁᛏᛏᚢᚱ ᛟᚠ ᚹᚢᛞ
 sek je þe dribur of najl and splittur of wud</code></pre></div>
 <p><em>TWY</em> parsed the line a bit and got <code>driver of nail and splitter of wood</code>. With that, <em>Mystiz</em> went through the characters and found <code>Carpenter</code> is the perfect match (he also found <em>hammer bird</em> but it was incorrect).</p>
 
@@ -720,7 +720,7 @@ That’s optimally not right when compressing.</p>
 </p>
 
 <p>We are given 266 bits as below:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">00100101110111101110011110101111101111
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">00100101110111101110011110101111101111
 10110110110001001010101001111000001101
 01000111101001111010110000001010100010
 11010110011000101101100100000110000010
@@ -761,13 +761,13 @@ That’s optimally not right when compressing.</p>
 <p>This proves our assumption, and we are certain that frequencies (instead of percentages) of letters is used. Also, this confirms that minimum weights is used, and multiplication is used for the new node.</p>
 
 <p>Here we start to think what the source the frequencies are taken from. We tried to use the letter frequencies from Alice in the Wonderland, and obtained the below &quot;plaintext&quot;:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">OJCCAUNQYLIOMAGAZAUQJHOFJJAIEWHEHPQDLJOGYCWARDFOERYEFELOHE</code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">OJCCAUNQYLIOMAGAZAUQJHOFJJAIEWHEHPQDLJOGYCWARDFOERYEFELOHE</code></pre></div>
 <p>Although all bits are consumed (We can immediately falsify a tree if there are leftover bits), the text looked nonsense. Eventually another hint comes in to the scene:</p>
 
 <p><figure><img src="/images/2021-08-19-defcon-gold-bug/hoofman-hint-3.png" alt=""></figure></p>
 
 <p>The paste is entitled <em>HoofmansSourceText</em>, and the contents comes from <em>&quot;Through the Looking-Glass, and What Alice Found There&quot;</em>, which is considered the sequel to Alice's Adventures in Wonderland. We replaced the current text with the given text, and obtained the below plaintext:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">ITLLPUZZLEITTOGOTHROUGHTHECEILINGIEXPECTKEYWORDFIERCEFELINE</code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">ITLLPUZZLEITTOGOTHROUGHTHECEILINGIEXPECTKEYWORDFIERCEFELINE</code></pre></div>
 <p><em>(It'll puzzle it to go through the ceiling I expect keyword fierce feline)</em></p>
 
 <p><em>Flag: <code>fiercefeline</code></em></p>
@@ -856,16 +856,16 @@ Name them well and we shall play.</p>
 <p>Finally, the y-axis then must be the character index of the corresponding beast's name. As the least y-index starts from 4, we can guess that all the beasts' name included the word &quot;The&quot;. Besides, there should be no spaces for the beasts' name as from the experence in previous challenges.</p>
 
 <p>Following the idea, we have the string below:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">iFYouLlBEaieveinmeIllBelieveinyou</code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">iFYouLlBEaieveinmeIllBelieveinyou</code></pre></div>
 <p>There is one incorrect point (10, 18) which should be instead (10, 17). Fixing it, we have the final answer:</p>
-<div class="highlight"><pre style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">ifyoullbelieveinmeillbelieveinyou</code></pre></div>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">ifyoullbelieveinmeillbelieveinyou</code></pre></div>
 <p>Which is, <em>&quot;If you'll believe in me, I'll believe in you&quot;</em>.</p>
 
 </div>
   <footer class="post-footer">
     <ul class="post-tags">
-      <li><a href="https://b6a.black/tags/gold-bug-puzzle/">gold bug puzzle</a></li>
       <li><a href="https://b6a.black/tags/puzzle/">puzzle</a></li>
+      <li><a href="https://b6a.black/tags/gold-bug-puzzle/">gold bug puzzle</a></li>
     </ul>
     <nav class="paginav">
       <a class="prev" href="https://b6a.black/posts/2021-11-04-hacklu-crypto/">
@@ -918,7 +918,7 @@ Name them well and we shall play.</p>
   })();
 </script>
     </main><footer class="footer">
-    <span>&copy; 2021 <a href="https://b6a.black/">Black Bauhinia</a></span>
+    <span>&copy; 2022 <a href="https://b6a.black/">Black Bauhinia</a></span>
     <span>&middot;</span>
     <span>Powered by <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a></span>
     <span>&middot;</span>
@@ -942,7 +942,7 @@ Name them well and we shall play.</p>
 
 
 
-<script defer src="/assets/js/highlight.min.27cd435cc9ed6abb4b496581b151804f79f366c412620272bb94e2f5f598ebcc.js" integrity="sha256-J81DXMntartLSWWBsVGAT3nzZsQSYgJyu5Ti9fWY68w="
+<script defer src="/assets/js/highlight.min.7680afc38aa6b15ddf158a4f3780b7b1f7dde7e91d26f073e6229bb7a0793c92.js" integrity="sha256-doCvw4qmsV3fFYpPN4C3sffd5&#43;kdJvBz5iKbt6B5PJI="
     onload="hljs.initHighlightingOnLoad();"></script>
 <script>
     window.onload = function () {
