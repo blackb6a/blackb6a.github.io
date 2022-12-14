@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>hkcert-ctf on Black Bauhinia</title>
+    <link>https://b6a.black/tags/hkcert-ctf/</link>
+    <description>Recent content in hkcert-ctf on Black Bauhinia</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Thu, 15 Dec 2022 19:00:00 +0800</lastBuildDate><atom:link href="https://b6a.black/tags/hkcert-ctf/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Minecraft Geoguessr: Making of</title>
+      <link>https://b6a.black/posts/2022-12-15-hkcert-ctf-minecraft-geoguessr/</link>
+      <pubDate>Thu, 15 Dec 2022 19:00:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/posts/2022-12-15-hkcert-ctf-minecraft-geoguessr/</guid>
+      <description>We played TSJ CTF last weekend and we won! This is the writeups of our challenges</description>
+    </item>
+    
+  </channel>
+</rss>

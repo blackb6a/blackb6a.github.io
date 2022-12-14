@@ -8,12 +8,12 @@
     <language>en-us</language>
     <lastBuildDate>Wed, 14 Dec 2022 19:00:00 +0800</lastBuildDate><atom:link href="https://b6a.black/tags/bsides-mumbai/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>Bsides Mumbai 2022 Writeup</title>
+      <title>BSides Mumbai CTF 2022 Writeup</title>
       <link>https://b6a.black/posts/2022-12-14-bsides-mumbai/</link>
       <pubDate>Wed, 14 Dec 2022 19:00:00 +0800</pubDate>
       
       <guid>https://b6a.black/posts/2022-12-14-bsides-mumbai/</guid>
-      <description>We played TSJ CTF last weekend and we won! This is the writeups of our challenges</description>
+      <description>We played BSides Mumbai CTF 2022 last week and we got the third. This is the write-up on the challenges we solved.</description>
     </item>
     
   </channel>

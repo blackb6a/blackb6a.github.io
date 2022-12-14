@@ -6,14 +6,23 @@
     <description>Recent content in Posts on Black Bauhinia</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Wed, 14 Dec 2022 19:00:00 +0800</lastBuildDate><atom:link href="https://b6a.black/posts/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Thu, 15 Dec 2022 19:00:00 +0800</lastBuildDate><atom:link href="https://b6a.black/posts/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>Bsides Mumbai 2022 Writeup</title>
+      <title>Minecraft Geoguessr: Making of</title>
+      <link>https://b6a.black/posts/2022-12-15-hkcert-ctf-minecraft-geoguessr/</link>
+      <pubDate>Thu, 15 Dec 2022 19:00:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/posts/2022-12-15-hkcert-ctf-minecraft-geoguessr/</guid>
+      <description>We played TSJ CTF last weekend and we won! This is the writeups of our challenges</description>
+    </item>
+    
+    <item>
+      <title>BSides Mumbai CTF 2022 Writeup</title>
       <link>https://b6a.black/posts/2022-12-14-bsides-mumbai/</link>
       <pubDate>Wed, 14 Dec 2022 19:00:00 +0800</pubDate>
       
       <guid>https://b6a.black/posts/2022-12-14-bsides-mumbai/</guid>
-      <description>We played TSJ CTF last weekend and we won! This is the writeups of our challenges</description>
+      <description>We played BSides Mumbai CTF 2022 last week and we got the third. This is the write-up on the challenges we solved.</description>
     </item>
     
     <item>
