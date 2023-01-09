@@ -2,22 +2,31 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
+    <loc>https://b6a.black/</loc>
+    <lastmod>2023-01-09T23:55:00+08:00</lastmod>
+  </url><url>
+    <loc>https://b6a.black/tags/ctf/</loc>
+    <lastmod>2023-01-09T23:55:00+08:00</lastmod>
+  </url><url>
+    <loc>https://b6a.black/posts/</loc>
+    <lastmod>2023-01-09T23:55:00+08:00</lastmod>
+  </url><url>
+    <loc>https://b6a.black/tags/pwn/</loc>
+    <lastmod>2023-01-09T23:55:00+08:00</lastmod>
+  </url><url>
+    <loc>https://b6a.black/tags/</loc>
+    <lastmod>2023-01-09T23:55:00+08:00</lastmod>
+  </url><url>
+    <loc>https://b6a.black/tags/tetctf/</loc>
+    <lastmod>2023-01-09T23:55:00+08:00</lastmod>
+  </url><url>
+    <loc>https://b6a.black/posts/2023-01-09-tetctf-pwn01/</loc>
+    <lastmod>2023-01-09T23:55:00+08:00</lastmod>
+  </url><url>
     <loc>https://b6a.black/tags/backdoor-ctf/</loc>
     <lastmod>2022-12-24T19:00:00+08:00</lastmod>
   </url><url>
     <loc>https://b6a.black/posts/2022-12-24-backdoorctf/</loc>
-    <lastmod>2022-12-24T19:00:00+08:00</lastmod>
-  </url><url>
-    <loc>https://b6a.black/</loc>
-    <lastmod>2022-12-24T19:00:00+08:00</lastmod>
-  </url><url>
-    <loc>https://b6a.black/tags/ctf/</loc>
-    <lastmod>2022-12-24T19:00:00+08:00</lastmod>
-  </url><url>
-    <loc>https://b6a.black/posts/</loc>
-    <lastmod>2022-12-24T19:00:00+08:00</lastmod>
-  </url><url>
-    <loc>https://b6a.black/tags/</loc>
     <lastmod>2022-12-24T19:00:00+08:00</lastmod>
   </url><url>
     <loc>https://b6a.black/posts/2022-12-14-bsides-mumbai/</loc>
@@ -81,9 +90,6 @@
     <lastmod>2021-02-11T02:01:00+08:00</lastmod>
   </url><url>
     <loc>https://b6a.black/tags/discrete-logarithm/</loc>
-    <lastmod>2021-01-03T13:39:00+08:00</lastmod>
-  </url><url>
-    <loc>https://b6a.black/tags/tetctf/</loc>
     <lastmod>2021-01-03T13:39:00+08:00</lastmod>
   </url><url>
     <loc>https://b6a.black/posts/2021-01-03-tetctf-unevaluated/</loc>

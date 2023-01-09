@@ -6,7 +6,16 @@
     <description>Recent content in ctf on Black Bauhinia</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sat, 24 Dec 2022 19:00:00 +0800</lastBuildDate><atom:link href="https://b6a.black/tags/ctf/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Mon, 09 Jan 2023 23:55:00 +0800</lastBuildDate><atom:link href="https://b6a.black/tags/ctf/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>TetCTF 2023: pwn01</title>
+      <link>https://b6a.black/posts/2023-01-09-tetctf-pwn01/</link>
+      <pubDate>Mon, 09 Jan 2023 23:55:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/posts/2023-01-09-tetctf-pwn01/</guid>
+      <description>I did not solve it in time (30 minutes late T.T). However, I spent quite of lot of time on this challenge, so I might as well do a write up. Special thanks to Mystiz, fsharp, cire meat pop for helping me on this challenge.</description>
+    </item>
+    
     <item>
       <title>BackdoorCTF 2022 Writeup</title>
       <link>https://b6a.black/posts/2022-12-24-backdoorctf/</link>

