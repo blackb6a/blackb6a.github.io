@@ -6,7 +6,16 @@
     <description>Recent content in Posts on Black Bauhinia</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 09 Jan 2023 23:55:00 +0800</lastBuildDate><atom:link href="https://b6a.black/posts/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 10 Jan 2023 22:20:00 +0800</lastBuildDate><atom:link href="https://b6a.black/posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>ASIS CTF 2022 Finals Writeup</title>
+      <link>https://b6a.black/posts/2023-01-10-asisctf/</link>
+      <pubDate>Tue, 10 Jan 2023 22:20:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/posts/2023-01-10-asisctf/</guid>
+      <description>Our collection of writeups for ASIS CTF 2022.</description>
+    </item>
+    
     <item>
       <title>TetCTF 2023: pwn01</title>
       <link>https://b6a.black/posts/2023-01-09-tetctf-pwn01/</link>
