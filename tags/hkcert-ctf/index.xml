@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>hkcert-ctf on Black Bauhinia</title>
+    <link>https://b6a.black/tags/hkcert-ctf/</link>
+    <description>Recent content in hkcert-ctf on Black Bauhinia</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Wed, 05 Apr 2023 16:22:00 +0800</lastBuildDate><atom:link href="https://b6a.black/tags/hkcert-ctf/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>HKCERT CTF 2022 Making-of: Minecraft Geoguessr</title>
+      <link>https://b6a.black/posts/2023-04-05-hkcert-ctf-2022-minecraft/</link>
+      <pubDate>Wed, 05 Apr 2023 16:22:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/posts/2023-04-05-hkcert-ctf-2022-minecraft/</guid>
+      <description>One challenge we wrote for HKCERT CTF 2022 is Minecraft Geoguessr. In this blog post, we will talk about stuffs behind the scene, including how the challenge was created and the lessons learnt. If you are interested in the solution, please refer to @mystiz’s blog.</description>
+    </item>
+    
+  </channel>
+</rss>

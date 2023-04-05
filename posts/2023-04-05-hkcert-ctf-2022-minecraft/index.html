@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>HKCERT CTF 2022 Making-of: Minecraft Geoguessr | Black Bauhinia</title>
+
+<meta name="keywords" content="ctf" />
+<meta name="description" content="One challenge we wrote for HKCERT CTF 2022 is Minecraft Geoguessr. In this blog post, we will talk about stuffs behind the scene, including how the challenge was created and the lessons learnt. If you are interested in the solution, please refer to @mystiz’s blog.">
+<meta name="author" content="apple, mystiz">
+<link rel="canonical" href="https://b6a.black/posts/2023-04-05-hkcert-ctf-2022-minecraft/" />
+<link href="/assets/css/stylesheet.min.79c4dfee3993cd3110886e38d36a5106e0d6922344cefa3ff5c0076f246815f0.css" integrity="sha256-ecTf7jmTzTEQiG4402pRBuDWkiNEzvo/9cAHbyRoFfA=" rel="preload stylesheet"
+    as="style">
+
+<link rel="icon" href="https://b6a.black/favicon.ico">
+
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<meta name="generator" content="Hugo 0.91.0" />
+
+
+
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-M67YZZ2MP1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-M67YZZ2MP1');
+</script>
+
+
+
+<script src="https://kit.fontawesome.com/fbbadced05.js" crossorigin="anonymous"></script>
+
+
+<link rel="preconnect" href="https://fonts.gstatic.com">
+<link href="https://fonts.googleapis.com/css2?family=Recursive&display=swap" rel="stylesheet"> 
+
+
+<meta property="og:title" content="HKCERT CTF 2022 Making-of: Minecraft Geoguessr" />
+<meta property="og:description" content="One challenge we wrote for HKCERT CTF 2022 is Minecraft Geoguessr. In this blog post, we will talk about stuffs behind the scene, including how the challenge was created and the lessons learnt. If you are interested in the solution, please refer to @mystiz’s blog." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://b6a.black/posts/2023-04-05-hkcert-ctf-2022-minecraft/" />
+<meta property="og:image" content="https://b6a.black/images/2023-04-05-hkcert/minecraft-screenshot.png" /><meta property="article:published_time" content="2023-04-05T16:22:00+08:00" />
+<meta property="article:modified_time" content="2023-04-05T16:22:00+08:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image" content="https://b6a.black/images/2023-04-05-hkcert/minecraft-screenshot.png" />
+<meta name="twitter:title" content="HKCERT CTF 2022 Making-of: Minecraft Geoguessr"/>
+<meta name="twitter:description" content="One challenge we wrote for HKCERT CTF 2022 is Minecraft Geoguessr. In this blog post, we will talk about stuffs behind the scene, including how the challenge was created and the lessons learnt. If you are interested in the solution, please refer to @mystiz’s blog."/>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "HKCERT CTF 2022 Making-of: Minecraft Geoguessr",
+  "name": "HKCERT CTF 2022 Making-of: Minecraft Geoguessr",
+  "description": "One challenge we wrote for HKCERT CTF 2022 is Minecraft Geoguessr. In this blog post, we will talk about stuffs behind the scene, including how the challenge was created and the …",
+  "keywords": [
+    "ctf"
+  ],
+  "articleBody": "  One challenge we wrote for HKCERT CTF 2022 is Minecraft Geoguessr. In this blog post, we will talk about stuffs behind the scene, including how the challenge was created and the lessons learnt. If you are interested in the solution, please refer to @mystiz’s blog.\nThe challenge is written by @apple and @mystiz, and it was solved by four teams (in the order of solving):\n S0162: CCC Kei Yuen College 🥇 T0024: HKUST S0125: Carmel Secondary School O0056: T0003 (2022) @ TWY’s Temple  The players were given a web service. It receives 5-tuples $(x, y, z, \\theta, \\varphi)$ from the players ($x, y, z$ are the coordinates, and $\\theta$ and $\\varphi$ are the yaw and pitch respectively) and push it to the request queue. Our intern will consume the queue – He teleports to the correspond location, takes a screenshot and reflects it to the requester.\n We are also given the below screenshot, where only the prefix of the flag hkcert22{ is shown. The objective is to recover the flag.\n How did we hire our intern?  Earlier in October 2022, we posted our job description (Link here!) on various employing websites. As soon as we posted, we received around thousands of applications and we spent two days interviewing our candidates. Eventually, one candidate stood out among the shortlist.\n…Well, that’s not the case. Jokes aside, let’s read the actual details.\nWhy Minecraft Geoguessr? We always wanted to create a Minecraft-based CTF challenge. Minecraft is a fun game - not because M$ releasing new game features or mobs every few months, but it has an active hacking community to extend the game: Mods, server plugins, resource pack, etc. I (@apple) learned a lot with Minecraft, my first bash script ever written was a Minecraft texture generator that make use of ffmpeg to convert video into animated block textures, which turns vanilla Minecraft into a video player (sound enabled!)\n It would be great if we can hide some flags in Minecraft. Be it some kind of redstone machinery, or command injection (INSERT LINK HERE). However, due to the licensing problem we couldn’t make it fair to all participants so far, so the ideas were discarded.\nOn October 26 (16 days before HKCERT CTF), @Mystiz had an idea on the challenge. However, he thinks that he is only capable to write an solution but not the infrastructure. Here @apple hops in and suggested ways to implement the infrastructure.\nNow we have one more five-star challenge in HKCERT CTF!\nInfrastructure The infrastructure for the challenge was fun. We need the actual Minecraft game for rendering the screenshots, then a Minecraft server so that we can teleport the player (thanks to Bukkit project and its forks to provide a convenient API), and finally a web front-end to for the players to interact with.\ngraph TD USER[\"User\"] MCSERVER[\"Minecraft server\"] MCCLIENT[\"Minecraft client\"] APP[\"Web server\"] MCCLIENT --|Connect| MCSERVER MCSERVER --|Get JobsReport Done| APP APP ---|VNC take screenshot| MCCLIENT USER --|Use| APP  The hardest part of the infra is to register a WoRkING MiCroSofT account so that we can login to the Minecraft client with the license.\nDocker and stuff Luckily, the Minecraft client works without GPU, so we can pack it into Docker and deploy everywhere. We tweaked acaranta/docker-minecraft-client. However, it consume way more computing power than we thought, so in the end it end up on its own VM.\nMinecraft server plugin We had some discussion on how the server should be teleporting the player. @Mystiz suggest that the Web server could send the Minecraft commands to the Minecraft server directly with rcon to teleport the player, while @apple thinks it is better to develop a server plugin to poll teleport instructions from the server. Which is better?\nIn the end @apple implements the server plugin with ScriptCraft, a plugin that uses the JavaScript engine (Narshon/Rhino) in Java that enables writing JavaScript minecraft plugins. Instant reload. No compilation. But turns out all the headaches are from the JavaScript.\nThe JavaScript engine has been removed from Java few years ago and therefore it got deprecated. As the engine has been removed from most of the implementation of Java JVM, it is hard to get ScriptCraft working, but I do it anyway as I felt nostalgic with it.\nPre-generating world map It is a common practice for server owners to pre-generate world map to reduce server resource consumption. In our case, we have to teleport our camera (player) as fast as possible, therefore the world map was pre-generated for the whole search space to avoid jamming the queue (and as a bonus, avoid side-channel attacks). Luckily, there were existing plugins like WorldBorder and Chunkmaster to do so.\n Although the generation was painfully slow, we wait till the end and got a ~80GB world map. One of the reason for the slowness is it generates the world with all the entities, caves, and stuffs that are not useful for solving the challenge. We deliberately did not disable them, as it is not Minecraft without them!\nInstead, we tried to disabled mobs/animals AI to squeeze more processing power from our CPU by tweaking entity-activation-range setting in Spigot. By setting the activation range to a minimal value, the entities (mobs/animals) stand still and doesn’t move at all so you can take the best shot with your favourite llama.\nWe also disabled weather to deliver better screenshot to everyone, setting the time to noon to avoid unintended solution… etc. There was an unexpectedly long list of options could be set on a Minecraft world, even without any plugin.\nScreenshot taker  Another thing we implemented is a screenshot taker (Yes, it is not performed by the intern). We wrote a microservice called which takes screenshots via a VNC connection. In short, the service is a VNC viewer that connects to the VNC server (the Minecraft client). The screen of the VNC is projected to a HTML5 canvas. It is then rendered as a DOM and saved as a blob of PNG.\nThe blob is then saved to the database and delivered to the players.\nHow can we improve? This is one of the challenges we spent a lot of effort in. The architecture is not tiny as there are multiple components involved.\nWe received quite a number of comments (complaints) from the players. We also identified some issues regarding the system. We were only able to fix some of them during the competition…\nThere are even downtimes for the services and we have to find excuses during those moments:\n  Lack of labour This might be one of the most popular challenge in HKCERT CTF 2022 – since many of the players knows Minecraft, they decided to give it a go. There are in total 8000+ screenshots taken in a span of 45 hours.\nIt takes 15 seconds for our intern to capture one screenshot. During peak hours, there was around 220 pending requests, which implies that the waiting time is around 55 minutes.\nIt is obvious that we should have allocated more budget on hiring more interns. During the competition, we made some announcements claiming that our intern is too busy. Unfortunately, it is hard to fix that during the contest. It is not that we are lack of budget to hire more interns, but our infrastructure. Scalability was the issue – the service was only able to handle one “intern” back then.\nUnhelpful hCaptcha Many contestants complained hCaptcha is bad. For instance, it is not user-friendly, and there are automated solvers online.\nThe intention for using hCaptcha was to prevent users from brute forcing. Given that it can be automated, we are obviously not doing a good job. Alas, it is not a good option to use reCAPTCHA when hosting international CTFs because it is blocked in some countries.\nSubtle input range We mentioned that $-20000 \\leq x, z \\leq 20000$ in the challenge statement. Well, the range is shown in the error message, which is too subtle. We should have the conditions explicitly mentioned.\nImproper input validations Surprisingly, we were struck by a few validation issues. Those validation issues were so bad that the service even crashed.\nThere is a missing validation we observed during the contest. It happened in the API GET /api/jobs/:id. Unlike Javascript, the integers in PostgreSQL are limited between -2147483648 and 2147483647.\nrouter.get('/jobs/:id(\\\\d+)', async function (req, res) { const id = parseInt(req.params.id, 10) const [ { rows: jobs }, { rows: [{ min_id: minId }]} ] = await Promise.all([ db.pg.query(`SELECT id, created_at, updated_at, status, image FROM jobs WHERE session_id = $1::text AND id = $2::integer`, [req.session, id]), db.pg.query(`SELECT MIN(id) as min_id FROM jobs WHERE status != 3`) ]) if (jobs.length === 0) return res.status(404).json({ error: 'Job not found.' }) const job = jobs[0] if (job.status !== 3) return res.send('Processing') return res.send(`${job['image']}\"`) }) Some players happened to send a large enough ID: 1234000410064738. Now there is an exception when running the SQL query. The code did not catch the exception and it eventually crashed.\n A mysterious overload We are using ScriptCraft this time. During the contest, we hit an exception regarding overloading. According to the message, there are two overloads for the Location constructor:\n new Location(org.bukkit.World, double, double, double), and new Location(org.bukkit.World, double, double, double, float, float).  However, it cannot identify the correct overload for new Location(world, 0, 64, 0, 0.1, 0.1). This is strange because we have been using it during the contest. We cannot figure out the reasons, and we should test more throughoutly next time for a more robust challenge environment.\n The last words Mystiz: I found our avatar looked like a Hong Kong Youtube channel called Pomato.  ",
+  "wordCount" : "1603",
+  "inLanguage": "en",
+  "image":"https://b6a.black/images/2023-04-05-hkcert/minecraft-screenshot.png","datePublished": "2023-04-05T16:22:00+08:00",
+  "dateModified": "2023-04-05T16:22:00+08:00",
+  "author":[{
+    "@type": "Person",
+    "name": "apple"
+  }, {
+    "@type": "Person",
+    "name": "mystiz"
+  }],
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://b6a.black/posts/2023-04-05-hkcert-ctf-2022-minecraft/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Black Bauhinia",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://b6a.black/favicon.ico"
+    }
+  }
+}
+</script>
+
+
+
+</head>
+
+<body class=" dark" id="top">
+<noscript>
+    <style type="text/css">
+        .theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+</noscript>
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://b6a.black/" accesskey="h" title="Black Bauhinia (Alt + H)">Black Bauhinia</a>
+            <span class="logo-switches">
+                
+                
+            </span>
+        </div>
+        <ul id="menu" onscroll="menu_on_scroll()">
+            <li>
+                <a href="https://b6a.black/about-us/" title="About Us">
+                    <span>About Us</span>
+                </a>
+            </li></ul>
+    </nav>
+</header>
+
+    <main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+
+    <h1 class="post-title">
+      HKCERT CTF 2022 Making-of: Minecraft Geoguessr
+    </h1>
+    <div class="post-meta">
+
+April 5, 2023&nbsp;·&nbsp;apple, mystiz
+
+</div>
+  </header>
+  
+  
+  <div class="post-content js-toc-content">
+
+  <figure class="center" >
+    <img src="/images/2023-04-05-hkcert/challenge-description.png"   />
+    
+  </figure>
+
+
+<p>One challenge we wrote for HKCERT CTF 2022 is Minecraft Geoguessr. In this blog post, we will talk about stuffs behind the scene, including how the challenge was created and the lessons learnt. If you are interested in the solution, please refer to <a href="https://mystiz.hk/posts/2022/2022-12-24-hkcert-ctf-3/#cga-%E9%A6%99%E6%B8%AF%E9%9B%BB%E7%AB%B6%E9%A4%A8--minecraft-geoguessr-misc"><em>@mystiz</em>&rsquo;s blog</a>.</p>
+<p>The challenge is written by <em>@apple</em> and <em>@mystiz</em>, and it was solved by four teams (in the order of solving):</p>
+<ol>
+<li>S0162: CCC Kei Yuen College 🥇</li>
+<li>T0024: HKUST</li>
+<li>S0125: Carmel Secondary School</li>
+<li>O0056: T0003 (2022) @ TWY&rsquo;s Temple</li>
+</ol>
+<p>The players were given a web service. It receives 5-tuples $(x, y, z, \theta, \varphi)$ from the players ($x, y, z$ are the coordinates, and $\theta$ and $\varphi$ are the yaw and pitch respectively) and push it to the request queue. Our intern will consume the queue &ndash; He teleports to the correspond location, takes a screenshot and reflects it to the requester.</p>
+
+  <figure class="center" >
+    <img src="/images/2023-04-05-hkcert/minecraft-geoguessr-service.png"   />
+    
+  </figure>
+
+
+<p>We are also given the below screenshot, where only the prefix of the flag <code>hkcert22{</code> is shown. The objective is to recover the flag.</p>
+
+  <figure class="center" >
+    <img src="/images/2023-04-05-hkcert/minecraft-screenshot.png"   />
+    
+  </figure>
+
+
+<h2 id="how-did-we-hire-our-intern">How did we hire our intern?<a hidden class="anchor" aria-hidden="true" href="#how-did-we-hire-our-intern">#</a></h2>
+
+  <figure class="center" >
+    <img src="/images/2023-04-05-hkcert/jd.png"   />
+    
+  </figure>
+
+
+<p>Earlier in October 2022, we posted our job description (<a href="https://drive.google.com/file/d/1GBq0SP7nuOHwElgqZvjV39K0ZWj21RWG/view?usp=share_link">Link here!</a>) on various employing websites. As soon as we posted, we received around thousands of applications and we spent two days interviewing our candidates. Eventually, one candidate stood out among the shortlist.</p>
+<p>&hellip;Well, that&rsquo;s not the case. Jokes aside, let&rsquo;s read the actual details.</p>
+<h2 id="why-minecraft-geoguessr">Why Minecraft Geoguessr?<a hidden class="anchor" aria-hidden="true" href="#why-minecraft-geoguessr">#</a></h2>
+<p>We always wanted to create a Minecraft-based CTF challenge. Minecraft is a fun game - not because M$ releasing new game features or mobs every few months, but it has an active hacking community to extend the game: Mods, server plugins, resource pack, etc. I (<em>@apple</em>) learned a lot with Minecraft, my first bash script ever written was a Minecraft texture generator that make use of <code>ffmpeg</code> to convert video into animated block textures, which turns vanilla Minecraft into a video player (sound enabled!)</p>
+
+  <figure class="center" >
+    <img src="/images/2023-04-05-hkcert/apples-first-bash.jpg"   />
+    
+  </figure>
+
+
+<p>It would be great if we can hide some flags in Minecraft. Be it some kind of redstone machinery, or command injection (<strong>INSERT LINK HERE</strong>). However, due to the licensing problem we couldn&rsquo;t make it fair to all participants so far, so the ideas were discarded.</p>
+<p>On October 26 (16 days before HKCERT CTF), <em>@Mystiz</em> had an idea on the challenge. However, he thinks that he is only capable to write an solution but not the infrastructure. Here <em>@apple</em> hops in and suggested ways to implement the infrastructure.</p>
+<p>Now we have one more five-star challenge in HKCERT CTF!</p>
+<h2 id="infrastructure">Infrastructure<a hidden class="anchor" aria-hidden="true" href="#infrastructure">#</a></h2>
+<p>The infrastructure for the challenge was fun. We need the <em>actual</em> Minecraft game for rendering the screenshots, then a Minecraft server so that we can teleport the player (thanks to Bukkit project and its forks to provide a convenient API), and finally a web front-end to for the players to interact with.</p>
+<div class="mermaid" style="text-align: center;">
+    
+graph TD
+    USER["User"]
+    MCSERVER["Minecraft server"]
+    MCCLIENT["Minecraft client"]
+    APP["Web server"]
+    
+    MCCLIENT -->|Connect| MCSERVER
+    MCSERVER -->|Get Jobs<br/>Report Done| APP
+    APP --->|VNC take screenshot| MCCLIENT
+    USER -->|Use| APP
+
+</div>
+
+<p>The hardest part of the infra is to register a WoRkING MiCroSofT account so that we can login to the Minecraft client with the license.</p>
+<h3 id="docker-and-stuff">Docker and stuff<a hidden class="anchor" aria-hidden="true" href="#docker-and-stuff">#</a></h3>
+<p>Luckily, the Minecraft client works without GPU, so we can pack it into Docker and deploy everywhere. We tweaked <a href="https://github.com/acaranta/docker-minecraft-client">acaranta/docker-minecraft-client</a>. However, it consume way more computing power than we thought, so in the end it end up on its own VM.</p>
+<h3 id="minecraft-server-plugin">Minecraft server plugin<a hidden class="anchor" aria-hidden="true" href="#minecraft-server-plugin">#</a></h3>
+<p>We had some discussion on how the server should be teleporting the player. <em>@Mystiz</em> suggest that the Web server could send the Minecraft commands to the Minecraft server directly with <code>rcon</code> to teleport the player, while <em>@apple</em> thinks it is better to develop a server plugin to poll teleport instructions from the server. Which is better?</p>
+<p>In the end <em>@apple</em> implements the server plugin with <a href="https://github.com/walterhiggins/ScriptCraft">ScriptCraft</a>, a plugin that uses the JavaScript engine (Narshon/Rhino) in Java that enables writing JavaScript minecraft plugins. Instant reload. No compilation. But turns out all the headaches are from the JavaScript.</p>
+<p>The JavaScript engine has been removed from Java few years ago and therefore it got deprecated. As the engine has been removed from most of the implementation of Java JVM, it is hard to get ScriptCraft working, but I do it anyway as I felt nostalgic with it.</p>
+<h3 id="pre-generating-world-map">Pre-generating world map<a hidden class="anchor" aria-hidden="true" href="#pre-generating-world-map">#</a></h3>
+<p>It is a common practice for server owners to pre-generate world map to reduce server resource consumption. In our case, we have to teleport our camera (player) as fast as possible, therefore the world map was pre-generated for the whole search space to avoid jamming the queue (and as a bonus, avoid side-channel attacks). Luckily, there were existing plugins like WorldBorder and Chunkmaster to do so.</p>
+
+  <figure class="center" >
+    <img src="/images/2023-04-05-hkcert/81gb.png"   />
+    
+  </figure>
+
+
+<p>Although the generation was painfully slow, we wait till the end and got a ~80GB world map. One of the reason for the slowness is it generates the world with all the entities, caves, and stuffs that are not useful for solving the challenge. We deliberately did not disable them, as it is not Minecraft without them!</p>
+<p>Instead, we tried to disabled mobs/animals AI to squeeze more processing power from our CPU by tweaking <code>entity-activation-range</code> setting in Spigot. By setting the activation range to a minimal value, the entities (mobs/animals) stand still and doesn&rsquo;t move at all so you can take the best shot with your favourite llama.</p>
+<p>We also disabled weather to deliver better screenshot to everyone, setting the time to noon to avoid unintended solution&hellip; etc. There was an unexpectedly long list of options could be set on a Minecraft world, even without any plugin.</p>
+<h3 id="screenshot-taker">Screenshot taker<a hidden class="anchor" aria-hidden="true" href="#screenshot-taker">#</a></h3>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+<video autoplay loop  style="width: 100%; margin: 0 auto; display: block;">
+  <source src="/images/2023-04-05-hkcert/screenshoot-taker.mp4" type="video/mp4">
+</video>
+<p>Another thing we implemented is a screenshot taker (Yes, it is not performed by the intern). We wrote a microservice called which takes screenshots via a VNC connection. In short, the service is a VNC viewer that connects to the VNC server (the Minecraft client). The screen of the VNC is projected to a HTML5 canvas. It is then rendered as a DOM and saved as a blob of PNG.</p>
+<p>The blob is then saved to the database and delivered to the players.</p>
+<h2 id="how-can-we-improve">How can we improve?<a hidden class="anchor" aria-hidden="true" href="#how-can-we-improve">#</a></h2>
+<p>This is one of the challenges we spent a lot of effort in. The architecture is not tiny as there are multiple components involved.</p>
+<p>We received quite a number of comments (complaints) from the players. We also identified some issues regarding the system. We were only able to fix some of them during the competition&hellip;</p>
+<p>There are even downtimes for the services and we have to find excuses during those moments:</p>
+
+  <figure class="center" >
+    <img src="/images/2023-04-05-hkcert/excuse-1.png"   />
+    
+  </figure>
+
+
+
+  <figure class="center" >
+    <img src="/images/2023-04-05-hkcert/excuse-2.png"   />
+    
+  </figure>
+
+
+<h3 id="lack-of-labour">Lack of labour<a hidden class="anchor" aria-hidden="true" href="#lack-of-labour">#</a></h3>
+<p>This might be one of the most popular challenge in HKCERT CTF 2022 &ndash; since many of the players knows Minecraft, they decided to give it a go. There are in total 8000+ screenshots taken in a span of 45 hours.</p>
+<p>It takes 15 seconds for our intern to capture one screenshot. During peak hours, there was around 220 pending requests, which implies that the waiting time is around 55 minutes.</p>
+<p>It is obvious that we should have allocated more budget on hiring more interns. During the competition, we made some announcements claiming that our intern is too busy. Unfortunately, it is hard to fix that during the contest. It is not that we are lack of budget to hire more interns, but our infrastructure. Scalability was the issue &ndash; the service was only able to handle one &ldquo;intern&rdquo; back then.</p>
+<h3 id="unhelpful-_hcaptcha_">Unhelpful <em>hCaptcha</em><a hidden class="anchor" aria-hidden="true" href="#unhelpful-_hcaptcha_">#</a></h3>
+<p>Many contestants complained <em>hCaptcha</em> is bad. For instance, it is not user-friendly, and there are automated solvers online.</p>
+<p>The intention for using <em>hCaptcha</em> was to prevent users from brute forcing. Given that it can be automated, we are obviously not doing a good job. Alas, it is not a good option to use <em>reCAPTCHA</em> when hosting international CTFs because it is blocked in some countries.</p>
+<h3 id="subtle-input-range">Subtle input range<a hidden class="anchor" aria-hidden="true" href="#subtle-input-range">#</a></h3>
+<p>We mentioned that $-20000 \leq x, z \leq 20000$ in the challenge statement. Well, the range is shown in the error message, which is too subtle. We should have the conditions explicitly mentioned.</p>
+<h3 id="improper-input-validations">Improper input validations<a hidden class="anchor" aria-hidden="true" href="#improper-input-validations">#</a></h3>
+<p>Surprisingly, we were struck by a few validation issues. Those validation issues were so bad that the service even crashed.</p>
+<p>There is a missing validation we observed during the contest. It happened in the API <code>GET /api/jobs/:id</code>. Unlike Javascript, the integers in PostgreSQL are limited between -2147483648 and 2147483647.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-javascript" data-lang="javascript"><span style="color:#a6e22e">router</span>.<span style="color:#a6e22e">get</span>(<span style="color:#e6db74">&#39;/jobs/:id(\\d+)&#39;</span>, <span style="color:#66d9ef">async</span> <span style="color:#66d9ef">function</span> (<span style="color:#a6e22e">req</span>, <span style="color:#a6e22e">res</span>) {
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">id</span> <span style="color:#f92672">=</span> parseInt(<span style="color:#a6e22e">req</span>.<span style="color:#a6e22e">params</span>.<span style="color:#a6e22e">id</span>, <span style="color:#ae81ff">10</span>)
+
+  <span style="color:#66d9ef">const</span> [
+    { <span style="color:#a6e22e">rows</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">jobs</span> },
+    { <span style="color:#a6e22e">rows</span><span style="color:#f92672">:</span> [{ <span style="color:#a6e22e">min_id</span><span style="color:#f92672">:</span> <span style="color:#a6e22e">minId</span> }]}
+   ] <span style="color:#f92672">=</span> <span style="color:#66d9ef">await</span> Promise.<span style="color:#a6e22e">all</span>([
+    <span style="color:#a6e22e">db</span>.<span style="color:#a6e22e">pg</span>.<span style="color:#a6e22e">query</span>(<span style="color:#e6db74">`SELECT id, created_at, updated_at, status, image FROM jobs WHERE session_id = $1::text AND id = $2::integer`</span>, [<span style="color:#a6e22e">req</span>.<span style="color:#a6e22e">session</span>, <span style="color:#a6e22e">id</span>]),
+    <span style="color:#a6e22e">db</span>.<span style="color:#a6e22e">pg</span>.<span style="color:#a6e22e">query</span>(<span style="color:#e6db74">`SELECT MIN(id) as min_id FROM jobs WHERE status != 3`</span>)
+  ])
+  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">jobs</span>.<span style="color:#a6e22e">length</span> <span style="color:#f92672">===</span> <span style="color:#ae81ff">0</span>) <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">res</span>.<span style="color:#a6e22e">status</span>(<span style="color:#ae81ff">404</span>).<span style="color:#a6e22e">json</span>({ <span style="color:#a6e22e">error</span><span style="color:#f92672">:</span> <span style="color:#e6db74">&#39;Job not found.&#39;</span> })
+  <span style="color:#66d9ef">const</span> <span style="color:#a6e22e">job</span> <span style="color:#f92672">=</span> <span style="color:#a6e22e">jobs</span>[<span style="color:#ae81ff">0</span>]
+  <span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">job</span>.<span style="color:#a6e22e">status</span> <span style="color:#f92672">!==</span> <span style="color:#ae81ff">3</span>) <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">res</span>.<span style="color:#a6e22e">send</span>(<span style="color:#e6db74">&#39;Processing&#39;</span>)
+  <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">res</span>.<span style="color:#a6e22e">send</span>(<span style="color:#e6db74">`&lt;img src=&#34;</span><span style="color:#e6db74">${</span><span style="color:#a6e22e">job</span>[<span style="color:#e6db74">&#39;image&#39;</span>]<span style="color:#e6db74">}</span><span style="color:#e6db74">&#34;&gt;`</span>)
+})
+</code></pre></div><p>Some players happened to send a large enough ID: <code>1234000410064738</code>. Now there is an exception when running the SQL query. The code did not catch the exception and it eventually crashed.</p>
+
+  <figure class="center" >
+    <img src="/images/2023-04-05-hkcert/integer-overflow.png"   />
+    
+  </figure>
+
+
+<h3 id="a-mysterious-overload">A mysterious overload<a hidden class="anchor" aria-hidden="true" href="#a-mysterious-overload">#</a></h3>
+<p>We are using ScriptCraft this time. During the contest, we hit an exception regarding overloading. According to the message, there are two overloads for the <code>Location</code> constructor:</p>
+<ol>
+<li><code>new Location(org.bukkit.World, double, double, double)</code>, and</li>
+<li><code>new Location(org.bukkit.World, double, double, double, float, float)</code>.</li>
+</ol>
+<p>However, it cannot identify the correct overload for <code>new Location(world, 0, 64, 0, 0.1, 0.1)</code>. This is strange because we have been using it during the contest. We cannot figure out the reasons, and we should test more throughoutly next time for a more robust challenge environment.</p>
+
+  <figure class="center" >
+    <img src="/images/2023-04-05-hkcert/no-applicable-overload.png"   />
+    
+  </figure>
+
+
+<h2 id="the-last-words">The last words<a hidden class="anchor" aria-hidden="true" href="#the-last-words">#</a></h2>
+
+  <figure class="center" >
+    <img src="/images/2023-04-05-hkcert/pomato.png"   />
+    
+      <figcaption class="right" >Mystiz: I found our avatar looked like a Hong Kong Youtube channel called Pomato.</figcaption>
+    
+  </figure>
+
+
+
+</div>
+  <footer class="post-footer">
+    <ul class="post-tags">
+      <li><a href="https://b6a.black/tags/ctf/">ctf</a></li>
+      <li><a href="https://b6a.black/tags/hkcert-ctf/">hkcert-ctf</a></li>
+      <li><a href="https://b6a.black/tags/making-of/">making-of</a></li>
+    </ul>
+    <nav class="paginav">
+      <a class="next" href="https://b6a.black/posts/2023-02-26-lactf/">
+        <span class="title">Next Page »</span>
+        <br>
+        <span>LA CTF 2023 Writeup</span>
+      </a>
+    </nav>
+  </footer>
+</article>
+<aside class="toc-container">
+  <a href="#" style="text-decoration: none; font-weight: 700;">
+    HKCERT CTF 2022 Making-of: Minecraft Geoguessr
+  </a>
+  <div class="js-toc"></div>
+</aside>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.12.0/tocbot.min.css" integrity="sha512-SFw7k74K3983tyOlJIHa8atr9Ppef3Kix5cmifwzU7ZdtU2E0FRuOVRtd3ENpMJ8sNCie5hlb/0j23efcdQJXA==" crossorigin="anonymous" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tocbot/4.12.0/tocbot.min.js" integrity="sha512-oD3xGN8YTxenx6tdS4D/RKqO4OtORBQtAb2/FseM17GGMIi6jMwKUBc8duX4A5RwMOGGXoFBZrsqbOk8GpXFgQ==" crossorigin="anonymous"></script>
+
+<script type="text/javascript">
+  tocbot.init({
+    headingSelector: 'h1, h2, h3, h4',
+    orderedList: false,
+    headingLabelCallback: s => s.substr(0, s.length-1),
+    collapseDepth: 2
+  });
+</script>
+<script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/viz.js/1.7.1/viz.js"> </script>
+<script type="text/javascript">
+  (function () {
+    const vizPrefix = "language-viz-";
+    Array.prototype.forEach.call(document.querySelectorAll("[class^=" + vizPrefix + "]"), function (x) {
+      let engine;
+      x.getAttribute("class").split(" ").forEach(function (cls) {
+        if (cls.startsWith(vizPrefix)) {
+          engine = cls.substr(vizPrefix.length);
+        }
+      });
+      const image = new DOMParser().parseFromString(Viz(x.innerText, { format: "svg", engine: engine }), "image/svg+xml");
+      x.parentNode.insertBefore(image.documentElement, x);
+      x.style.display = 'none'
+      x.parentNode.style.backgroundColor = "white"
+    });
+  })();
+</script>
+    </main><footer class="footer">
+    <span>&copy; 2023 <a href="https://b6a.black/">Black Bauhinia</a></span>
+    <span>&middot;</span>
+    <span>Powered by <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a></span>
+    <span>&middot;</span>
+    <span>Theme <a href="https://git.io/hugopapermod" rel="noopener" target="_blank">PaperMod</a></span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)">
+    <button class="top-link" id="top-link" type="button" accesskey="g">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+            <path d="M12 6H0l6-6z" />
+        </svg>
+    </button>
+</a>
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css"
+  integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.js"
+  integrity="sha384-g7c+Jr9ZivxKLnZTDUhnkOnsh30B4H0rpLUpJ4jAIKs4fnJI+sEnkvrMWph2EDg4" crossorigin="anonymous"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/contrib/auto-render.min.js"
+  integrity="sha384-mll67QQFJfxn0IYznZYonOWZ644AWYC+Pt2cHqMaRhXVrursRwvLnLaebdGIlYNa" crossorigin="anonymous"
+  onload="renderMathInElement(document.body, { delimiters: [{ left: '$$', right: '$$', display: true }, { left: '\\[', right: '\\]', display: true }, { left: '$', right: '$', display: false }, { left: '\\(', right: '\\)', display: false }]})"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>
+mermaid.initialize({
+    startOnLoad: true,
+    htmlLabels: true,
+    securityLevel: "loose",
+    theme: 'base',
+    themeVariables: {
+        background: '#22222c',
+        primaryColor: '#33333c',
+        primaryTextColor: '#ffe4e1',
+    }
+});
+</script>
+
+
+
+<script defer src="/assets/js/highlight.min.7680afc38aa6b15ddf158a4f3780b7b1f7dde7e91d26f073e6229bb7a0793c92.js" integrity="sha256-doCvw4qmsV3fFYpPN4C3sffd5&#43;kdJvBz5iKbt6B5PJI="
+    onload="hljs.initHighlightingOnLoad();"></script>
+<script>
+    window.onload = function () {
+        if (localStorage.getItem("menu-scroll-position")) {
+            document.getElementById('menu').scrollLeft = localStorage.getItem("menu-scroll-position");
+        }
+    }
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+    function menu_on_scroll() {
+        localStorage.setItem("menu-scroll-position", document.getElementById('menu').scrollLeft);
+    }
+
+</script>
+
+</body>
+
+</html>
