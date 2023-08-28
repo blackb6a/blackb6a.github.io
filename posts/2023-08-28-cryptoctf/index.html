@@ -179,7 +179,7 @@ def encrypt(s, msg):
 <h2 id="suction-41-points-151-solves">Suction (41 points, 151 solves)<a hidden class="anchor" aria-hidden="true" href="#suction-41-points-151-solves">#</a></h2>
 <p>Difficulty: Easy</p>
 <p>RSA parameters with $p, q \sim 2^{128}$ and $e \sim 2^{16}$ are generated. However, we are only given $N' = \lfloor pq / 2^8 \rfloor$ and $e' = \lfloor e / 2^8 \rfloor$. This is not a problem to us, as we know that $N \in [2^8 pq, 2^8 pq + 2^8)$. We used our teammate TWY&rsquo;s computer to factor all these numbers. <del>To quote, &ldquo;it took 4 seconds&rdquo;. (4 seconds is the time to test $e$ lul)</del></p>
-<p><img src="https://hackmd.io/_uploads/Sy1h4z3Kn.png" alt="">
+<p><img src="/images/2023-08-28-cryptoctf/suction.png" alt="">
 (All primes and numbers with any factor less than 10000 have been eliminated before factoring.)</p>
 <p>In the end, we see that $N = N' + 69$ and $(p, q) = (188473222069998143349386719941755726311, \cdots)$, and testing the $256$ candidates for $e$ yields the flag.</p>
 <hr>
@@ -259,10 +259,10 @@ print(X, Y, Z)
 <p>Since these parameters are all related, we can recover all of them if we can recover the password of the compressed file. We can use an existing known plaintext attack tool, <a href="https://github.com/kimci86/bkcrack">bkcrack</a> to do so.</p>
 <p>To carry out the attack, we need some known plaintext.</p>
 <p><em>PNG Format Dissection by <a href="https://github.com/corkami/formats/tree/master">corkami</a>:</em>
-<img src="https://github.com/corkami/formats/blob/master/image/PNGRGB_dissected.png?raw=true" alt="PNG Format"></p>
+<img src="/images/2023-08-28-cryptoctf/blobfish-png-format.png" alt=""></p>
 <p>Given the fixed dimension (800x50) of flag.png, all bytes before the CRC32 checksum in the header should be fixed. Therefore we can prepare our known plaintext file as the following:</p>
 <p><em>plain.txt</em>
-<img src="https://hackmd.io/_uploads/HJyhiEhYn.png" alt=""></p>
+<img src="/images/2023-08-28-cryptoctf/blobfish-plain.png" alt=""></p>
 <p>According to <a href="https://github.com/kimci86/bkcrack/blob/master/example/tutorial.md">bkcrack tutorial</a>, we can obtain the internal key using the below command:</p>
 <pre tabindex="0"><code>bkcrack -C flag.zip -c flag.png -p plain.txt
 </code></pre><p>After a while the key <code>03492be6 b81a5123 24d7b146</code> will appear.</p>
