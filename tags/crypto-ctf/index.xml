@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>crypto-ctf on Black Bauhinia</title>
+    <link>https://b6a.black/tags/crypto-ctf/</link>
+    <description>Recent content in crypto-ctf on Black Bauhinia</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 28 Aug 2023 18:00:00 +0800</lastBuildDate><atom:link href="https://b6a.black/tags/crypto-ctf/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>CryptoCTF 2023 Writeup</title>
+      <link>https://b6a.black/posts/2023-08-28-cryptoctf/</link>
+      <pubDate>Mon, 28 Aug 2023 18:00:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/posts/2023-08-28-cryptoctf/</guid>
+      <description>Welcome!! (23 points, 663 solves) Difficulty: Warm-up
+We surely did get warmed up this CTF, as we came second, even beating the Cryptohackers (merge) team! Well done to everyone who participated 💜
+ Did it! (33 points, 220 solves) Difficulty: Easy
+The parameters $n = 127$ and $\ell = 20$ is fixed. A hidden subset of $\ell$ numbers $S \subseteq \{0, 1, \cdots, n - 1\}$ with $|S| \leq \ell$ is chosen, and we are given $13$ calls to the following oracle: Given a set $T \subseteq {0, 1, \cdots, n - 1}$ also with $|T| \leq \ell$, the server computes $T \setminus S$ and outputs $\{(u^2 + \varepsilon) \pmod{n} : u \in T \setminus S, \varepsilon \in \{0, 1\}\}$.</description>
+    </item>
+    
+  </channel>
+</rss>
