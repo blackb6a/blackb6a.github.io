@@ -6,7 +6,17 @@
     <description>Recent content in Posts on Black Bauhinia</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 28 Aug 2023 17:56:00 +0800</lastBuildDate><atom:link href="https://b6a.black/posts/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Sun, 10 Mar 2024 19:47:00 +0800</lastBuildDate><atom:link href="https://b6a.black/posts/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Bauhinia CTF 2023: Image Factory</title>
+      <link>https://b6a.black/posts/2024-03-10-b6actf-image-factory/</link>
+      <pubDate>Sun, 10 Mar 2024 19:47:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/posts/2024-03-10-b6actf-image-factory/</guid>
+      <description>Last year, I created a pwn challenge for the Bauhinia CTF competition. Personally, I consider it to be the most difficult pwn challenge I have ever created, and here I would like to share the challenge and its intended solution. At the same time, I will discuss common solving approaches you may find useful for this type of challenge.
+ Overview  As a CTFer, we have the obligation to code any program in a secure manner, even if a university assignment, right?</description>
+    </item>
+    
     <item>
       <title>CryptoCTF 2023 Writeup</title>
       <link>https://b6a.black/posts/2023-08-28-cryptoctf/</link>

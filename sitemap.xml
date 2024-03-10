@@ -2,22 +2,28 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   <url>
+    <loc>https://b6a.black/posts/2024-03-10-b6actf-image-factory/</loc>
+    <lastmod>2024-03-10T19:47:00+08:00</lastmod>
+  </url><url>
+    <loc>https://b6a.black/tags/bauhinia-ctf/</loc>
+    <lastmod>2024-03-10T19:47:00+08:00</lastmod>
+  </url><url>
     <loc>https://b6a.black/</loc>
-    <lastmod>2023-08-28T17:56:00+08:00</lastmod>
+    <lastmod>2024-03-10T19:47:00+08:00</lastmod>
+  </url><url>
+    <loc>https://b6a.black/tags/ctf/</loc>
+    <lastmod>2024-03-10T19:47:00+08:00</lastmod>
+  </url><url>
+    <loc>https://b6a.black/posts/</loc>
+    <lastmod>2024-03-10T19:47:00+08:00</lastmod>
+  </url><url>
+    <loc>https://b6a.black/tags/</loc>
+    <lastmod>2024-03-10T19:47:00+08:00</lastmod>
   </url><url>
     <loc>https://b6a.black/tags/crypto-ctf/</loc>
     <lastmod>2023-08-28T17:56:00+08:00</lastmod>
   </url><url>
     <loc>https://b6a.black/posts/2023-08-28-cryptoctf/</loc>
-    <lastmod>2023-08-28T17:56:00+08:00</lastmod>
-  </url><url>
-    <loc>https://b6a.black/tags/ctf/</loc>
-    <lastmod>2023-08-28T17:56:00+08:00</lastmod>
-  </url><url>
-    <loc>https://b6a.black/posts/</loc>
-    <lastmod>2023-08-28T17:56:00+08:00</lastmod>
-  </url><url>
-    <loc>https://b6a.black/tags/</loc>
     <lastmod>2023-08-28T17:56:00+08:00</lastmod>
   </url><url>
     <loc>https://b6a.black/posts/2023-04-05-hkcert-ctf-2022-minecraft/</loc>
