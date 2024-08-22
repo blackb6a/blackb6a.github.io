@@ -6,7 +6,19 @@
     <description>Recent content in ctf on Black Bauhinia</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Sun, 10 Mar 2024 19:47:00 +0800</lastBuildDate><atom:link href="https://b6a.black/tags/ctf/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Fri, 23 Aug 2024 00:40:00 +0800</lastBuildDate><atom:link href="https://b6a.black/tags/ctf/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Bauhinia Newsletter Volume 1</title>
+      <link>https://b6a.black/posts/2024-08-23-b6a-newsletter-vol1/</link>
+      <pubDate>Fri, 23 Aug 2024 00:40:00 +0800</pubDate>
+      
+      <guid>https://b6a.black/posts/2024-08-23-b6a-newsletter-vol1/</guid>
+      <description>Announcing Bauhinia Newsletter!
+ Bauhinia Newsletter is one of our initiative for our members to share knowledge to others, containing technical articles, CTF and conference journals and team memes!
+Here is the table of content for the first volume! Notice some of the content are in English while some are in Cantonese.
+ Knowledge Sharing  The journey of my first cybersecurity certificate – Jimmy Reflections on “Reflections on Trusting Trust” – Stdor The Power of QR code recovery – a1668k Bauhinia CTF 2023 Image Factory – cire meat pop TetCTF 2024 LordGPT: Microsoft Azure OAuth Bug – vow Binary Similarity: Overview of BinDiff – wwkenwong How LLL works (simply) – Eason Traffic Routing in Kubernetes – ensy Flipper Zero 推坑簡介之 NFC – GonJK Threats Analysis for Running Out of Paper in Public Toilets – apple Introduction to Generative Model – streamline Interacting Breakpoints with OWASP ZAP API – vikychoi APT techniques studying: DLL sideloading – botton PuTTY’s P521 vulnerability, and a LLL primer – Mystiz   Events  小妹火山遊🌋– grhkm Onsite Hardware Problem in SECCON 2023 Final – harrier SECCON Trip in Japan – hoifanrd   Ad-Hoc  Isekai Tensei Hakka Vol 1 Issue 1 – Ozetta Isekai Tensei Hakka Vol 1 Issue 2 – Ozetta    You can download the pdf for this volume at here!</description>
+    </item>
+    
     <item>
       <title>Bauhinia CTF 2023: Image Factory</title>
       <link>https://b6a.black/posts/2024-03-10-b6actf-image-factory/</link>
